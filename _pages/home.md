@@ -1,18 +1,23 @@
 ---
-title: "Allan Lab - Home"
+title: "PRISM Lab - Home"
 layout: homelay
-excerpt: "Allan Lab at Leiden University &rarr; LMU."
+excerpt: "PRISM Lab at Sungshin Women's University &rarr; SSWU"
 sitemap: false
 permalink: /
 ---
 
-**News: Our group moved to the University of Munich (LMU)!** Join us! 
+<!-- **News: Our group moved to the University of Munich (LMU)!** Join us! -->
 
-We are a dynamic research group at [LMU physics](https://www.physik.lmu.de/en/index.html) and at the [Leiden Institute of Physics](http://www.physics.leidenuniv.nl/). 
+In recent, machine learning and deep learning frameworks have become de facto standards in diverse fields, e.g., computer vision, natural language processing, healthcare, and manufacturing, thanks to their unprecedented caliber in data representation. Inter alia, industrial tasks performed by experts are time-consuming and expensive per se; hence many pioneering studies tried to revolutionize the domain of industrial artificial intelignece by enjoying the recent advancements of machine learning and deep learning. Nevertheless, room for improvement still exists, especially in the data-oriented viewpoint.
+Our research addresses fundamental problems in developing theoretically sound machine and deep learning algorithms and frameworks for various data modalities such as image, signal, graph, and table in the industrial artificial intelligence field.
 
-We have two overarching goals: first, 
-**to understand quantum materials**, including strange metals, high-temperature superconductors, and quantum critical electron matter. Second, **to make novel and useful materials** that never existed before, like possible room-temperature superconductors. 
-To achieve these goals, we develop new quantum sensing and quantum imaging instrumentation to obtain the key quantum mechanical degrees of freedom. We want to build the perfect instruments to answer the scientific questions we deem most important. 
+- We aim to develop novel machine learning and deep learning structures in the data-oriented perspective by considering distributional properties of given data.
+
+- We aim to devise novel machine learning and deep learning algorithms and methods, grounded in the principles of Bayesian statistics, topology, and physics.
+
+- We aim to propose biomedical artificial intelligence frameworks for biosignal (e.g., electroencephalogram) processing, neuroimaging (e.g., structural/functional magnetic resonance imaging) analysis, and biomedical data mining which can integrate multiple modalities (e.g., gene and neuroimaging).
+
+- We aim to design manufacturing artificial intelligence frameworks for market signal (e.g., stock) forecasting, semiconductor device (e.g., technology computer aided design) analysis, and production data (e.g., equipments sensors table) representation for the yield prediction.
 
 <div markdown="0" id="carousel" class="carousel slide" data-ride="carousel" data-interval="4000" data-pause="hover" >
     <!-- Menu -->
