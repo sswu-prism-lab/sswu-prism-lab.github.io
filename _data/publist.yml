@@ -4,7 +4,7 @@
   authors: C. Park, M. Cho, Y. Kim, W. Jung, and W. Ko
   link:
     url: https://www.sigapp.org/sac/sac2026/
-    display: Proc. 41st ACM/SIGAPP Symposium on Applied Computing
+    display: Proc. 41st ACM/SIGAPP Symposium on Applied Computing (SAC)
   highlight: 1
   news1: <a style="color:#6c6fa9">SAC26 Acceptance rate 24%</a>
   #news2: See [Physics World](https://physicsworld.com/a/cooper-pairs-spotted-above-critical-temperature-for-superconductivity/), [SRON news](https://www.sron.nl/news/5169-elektronparen-blijven-stabiel-boven-kritische-temperatuur-supergeleiding), [TU Delft news](https://www.tudelft.nl/en/2021/eemcs/inexplicably-stable-electron-pairs-without-superconductivity), [Leiden news](https://www.universiteitleiden.nl/en/news/2021/10/new-quantum-liquid-discovered).
@@ -72,4 +72,13 @@
   link:
     url: https://www.nature.com/articles/s41598-022-08490-9
     display: Scientific Reports 12 (2022)
+  highlight: 0
+
+- title: "EEG-Oriented Self-Supervised Learning and Cluster-Aware Adaptation"
+  image: dummy.png
+  description: ""
+  authors: W. Ko and H.-I. Suk
+  link:
+    url: https://dl.acm.org/doi/abs/10.1145/3511808.3557589
+    display: Proc. 31st ACM International Conference on Information and Knowledge Management (CIKM)
   highlight: 0
