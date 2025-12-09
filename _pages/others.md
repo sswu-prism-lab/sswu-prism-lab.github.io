@@ -1,9 +1,9 @@
 ---
 title: "PRISM Lab - Others"
-layout: homelay
-excerpt: "PRISM Lab at Sungshin Women's University &rarr; SSWU"
+layout: gridlay
+excerpt: "PRISM Lab: Others"
 sitemap: false
-permalink: /
+permalink: /others/
 ---
 
 **Project**
