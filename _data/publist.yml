@@ -120,4 +120,30 @@
     display: Proc. 21st IEEE International Conference on Data Mining (ICDM)
   highlight: 0
   
-  
+- title: "Spectro-Spatio-Temporal EEG Representation Learning for Imagined Speech Recognition"
+  image: dummy.png
+  description: ""
+  authors: W. Ko, E. Jeon, and H.-I. Suk
+  link:
+    url: https://link.springer.com/chapter/10.1007/978-3-031-02444-3_25
+    display: Proc. 6th Asian Conference on Pattern Recognition (ACPR)
+  highlight: 0
+
+- title: "Fine-grained Temporal Attention Network for EEG-based Seizure Detection"
+  image: dummy.png
+  description: ""
+  authors: S. Jeong, E. Jeon, W. Ko, and H.-I. Suk
+  link:
+    url: https://ieeexplore.ieee.org/abstract/document/9385307
+    display: Proc. 9th International Winter Conference on Brain-Computer Interface (BCI)
+  highlight: 0
+
+- title: "A Survey on Deep Learning-based Short/Zero-calibration Approaches for EEG-based Brain-Computer Interfaces"
+  image: dummy.png
+  description: ""
+  authors: W. Ko*, E. Jeon*, S. Jeong, J. Phyo, and H.-I. Suk
+  link:
+    url: https://www.frontiersin.org/journals/human-neuroscience/articles/10.3389/fnhum.2021.643386/full
+    display: Frontiers in Human Neuroscience 15 (2021)
+  highlight: 0
+
