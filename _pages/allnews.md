@@ -3,7 +3,7 @@ title: "News"
 layout: textlay
 excerpt: "PRISM Lab at Sungshin Women's University."
 sitemap: false
-permalink: /allnews.html
+permalink: /allnews/
 ---
 
 # News
