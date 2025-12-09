@@ -6,7 +6,7 @@
     url: https://www.sigapp.org/sac/sac2026/
     display: Proc. 41st ACM/SIGAPP Symposium on Applied Computing
   highlight: 1
-  news1: <a style="color:#6c6fa9">"SAC26 Acceptance rate 24%"</a>
+  news1: <a style="color:#6c6fa9">SAC26 Acceptance rate 24%</a>
   #news2: See [Physics World](https://physicsworld.com/a/cooper-pairs-spotted-above-critical-temperature-for-superconductivity/), [SRON news](https://www.sron.nl/news/5169-elektronparen-blijven-stabiel-boven-kritische-temperatuur-supergeleiding), [TU Delft news](https://www.tudelft.nl/en/2021/eemcs/inexplicably-stable-electron-pairs-without-superconductivity), [Leiden news](https://www.universiteitleiden.nl/en/news/2021/10/new-quantum-liquid-discovered).
 
 - title: "SLEEP-SAFE: Self-supevised Learning for Estimating Electroencephalogram Patterns with Structural Analysis of Fatigue Evidence"
@@ -26,4 +26,4 @@
     url: https://ieeexplore.ieee.org/abstract/document/10588965
     display: IEEE Transactions on Cybernetics 54, 11 (2024)
   highlight: 1
-  news1: <a style="color:#6c6fa9">"2022-JCR-IF 11.800, Computer Science-Cybernetics 1/24"</a>
+  news1: <a style="color:#6c6fa9">2022-JCR-IF 11.800, Computer Science-Cybernetics 1/24</a>
