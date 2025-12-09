@@ -1,7 +1,7 @@
 - title: "A Novel Self-Supervised Deep Learning Framework for Pattern Recognition of Neurodegenerative Disease via Graph-based Phenotype–Genotype Relation Modeling"
   image: sac26.png
   description: "We designe a novel graph neural network architecture and data-oriented self-supervised learning strategy for imaging genetics."
-  authors: C. Park*, M. Cho*, Y. Kim, W. Jung, and W. Ko
+  authors: C. Park* & M. Cho*, Y. Kim, W. Jung, and W. Ko
   link:
     url: https://www.sigapp.org/sac/sac2026/
     display: Proc. 41st ACM/SIGAPP Symposium on Applied Computing (SAC)
@@ -141,7 +141,7 @@
 - title: "A Survey on Deep Learning-based Short/Zero-calibration Approaches for EEG-based Brain-Computer Interfaces"
   image: dummy.png
   description: ""
-  authors: W. Ko*, E. Jeon*, S. Jeong, J. Phyo, and H.-I. Suk
+  authors: W. Ko* & E. Jeon*, S. Jeong, J. Phyo, and H.-I. Suk
   link:
     url: https://www.frontiersin.org/journals/human-neuroscience/articles/10.3389/fnhum.2021.643386/full
     display: Frontiers in Human Neuroscience 15 (2021)
@@ -159,9 +159,55 @@
 - title: "A Unified Framework for Personalized Regions Selection and Functional Relation Modeling for Early MCI Identification"
   image: neuroimage21.png
   description: "We devise a reinforcement learning algorithm for automatically selecting important brain regions for neurodegenerative disease diagnosis."
-  authors: J. Lee*, W. Ko*, E. Kang, and H.-I. Suk
+  authors: J. Lee* & W. Ko*, E. Kang, and H.-I. Suk
   link:
     url: https://www.sciencedirect.com/science/article/pii/S1053811921003256
     display: NeuroImage 236 (2021)
   highlight: 1
   news1: <a style="color:#6c6fa9">2021-JCR-IF 7.400, Neuroimaging 2/14</a>  
+
+- title: "Multi-Scale Neural Network for EEG Representation Learning in BCI"
+  image: cim21.png
+  description: "We design a robust deep neural network architecture for various EEG paradigms."
+  authors: W. Ko, E. Jeon, S. Jeong, and H.-I. Suk
+  link:
+    url: https://ieeexplore.ieee.org/abstract/document/9403717
+    display: IEEE Computational Intelligence Magazine 16 (2021)
+  highlight: 1
+  news1: <a style="color:#6c6fa9">2021-JCR-IF 9.809, Computer Science-Artificial Intelligence 15/145</a>  
+
+- title: "VIGNet: A Deep Convolutional Neural Network for EEG-based Driver Vigilance Estimation"
+  image: dummy.png
+  description: ""
+  authors: W. Ko, K. Oh, E. Jeon, and H.-I. Suk
+  link:
+    url: https://ieeexplore.ieee.org/abstract/document/9061668
+    display: Proc. 8th International Winter Conference on Brain-Computer Interface (BCI)
+  highlight: 0
+
+- title: "Domain Adaptation with Source Selection for Motor-Imagery based BCI"
+  image: dummy.png
+  description: ""
+  authors: E. Jeon, W. Ko, and H.-I. Suk
+  link:
+    url: https://ieeexplore.ieee.org/abstract/document/8737340
+    display: Proc. 7th International Winter Conference on Brain-Computer Interface (BCI)
+  highlight: 0
+
+- title: "Semi-Supervised Deep Adversarial Learning for Brain-Computer Interface"
+  image: dummy.png
+  description: ""
+  authors: W. Ko, E. Jeon, J. Lee, and H.-I. Suk
+  link:
+    url: https://ieeexplore.ieee.org/abstract/document/8737345
+    display: Proc. 7th International Winter Conference on Brain-Computer Interface (BCI)
+  highlight: 0
+
+- title: "Deep Recurrent Spatio-Temporal Neural Network for Motor Imagery based BCI"
+  image: dummy.png
+  description: ""
+  authors: W. Ko, J. S. Yoon, E. Kang, E. Jun, J.-S. Choi, and H.-I. Suk
+  link:
+    url: https://ieeexplore.ieee.org/document/8311535
+    display: Proc. 6th International Winter Conference on Brain-Computer Interface (BCI)
+  highlight: 0
