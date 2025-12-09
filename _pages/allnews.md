@@ -1,5 +1,5 @@
 ---
-title: "News"
+title: "PRISM Lab - News"
 layout: textlay
 excerpt: "PRISM Lab at Sungshin Women's University."
 sitemap: false
