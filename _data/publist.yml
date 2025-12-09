@@ -36,3 +36,22 @@
     url: https://ieeexplore.ieee.org/document/10266751
     display: IEEE Transactions on Pattern Analysis and Machine Intelligence 46, 1 (2024)
   highlight: 0
+
+- title: "Transitioning-aware Attention-based Deep Neural Network for Sleep Staging"
+  image: dummy.png
+  description: ""
+  authors: J. Phyo, W. Ko, E. Jeon, and H.-I. Suk
+  link:
+    url: https://ieeexplore.ieee.org/document/9877908
+    display: IEEE Transactions on Cybernetics 53, 7 (2023)
+  highlight: 0
+
+- title: "Mutual Information-driven Subject-invariant and Class-relevant Deep Representation Learning in BCI"
+  image: dummy.png
+  description: ""
+  authors: E. Jeon, W. Ko, J. S. Yoon, and H.-I. Suk
+  link:
+    url: https://ieeexplore.ieee.org/document/9508768
+    display: IEEE Transactions on Neural Networks and Learning Systems 34, 2 (2023)
+  highlight: 0
+  
