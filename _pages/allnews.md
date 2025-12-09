@@ -1,9 +1,9 @@
 ---
 title: "PRISM Lab - News"
-layout: gridlay
-excerpt: "PRISM Lab -- News."
+layout: textlay
+excerpt: "PRISM Lab at Sungshin Women's University."
 sitemap: false
-permalink: /allnews/
+permalink: /allnews.html
 ---
 
 # News
