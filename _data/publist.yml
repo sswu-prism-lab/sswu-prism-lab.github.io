@@ -27,3 +27,12 @@
     display: IEEE Transactions on Cybernetics 54, 11 (2024)
   highlight: 1
   news1: <a style="color:#6c6fa9">2022-JCR-IF 11.800, Computer Science-Cybernetics 1/24</a>
+
+- title: "Deep Efficient Continuous Manifold Learning for Time Series Modeling"
+  image: dummy.png
+  description: ""
+  authors: S. Jeong, W. Ko, A. W. Mulyadi, and H.-I. Suk
+  link:
+    url: https://ieeexplore.ieee.org/document/10266751
+    display: IEEE Transactions on Pattern Analysis and Machine Intelligence 46, 1 (2024)
+  highlight: 0
