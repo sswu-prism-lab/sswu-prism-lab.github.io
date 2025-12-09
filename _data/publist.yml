@@ -1,7 +1,7 @@
 - title: "A Novel Self-Supervised Deep Learning Framework for Pattern Recognition of Neurodegenerative Disease via Graph-based Phenotype–Genotype Relation Modeling"
   image: sac26.png
   description: "We designe a novel graph neural network architecture and data-oriented self-supervised learning strategy for imaging genetics."
-  authors: C. Park, M. Cho, Y. Kim, W. Jung, and W. Ko
+  authors: C. Park*, M. Cho*, Y. Kim, W. Jung, and W. Ko
   link:
     url: https://www.sigapp.org/sac/sac2026/
     display: Proc. 41st ACM/SIGAPP Symposium on Applied Computing (SAC)
