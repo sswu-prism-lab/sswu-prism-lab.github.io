@@ -1,7 +1,7 @@
 ---
-title: "Allan Lab - Publications"
+title: "PRISM Lab - Publications"
 layout: gridlay
-excerpt: "Allan Lab -- Publications."
+excerpt: "PRISM Lab -- Publications."
 sitemap: false
 permalink: /publications/
 ---
@@ -61,6 +61,6 @@ permalink: /publications/
 {% endfor %}
 
 ## Patents
-<em>고원준, 강종구, 최정원</em><br />뇌전도 신호를 이용한 자기지도학습 기반 피로 상태 추정 학습 모델 구축 방법 및 이를 이용한 피로 상태 추정 장치<br /> "출원번호: 10-2025-0190652, 출원일자: 2025.12.04"
+<em>고원준, 강종구, 최정원</em><br />뇌전도 신호를 이용한 자기지도학습 기반 피로 상태 추정 학습 모델 구축 방법 및 이를 이용한 피로 상태 추정 장치<br /> 출원번호: 10-2025-0190652, 출원일자: 2025.12.04
 
-<em>Milan P Allan</em><br /> Methods of manufacturing superconductor and phononic elements <br /> <a href="https://patents.google.com/patent/US10439125B2/en?inventor=Milan+ALLAN&oq=inventor:(Milan+ALLAN)">US10439125B2 (2016)</a>
+<em>석흥일, 고원준</em><br />딥러닝 기반 유전자형-표현형 데이터 분석 및 질병 진단 방법 및 장치<br /> 등록번호: 10-2747717, 등록일자: 2024.12.24
