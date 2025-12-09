@@ -82,3 +82,22 @@
     url: https://dl.acm.org/doi/abs/10.1145/3511808.3557589
     display: Proc. 31st ACM International Conference on Information and Knowledge Management (CIKM)
   highlight: 0
+
+- title: "Enhancing Contextual Encoding with Stage-Confusion and Stage-Transition Estimation for EEG-based Sleep Staging"
+  image: dummy.png
+  description: ""
+  authors: J. Phyo, W. Ko, E. Jeon, and H.-I. Suk
+  link:
+    url: https://ieeexplore.ieee.org/abstract/document/9746353
+    display: Proc. 47th IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP)
+  highlight: 0
+
+- title: "Continuous Riemannian Geometric Learning for Sleep Staging Classification"
+  image: dummy.png
+  description: ""
+  authors: S. Jeong, W. Ko, A. W. Mulyadi, and H.-I. Suk
+  link:
+    url: https://ieeexplore.ieee.org/abstract/document/9734855
+    display: Proc. 10th International Winter Conference on Brain-Computer Interface (BCI)
+  highlight: 0
+  
