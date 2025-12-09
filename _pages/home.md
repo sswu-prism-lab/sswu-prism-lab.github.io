@@ -69,7 +69,7 @@ Our research addresses fundamental problems in developing theoretically sound ma
 
 
 <figure class="fifth">
+  <img src="{{ site.url }}{{ site.baseurl }}/images/logopic/logo2.jpeg" style="width: 230px">
   <img src="{{ site.url }}{{ site.baseurl }}/images/logopic/logo1.png" style="width: 100px">
-  <img src="{{ site.url }}{{ site.baseurl }}/images/logopic/logo2.jpeg" style="width: 200px">
   <img src="{{ site.url }}{{ site.baseurl }}/images/logopic/logo3.png" style="width: 100px">
 </figure>
