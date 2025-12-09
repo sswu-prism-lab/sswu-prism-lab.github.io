@@ -100,4 +100,14 @@
     url: https://ieeexplore.ieee.org/abstract/document/9734855
     display: Proc. 10th International Winter Conference on Brain-Computer Interface (BCI)
   highlight: 0
+
+- title: "A Novel RL-assisted Deep Learning Framework for Task-informative Signals Selection and Classification for Spontaneous BCIs"
+  image: tii22.png
+  description: "We devise a reinforcement learning algorithm for representing spontaneously generated EEG signals."
+  authors: W. Ko, E. Jeon, and H.-I. Suk
+  link:
+    url: https://ieeexplore.ieee.org/abstract/document/9293035
+    display: IEEE Transactions on Industrial Informatics 18, 3 (2022)
+  highlight: 1
+  news1: <a style="color:#6c6fa9">2021-JCR-IF 11.648, Computer Science-Interdisciplinary Applications 4/112</a>  
   
