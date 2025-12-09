@@ -62,7 +62,7 @@ Our research addresses fundamental problems in developing theoretically sound ma
   </a>
 </div>
 
-**We are looking for passionate new Master students to join the team** [(more info)](https://www.allanlab.org/vacancies) **!**
+**We are looking for passionate new PhD/Master students to join the team!**
 
 
 
