@@ -55,3 +55,12 @@
     display: IEEE Transactions on Neural Networks and Learning Systems 34, 2 (2023)
   highlight: 0
   
+- title: "A Deep Generative-Discriminative Learning for Multi-modal Representation in Imaging Genetics"
+  image: tmi22.png
+  description: "We designe a deep generative-discriminative learning framework for modeling phenotype-genotype relations."
+  authors: W. Ko, W. Jung, E. Jeon, and H.-I. Suk
+  link:
+    url: https://ieeexplore.ieee.org/document/9743914
+    display: IEEE Transactions on Medical Imaging 41, 9 (2022)
+  highlight: 1
+  news1: <a style="color:#6c6fa9">2021-JCR-IF 11.037, Radiology-Nuclear Medicine and Medical Imaging 5/136</a>
