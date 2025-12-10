@@ -3,7 +3,7 @@
   info: Undergraduate Intern
   email: 20220363@sungshin.ac.kr
   number_educ: 2
-  education1: Dept. Psychology and Dept. Artificial Intelligence
+  education1: Major in Psychology and Artificial Intelligence
   education2: Biosignal representation, topological deep learning
 
 - name: Chaeyoung Lee (이채영)
@@ -11,7 +11,7 @@
   info: Undergraduate Intern
   email: 20231416@sungshin.ac.kr
   number_educ: 2
-  education1: Dept. Artificial Intelligence
+  education1: Major in Artificial Intelligence
   education2: Neuroimaging analysis
 
 - name: Yeonji Kim (김연지)
@@ -19,7 +19,7 @@
   info: Undergraduate Intern
   email: 20231333@sungshin.ac.kr
   number_educ: 2
-  education1: Dept. Artificial Intelligence
+  education1: Major in Artificial Intelligence
   education2: Imaging genetics, self-supervised learning
 
 - name: Minseo Cho (조민서)
@@ -27,7 +27,7 @@
   info: Undergraduate Intern
   email: 20211404@sungshin.ac.kr
   number_educ: 2
-  education1: Dept. Artificial Intelligence
+  education1: Major in Artificial Intelligence
   education2: Imaging genetics, computer vision
   
 - name: Chanmi Park (박찬미)
@@ -35,7 +35,7 @@
   info: Undergraduate Intern
   email: 20221633@sungshin.ac.kr
   number_educ: 2
-  education1: Dept. Intelligent IoT
+  education1: Major in Intelligent IoT
   education2: Imaging genetics, computer vision
 
 - name: Huiyoung Shin (신희영)
@@ -43,7 +43,7 @@
   info: Undergraduate Intern
   email: 20241223@sungshin.ac.kr
   number_educ: 2
-  education1: Dept. Artificial Intelligence
+  education1: Major in Artificial Intelligence
   education2: Molecule modeling, graph neural network
 
 - name: Yobin Yoon (윤여빈)
@@ -51,7 +51,7 @@
   info: Undergraduate Intern
   email: 20220904@sungshin.ac.kr
   number_educ: 2
-  education1: Dept. Statistics
+  education1: Major in Statistics
   education2: Electronic health record, topological deep learning
 
 - name: Yoonkyeong Kang (강윤경)
@@ -59,7 +59,7 @@
   info: Undergraduate Intern
   email: 20232632@sungshin.ac.kr
   number_educ: 2
-  education1: Dept. Artificial Intelligence
+  education1: Major in Artificial Intelligence
   education2: Biosignal representation, topological deep learning
 
 - name: Jiho Lee (이지호)
@@ -67,13 +67,13 @@
   info: Undergraduate Intern
   email: 20231414@sungshin.ac.kr
   number_educ: 2
-  education1: Dept. Artificial Intelligence
+  education1: Major in Artificial Intelligence
   education2: Imaging genetics
 
-- name: "This could be you !"
+- name: "This could be you!"
   photo: rock.jpg
   info: Contact us:)
-  email: milan.allan@gmail.com
+  email: tmp@tmp.tmp
   number_educ: 0
   education1:
   education2:
