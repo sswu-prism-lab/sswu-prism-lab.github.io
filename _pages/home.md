@@ -10,6 +10,8 @@ permalink: /
 
 #### We are Pattern Recognition and Intelligent System Modeling Lab :D
 
+<div style="text-align: justify;">
+
 In recent, machine learning and deep learning frameworks have become de facto standards in diverse fields, e.g., computer vision, natural language processing, healthcare, and manufacturing, thanks to their unprecedented caliber in data representation. Inter alia, industrial tasks performed by experts are time-consuming and expensive per se; hence many pioneering studies tried to revolutionize the domain of industrial artificial intelignece by enjoying the recent advancements of machine learning and deep learning. Nevertheless, room for improvement still exists, especially in the data-oriented viewpoint.
 Our research addresses fundamental problems in developing theoretically sound machine and deep learning algorithms and frameworks for various data modalities such as image, signal, graph, and table in the industrial artificial intelligence field.
 
@@ -62,6 +64,8 @@ Our research addresses fundamental problems in developing theoretically sound ma
     <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
     <span class="sr-only">Next</span>
   </a>
+</div>
+
 </div>
 
 **We are looking for passionate new PhD/Master students to join the team!**
