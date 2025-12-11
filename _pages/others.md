@@ -9,8 +9,13 @@ permalink: /others/
 # Project, Awards, Seminars, and Advisory
 
 ## Project
+
+<div style="text-align: justify;">
+
 - Development of a unified diagnostic framework for mental disorder/brain disease through user-independent and protocol-agnostic EEG representation based on interpretable topological deep learning techniques (approximately $400,000), National Research Foundation of Korea-Outstanding Young Scientist Grant
 	- 해석 가능한 위상적 딥러닝 기술 기반 사용자-독립적, 프로토콜-무관한 뇌전도 표현을 통한 정신장애/뇌질환 통합 진단 프레임워크 개발 (약 5.6억원), 한국연구재단-우수신진연구 (2025-2028)
+
+</div>
 
 ## Awards
 - Sungshin Excellent Teaching Award, Sungshin Women's University (2024)
