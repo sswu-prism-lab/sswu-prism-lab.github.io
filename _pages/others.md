@@ -6,7 +6,7 @@ sitemap: false
 permalink: /others/
 ---
 
-# Projects, Awards, Seminars, and Advisory
+# Project, Awards, Seminars, and Advisory
 
 ## Project
 - Development of a unified diagnostic framework for mental disorder/brain disease through user-independent and protocol-agnostic EEG representation based on interpretable topological deep learning techniques (approximately $400,000), National Research Foundation of Korea-Outstanding Young Scientist Grant
