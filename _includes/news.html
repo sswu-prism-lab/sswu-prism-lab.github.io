@@ -2,9 +2,13 @@
   <h4>News</h4>
 
   {% for article in site.data.news limit:3 %}
-    <div style="text-align: justify; margin-bottom: 10px;">
+    <div style="text-align: justify; margin-bottom: 12px;">
+      
       <span style="font-size: 1.05em; font-weight: bold;">{{ article.date }}</span>
-      {{ article.headline | markdownify }}
+      <br>
+      
+      {{ article.headline | markdownify | remove: '<p>' | remove: '</p>' }}
+      
     </div>
   {% endfor %}
 
