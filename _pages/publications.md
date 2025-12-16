@@ -6,7 +6,6 @@ sitemap: false
 permalink: /publications/
 ---
 
-
 # Publications
 
 ## Highlights
@@ -24,9 +23,9 @@ permalink: /publications/
 {% endif %}
 
 <div class="col-sm-6 clearfix">
- <div class="well">
+ <div class="well" style="text-align: justify;">
   <pubtit>{{ publi.title }}</pubtit>
-  <img src="{{ site.url }}{{ site.baseurl }}/images/pubpic/{{ publi.image }}" class="img-responsive" width="33%" style="float: left" />
+  <img src="{{ site.url }}{{ site.baseurl }}/images/pubpic/{{ publi.image }}" class="img-responsive" width="33%" style="float: left; margin-right: 10px;" />
   <p>{{ publi.description }}</p>
   <p><em>{{ publi.authors }}</em></p>
   <p><strong><a href="{{ publi.link.url }}">{{ publi.link.display }}</a></strong></p>
@@ -55,12 +54,24 @@ permalink: /publications/
 
 {% for publi in site.data.publist %}
 
-  {{ publi.title }} <br />
-  <em>{{ publi.authors }} </em><br /><a href="{{ publi.link.url }}">{{ publi.link.display }}</a>
+<div style="text-align: justify; margin-bottom: 15px;">
+  <strong>{{ publi.title }}</strong> <br />
+  <em>{{ publi.authors }} </em><br />
+  <a href="{{ publi.link.url }}">{{ publi.link.display }}</a>
+</div>
 
 {% endfor %}
 
 ## Patents
-<em>고원준, 강종구, 최정원</em><br />뇌전도 신호를 이용한 자기지도학습 기반 피로 상태 추정 학습 모델 구축 방법 및 이를 이용한 피로 상태 추정 장치<br /> 출원번호: 10-2025-0190652, 출원일자: 2025.12.04
 
-<em>석흥일, 고원준</em><br />딥러닝 기반 유전자형-표현형 데이터 분석 및 질병 진단 방법 및 장치<br /> 등록번호: 10-2747717, 등록일자: 2024.12.24
+<div style="text-align: justify; margin-bottom: 15px;">
+  <em>고원준, 강종구, 최정원</em><br />
+  뇌전도 신호를 이용한 자기지도학습 기반 피로 상태 추정 학습 모델 구축 방법 및 이를 이용한 피로 상태 추정 장치<br />
+  출원번호: 10-2025-0190652, 출원일자: 2025.12.04
+</div>
+
+<div style="text-align: justify; margin-bottom: 15px;">
+  <em>석흥일, 고원준</em><br />
+  딥러닝 기반 유전자형-표현형 데이터 분석 및 질병 진단 방법 및 장치<br />
+  등록번호: 10-2747717, 등록일자: 2024.12.24
+</div>
