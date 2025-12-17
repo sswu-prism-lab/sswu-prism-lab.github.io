@@ -46,7 +46,7 @@
 - title: "A Novel Topological Deep Learning Framework for Neurodevelopmental Disorder Diagnosis by Multichannel Biosignal Representation"
   image: dummy.png
   description: ""
-  authors: Y. Yoon* & J. Choe, W. Ko
+  authors: Y. Yoon* & J. Choe*, W. Ko
   link:
     url: https://sswu-prism-lab.github.io
     display: Proc. IEEE International Conference on Acoustics, Speech, and Signal Processing (ICASSP), Under Review
