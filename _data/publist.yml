@@ -1,7 +1,7 @@
 - title: "A Novel Self-Supervised Deep Learning Framework for Pattern Recognition of Neurodegenerative Disease via Graph-based Phenotype–Genotype Relation Modeling"
   image: sac26.png
   description: "We designe a novel graph neural network architecture and data-oriented self-supervised learning strategy for imaging genetics."
-  authors: C. Park* & M. Cho*, Y. Kim, W. Jung, and W. Ko
+  authors: C. Park* & M. Cho*, Y. Kim, W. Jung, W. Ko
   link:
     url: https://www.sigapp.org/sac/sac2026/
     display: Proc. 41st ACM/SIGAPP Symposium on Applied Computing (SAC)
@@ -12,7 +12,7 @@
 - title: "SLEEP-SAFE: Self-supevised Learning for Estimating Electroencephalogram Patterns with Structural Analysis of Fatigue Evidence"
   image: dummy.png
   description: ""
-  authors: W. Ko, J Choe, and J. Kang
+  authors: W. Ko, J Choe, J. Kang
   link:
     url: https://ieeexplore.ieee.org/document/10902181
     display: IEEE Access 13 (2025)
@@ -21,7 +21,7 @@
 - title: "EEG-Oriented Self-Supervised Learning with Triple Information Pathways Network"
   image: tcyb25.png
   description: "We designe a novel deep neural network architecture, adaptive layer normalization algorithm, and data-oriented self-supervised learning strategy for EEG analysis."
-  authors: W. Ko, S. Jeong, S.-K. Song, and H.-I. Suk
+  authors: W. Ko, S. Jeong, S.-K. Song, H.-I. Suk
   link:
     url: https://ieeexplore.ieee.org/abstract/document/10588965
     display: IEEE Transactions on Cybernetics 54, 11 (2024)
@@ -31,7 +31,7 @@
 - title: "Deep Efficient Continuous Manifold Learning for Time Series Modeling"
   image: dummy.png
   description: ""
-  authors: S. Jeong, W. Ko, A. W. Mulyadi, and H.-I. Suk
+  authors: S. Jeong, W. Ko, A. W. Mulyadi, H.-I. Suk
   link:
     url: https://ieeexplore.ieee.org/document/10266751
     display: IEEE Transactions on Pattern Analysis and Machine Intelligence 46, 1 (2024)
@@ -40,7 +40,7 @@
 - title: "Transitioning-aware Attention-based Deep Neural Network for Sleep Staging"
   image: dummy.png
   description: ""
-  authors: J. Phyo, W. Ko, E. Jeon, and H.-I. Suk
+  authors: J. Phyo, W. Ko, E. Jeon, H.-I. Suk
   link:
     url: https://ieeexplore.ieee.org/document/9877908
     display: IEEE Transactions on Cybernetics 53, 7 (2023)
@@ -49,7 +49,7 @@
 - title: "Mutual Information-driven Subject-invariant and Class-relevant Deep Representation Learning in BCI"
   image: dummy.png
   description: ""
-  authors: E. Jeon, W. Ko, J. S. Yoon, and H.-I. Suk
+  authors: E. Jeon, W. Ko, J. S. Yoon, H.-I. Suk
   link:
     url: https://ieeexplore.ieee.org/document/9508768
     display: IEEE Transactions on Neural Networks and Learning Systems 34, 2 (2023)
@@ -58,7 +58,7 @@
 - title: "A Deep Generative-Discriminative Learning for Multi-modal Representation in Imaging Genetics"
   image: tmi22.png
   description: "We designe a deep generative-discriminative learning framework for modeling phenotype-genotype relations."
-  authors: W. Ko, W. Jung, E. Jeon, and H.-I. Suk
+  authors: W. Ko, W. Jung, E. Jeon, H.-I. Suk
   link:
     url: https://ieeexplore.ieee.org/document/9743914
     display: IEEE Transactions on Medical Imaging 41, 9 (2022)
@@ -68,7 +68,7 @@
 - title: "Semi-Supervised Generative and Discriminative Adversarial Learning for Motor Imagery-based Brain-Computer Interface"
   image: dummy.png
   description: ""
-  authors: W. Ko, E. Jeon, J. S. Yoon, and H.-I. Suk
+  authors: W. Ko, E. Jeon, J. S. Yoon, H.-I. Suk
   link:
     url: https://www.nature.com/articles/s41598-022-08490-9
     display: Scientific Reports 12 (2022)
@@ -77,7 +77,7 @@
 - title: "EEG-Oriented Self-Supervised Learning and Cluster-Aware Adaptation"
   image: dummy.png
   description: ""
-  authors: W. Ko and H.-I. Suk
+  authors: W. Ko, H.-I. Suk
   link:
     url: https://dl.acm.org/doi/abs/10.1145/3511808.3557589
     display: Proc. 31st ACM International Conference on Information and Knowledge Management (CIKM)
@@ -86,7 +86,7 @@
 - title: "Enhancing Contextual Encoding with Stage-Confusion and Stage-Transition Estimation for EEG-based Sleep Staging"
   image: dummy.png
   description: ""
-  authors: J. Phyo, W. Ko, E. Jeon, and H.-I. Suk
+  authors: J. Phyo, W. Ko, E. Jeon, H.-I. Suk
   link:
     url: https://ieeexplore.ieee.org/abstract/document/9746353
     display: Proc. 47th IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP)
@@ -95,7 +95,7 @@
 - title: "Continuous Riemannian Geometric Learning for Sleep Staging Classification"
   image: dummy.png
   description: ""
-  authors: S. Jeong, W. Ko, A. W. Mulyadi, and H.-I. Suk
+  authors: S. Jeong, W. Ko, A. W. Mulyadi, H.-I. Suk
   link:
     url: https://ieeexplore.ieee.org/abstract/document/9734855
     display: Proc. 10th International Winter Conference on Brain-Computer Interface (BCI)
@@ -104,7 +104,7 @@
 - title: "A Novel RL-assisted Deep Learning Framework for Task-informative Signals Selection and Classification for Spontaneous BCIs"
   image: tii22.png
   description: "We devise a reinforcement learning algorithm for representing spontaneously generated EEG signals."
-  authors: W. Ko, E. Jeon, and H.-I. Suk
+  authors: W. Ko, E. Jeon, H.-I. Suk
   link:
     url: https://ieeexplore.ieee.org/abstract/document/9293035
     display: IEEE Transactions on Industrial Informatics 18, 3 (2022)
@@ -114,7 +114,7 @@
 - title: "ENGINE: Enhancing Neuroimaging and Genetic Information by Neural Embedding"
   image: dummy.png
   description: ""
-  authors: W. Ko, W. Jung, A. W. Mulyadi, E. Jeon, and H.-I. Suk
+  authors: W. Ko, W. Jung, A. W. Mulyadi, E. Jeon, H.-I. Suk
   link:
     url: https://ieeexplore.ieee.org/abstract/document/9679140
     display: Proc. 21st IEEE International Conference on Data Mining (ICDM)
@@ -123,7 +123,7 @@
 - title: "Spectro-Spatio-Temporal EEG Representation Learning for Imagined Speech Recognition"
   image: dummy.png
   description: ""
-  authors: W. Ko, E. Jeon, and H.-I. Suk
+  authors: W. Ko, E. Jeon, H.-I. Suk
   link:
     url: https://link.springer.com/chapter/10.1007/978-3-031-02444-3_25
     display: Proc. 6th Asian Conference on Pattern Recognition (ACPR)
@@ -132,7 +132,7 @@
 - title: "Fine-grained Temporal Attention Network for EEG-based Seizure Detection"
   image: dummy.png
   description: ""
-  authors: S. Jeong, E. Jeon, W. Ko, and H.-I. Suk
+  authors: S. Jeong, E. Jeon, W. Ko, H.-I. Suk
   link:
     url: https://ieeexplore.ieee.org/abstract/document/9385307
     display: Proc. 9th International Winter Conference on Brain-Computer Interface (BCI)
@@ -141,7 +141,7 @@
 - title: "A Survey on Deep Learning-based Short/Zero-calibration Approaches for EEG-based Brain-Computer Interfaces"
   image: dummy.png
   description: ""
-  authors: W. Ko* & E. Jeon*, S. Jeong, J. Phyo, and H.-I. Suk
+  authors: W. Ko* & E. Jeon*, S. Jeong, J. Phyo, H.-I. Suk
   link:
     url: https://www.frontiersin.org/journals/human-neuroscience/articles/10.3389/fnhum.2021.643386/full
     display: Frontiers in Human Neuroscience 15 (2021)
@@ -159,7 +159,7 @@
 - title: "A Unified Framework for Personalized Regions Selection and Functional Relation Modeling for Early MCI Identification"
   image: neuroimage21.png
   description: "We devise a reinforcement learning algorithm for automatically selecting important brain regions for neurodegenerative disease diagnosis."
-  authors: J. Lee* & W. Ko*, E. Kang, and H.-I. Suk
+  authors: J. Lee* & W. Ko*, E. Kang, H.-I. Suk
   link:
     url: https://www.sciencedirect.com/science/article/pii/S1053811921003256
     display: NeuroImage 236 (2021)
@@ -169,7 +169,7 @@
 - title: "Multi-Scale Neural Network for EEG Representation Learning in BCI"
   image: cim21.png
   description: "We design a robust deep neural network architecture for various EEG paradigms."
-  authors: W. Ko, E. Jeon, S. Jeong, and H.-I. Suk
+  authors: W. Ko, E. Jeon, S. Jeong, H.-I. Suk
   link:
     url: https://ieeexplore.ieee.org/abstract/document/9403717
     display: IEEE Computational Intelligence Magazine 16 (2021)
@@ -179,7 +179,7 @@
 - title: "VIGNet: A Deep Convolutional Neural Network for EEG-based Driver Vigilance Estimation"
   image: dummy.png
   description: ""
-  authors: W. Ko, K. Oh, E. Jeon, and H.-I. Suk
+  authors: W. Ko, K. Oh, E. Jeon, H.-I. Suk
   link:
     url: https://ieeexplore.ieee.org/abstract/document/9061668
     display: Proc. 8th International Winter Conference on Brain-Computer Interface (BCI)
@@ -188,7 +188,7 @@
 - title: "Domain Adaptation with Source Selection for Motor-Imagery based BCI"
   image: dummy.png
   description: ""
-  authors: E. Jeon, W. Ko, and H.-I. Suk
+  authors: E. Jeon, W. Ko, H.-I. Suk
   link:
     url: https://ieeexplore.ieee.org/abstract/document/8737340
     display: Proc. 7th International Winter Conference on Brain-Computer Interface (BCI)
@@ -197,7 +197,7 @@
 - title: "Semi-Supervised Deep Adversarial Learning for Brain-Computer Interface"
   image: dummy.png
   description: ""
-  authors: W. Ko, E. Jeon, J. Lee, and H.-I. Suk
+  authors: W. Ko, E. Jeon, J. Lee, H.-I. Suk
   link:
     url: https://ieeexplore.ieee.org/abstract/document/8737345
     display: Proc. 7th International Winter Conference on Brain-Computer Interface (BCI)
@@ -206,7 +206,7 @@
 - title: "Deep Recurrent Spatio-Temporal Neural Network for Motor Imagery based BCI"
   image: dummy.png
   description: ""
-  authors: W. Ko, J. S. Yoon, E. Kang, E. Jun, J.-S. Choi, and H.-I. Suk
+  authors: W. Ko, J. S. Yoon, E. Kang, E. Jun, J.-S. Choi, H.-I. Suk
   link:
     url: https://ieeexplore.ieee.org/document/8311535
     display: Proc. 6th International Winter Conference on Brain-Computer Interface (BCI)
