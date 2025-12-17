@@ -65,6 +65,12 @@ permalink: /publications/
 ## Patents
 
 <div style="text-align: justify; margin-bottom: 15px;">
+  <em>고원준, 최정원, 윤여빈</em><br />
+  다중채널 뇌전도 신호 기반 신경발달장애 진단 시스템<br />
+  출원번호: 10-2025-0201060, 출원일자: 2025.12.16
+</div>
+
+<div style="text-align: justify; margin-bottom: 15px;">
   <em>고원준, 강종구, 최정원</em><br />
   뇌전도 신호를 이용한 자기지도학습 기반 피로 상태 추정 학습 모델 구축 방법 및 이를 이용한 피로 상태 추정 장치<br />
   출원번호: 10-2025-0190652, 출원일자: 2025.12.04
