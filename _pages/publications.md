@@ -65,6 +65,12 @@ permalink: /publications/
 ## Patents
 
 <div style="text-align: justify; margin-bottom: 15px;">
+  <em>고원준, 박찬미, 조민서, 김연지</em><br />
+  그래프 기반 표현형-유전형 관계 모델링을 이용한 자기지도 학습 기반 신경퇴행성 질환 패턴 인식 방법<br />
+  출원번호: 10-2025-0201986, 출원일자: 2025.12.17
+</div>
+
+<div style="text-align: justify; margin-bottom: 15px;">
   <em>고원준, 최정원, 윤여빈</em><br />
   다중채널 뇌전도 신호 기반 신경발달장애 진단 시스템<br />
   출원번호: 10-2025-0201060, 출원일자: 2025.12.16
