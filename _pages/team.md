@@ -8,7 +8,7 @@ permalink: /team/
 
 # <span style="color:rgb(188, 90, 93);">P</span><span style="color:rgb(242, 221, 134);">R</span><span style="color:rgb(111, 142, 114);">I</span><span style="color:rgb(75, 85, 210);">S</span><span style="color:rgb(119, 94, 145);">M</span> Lab Members
 
- **Currently, we are only looking for new PhD/Master students or undergraduate interns interested in pursuing graduate studies to join the team!**
+ **Currently, we are only looking for new <span style="color:rgb(107, 111, 174);">PhD/Master students or undergraduate interns interested in pursuing graduate studies</span> to join the team!**
 
 
 <!--Jump to [staff](#staff), [master and bachelor students](#master-and-bachelor-students), [alumni](#alumni), [administrative support](#administrative-support), [lab visitors](#lab-visitors).-->
