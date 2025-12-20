@@ -12,16 +12,15 @@ permalink: /
 
 <div style="text-align: justify;">
 
-In recent, machine learning and deep learning frameworks have become de facto standards in diverse fields, e.g., computer vision, natural language processing, healthcare, and manufacturing, thanks to their unprecedented caliber in data representation. Inter alia, industrial tasks performed by experts are time-consuming and expensive per se; hence many pioneering studies tried to revolutionize the domain of industrial artificial intelignece by enjoying the recent advancements of machine learning and deep learning. Nevertheless, room for improvement still exists, especially in the data-oriented viewpoint.
-Our research addresses fundamental problems in developing theoretically sound machine and deep learning algorithms and frameworks for various data modalities such as image, signal, graph, and table in the industrial artificial intelligence field.
+In recent, machine learning and deep learning frameworks have become de facto standards in diverse fields, e.g., computer vision, natural language processing, and healthcare, thanks to their unprecedented caliber in data representation. Inter alia, biomedical tasks performed by experts are time-consuming and expensive per se; hence many pioneering studies tried to revolutionize the domain of biomedical artificial intelignece by enjoying the recent advancements of machine learning and deep learning. Nevertheless, room for improvement still exists, especially in the data-oriented viewpoint. 
 
-- We aim to develop novel machine learning and deep learning structures in the data-oriented perspective by considering distributional properties of given data.
+Our research addresses fundamental problems in developing theoretically sound representation learning algorithms and frameworks for various data modalities such as image, signal, graph, and table in the biomedical artificial intelligence field.
+
+- We aim to develop novel linear representation methods and deep neural network structures in the data-oriented perspective by considering distributional properties of given data.
 
 - We aim to devise novel machine learning and deep learning algorithms and methods, grounded in the principles of Bayesian statistics, topology, and physics.
 
-- We aim to propose biomedical artificial intelligence frameworks for biosignal (e.g., electroencephalogram) processing, neuroimaging (e.g., structural/functional magnetic resonance imaging) analysis, and biomedical data mining which can integrate multiple modalities (e.g., gene and neuroimaging).
-
-- We aim to design manufacturing artificial intelligence frameworks for market signal (e.g., stock) forecasting, semiconductor device (e.g., technology computer aided design) analysis, and production data (e.g., equipments sensors table) representation for the yield prediction.
+- We aim to propose biomedical artificial intelligence frameworks for biosignal (e.g., electroencephalogram) processing, neuroimaging (e.g., structural/functional magnetic resonance imaging) analysis, and data mining which can integrate multiple modalities (e.g., gene and neuroimaging).
 
 <div markdown="0" id="carousel" class="carousel slide" data-ride="carousel" data-interval="4000" data-pause="hover" >
     <!-- Menu -->
