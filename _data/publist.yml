@@ -1,3 +1,12 @@
+- title: "A Novel Topological Deep Learning for EEG Representation: Towards Paradigm-Invariant Brain-Monitoring Intelligence"
+  image: dummy.png
+  description: ""
+  authors: J. Choe* & Y. Yoon*, W. Ko
+  link:
+    url: https://sswu-prism-lab.github.io
+    display: In Preparation
+  highlight: 0
+
 - title: "Diffusion-Based Multi-Scale fMRI Representation Learning Framework for Cross-Subject Natural Image Reconstruction"
   image: dummy.png
   description: ""
