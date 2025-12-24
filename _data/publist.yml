@@ -25,10 +25,10 @@
     display: In Preparation
   highlight: 0
 
-- title: "Unsupervised Latent Context Representation of Biosignal for Label-Efficient Sleep Apnea Screening"
+- title: "Unsupervised Latent Context Representation of Electroencephalogram for Label-Efficient Sleep Apnea Screening"
   image: dummy.png
   description: ""
-  authors: Y. Kang, W. Ko
+  authors: Y. Kang, C. Park, Y. Kim, W. Ko
   link:
     url: https://sswu-prism-lab.github.io
     display: In Preparation
