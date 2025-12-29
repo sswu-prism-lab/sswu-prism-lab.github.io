@@ -12,7 +12,7 @@
   email: 20231416@sungshin.ac.kr
   number_educ: 2
   education1: Major in Artificial Intelligence
-  education2: Neuroimaging analysis
+  education2: Neuroimaging analysis, computer vision
 
 - name: Yeonji Kim (김연지)
   photo: Yeonji.jpeg
@@ -44,7 +44,7 @@
   email: 20241223@sungshin.ac.kr
   number_educ: 2
   education1: Major in Artificial Intelligence
-  education2: Molecule modeling, graph neural network
+  education2: Molecule modeling, graphical model
 
 - name: Yobin Yoon (윤여빈)
   photo: Yobin.jpg
@@ -68,7 +68,7 @@
   email: 20231414@sungshin.ac.kr
   number_educ: 2
   education1: Major in Artificial Intelligence
-  education2: Imaging genetics
+  education2: Imaging genetics, graphical model
 
 - name: "This could be you!"
   photo: rock.jpg
