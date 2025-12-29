@@ -10,7 +10,7 @@
 - title: "Diffusion-Based Multi-Scale fMRI Representation Learning Framework for Cross-Subject Natural Image Reconstruction"
   image: dummy.png
   description: ""
-  authors: C. Park, W. Ko
+  authors: C. Park, Y. Kang, M. Cho, W. Ko
   link:
     url: https://sswu-prism-lab.github.io
     display: In Preparation
@@ -19,7 +19,7 @@
 - title: "Data-oriented Self-supervised Learning Approach on Genetic Pattern Recognition for Cancer of Unknown Primary Diagnosis"
   image: dummy.png
   description: ""
-  authors: Y. Kim, W. Ko
+  authors: Y. Kim, Y. Kang, M. Cho, W. Ko
   link:
     url: https://sswu-prism-lab.github.io
     display: In Preparation
@@ -37,7 +37,7 @@
 - title: "Multi-branch Neural Network Structure for Predicting Lesion Evolution in Diffuse Glioma"
   image: dummy.png
   description: ""
-  authors: M. Cho, W. Ko
+  authors: M. Cho, C. Park, Y. Kim, W. Ko
   link:
     url: https://sswu-prism-lab.github.io
     display: In Preparation
