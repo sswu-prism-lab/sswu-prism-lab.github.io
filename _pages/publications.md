@@ -65,6 +65,18 @@ permalink: /publications/
 ## Patents
 
 <div style="text-align: justify; margin-bottom: 15px;">
+  <em>고원준, 강윤경, 박찬미, 김연지</em><br />
+  비지도 학습 기반 수면 무호흡 판별 방법<br />
+  출원번호: 10-2026-0060026, 출원일자: 2026.04.02
+</div>
+
+<div style="text-align: justify; margin-bottom: 15px;">
+  <em>고원준, 김연지, 조민서, 강윤경</em><br />
+  자가지도학습모델을 이용한 원발불명암 진단 방법<br />
+  출원번호: 10-2026-0060016, 출원일자: 2026.04.02
+</div>
+
+<div style="text-align: justify; margin-bottom: 15px;">
   <em>고원준, 박찬미, 조민서, 김연지</em><br />
   그래프 기반 표현형-유전형 관계 모델링을 이용한 자기지도 학습 기반 신경퇴행성 질환 패턴 인식 방법<br />
   출원번호: 10-2025-0201986, 출원일자: 2025.12.17
