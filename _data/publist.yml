@@ -1,3 +1,12 @@
+- title: "Unsupervised Latent Context Representation of Electroencephalography for Label-Efficient Sleep Apnea Screening"
+  image: dummy.png
+  description: ""
+  authors: Y. Kang, C. Park, Y. Kim, W. Ko
+  link:
+    url: https://icpr2026.org
+    display: Proc. 28th International Conference on Pattern Recognition (ICPR2026)
+  highlight: 0
+
 - title: "A Novel Self-Supervised Deep Learning Framework for Pattern Recognition of Neurodegenerative Disease via Graph-based Phenotype–Genotype Relation Modeling"
   image: sac26.png
   description: "We designe a novel graph neural network architecture and data-oriented self-supervised learning strategy for imaging genetics."
