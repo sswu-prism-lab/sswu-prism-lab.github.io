@@ -62,6 +62,22 @@
   education1: Major in Artificial Intelligence
   education2: Imaging genetics, graphical model
 
+- name: Eunhye Jeong (정은혜)
+  photo: Eunhye.jpeg
+  info: Undergraduate Intern
+  email: 20231162@sungshin.ac.kr
+  number_educ: 2
+  education1: Major in Artificial Intelligence
+  education2: Neuroimaging analysis, graphical model
+
+- name: Yujin Na (나유진)
+  photo: Yujin.jpeg
+  info: Undergraduate Intern
+  email: 20231348@sungshin.ac.kr
+  number_educ: 2
+  education1: Major in Artificial Intelligence
+  education2: Biosignal representation
+
 - name: "This could be you!"
   photo: sw-dragon.JPG
   info: Contact us:)
