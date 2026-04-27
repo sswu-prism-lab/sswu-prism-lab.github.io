@@ -6,7 +6,7 @@ sitemap: false
 permalink: /others/
 ---
 
-# Project, Awards, Seminars, and Advisory
+# Project, Awards, Seminars, and Professional Services
 
 ## Project
 
@@ -35,7 +35,10 @@ permalink: /others/
 - SK Winder Data Science Engineer School, SK Inc. (2023)
 - Deep Reinforcement Learning and Applications, SK hynix Inc. (2022)
 
-## Advisory
+## Professional Services
+# Advisory
 - 초거대 AI 확산 조성 산업(군 대상품 상태 검사 데이터), (주)에스지앤아이 (2024)
+# Committee
+- 제 4기 국가산학연협력위원회, 교육부 (2026~2028)
 
 </div>
