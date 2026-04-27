@@ -36,9 +36,14 @@ permalink: /others/
 - Deep Reinforcement Learning and Applications, SK hynix Inc. (2022)
 
 ## Professional Services
-# Advisory
+### Advisory
 - 초거대 AI 확산 조성 산업(군 대상품 상태 검사 데이터), (주)에스지앤아이 (2024)
-# Committee
+
+### Committee
 - 제 4기 국가산학연협력위원회, 교육부 (2026~2028)
 
+### Reviewers
+- IEEE Transactions on Medical Imaging, Cybernetics, Industrial Informatics, Neural Networks and Learning Systems, etc.
+- Scientific Reports, Biomedical Singal Processing and Control, Artificial Intelligence in Medicine etc.
+- MICCAI, ICASSP, ACPR, etc.
 </div>
