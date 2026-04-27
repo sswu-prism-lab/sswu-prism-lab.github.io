@@ -10,7 +10,7 @@ permalink: /team/
 
 <!-- #### Sorry, we have now reached full capacity. Currently, we are not seeking any new members ;( -->
 
-#### Currently, we are looking for new <span style="color:rgb(188, 90, 93);">P</span><span style="color:rgb(242, 221, 134);">R</span><span style="color:rgb(111, 142, 114);">I</span><span style="color:rgb(75, 85, 210);">S</span><span style="color:rgb(119, 94, 145);">M</span> members, PhD/Master students or combined B.S.-Master students</span> to join the team!
+#### Currently, we are looking for new <span style="color:rgb(188, 90, 93);">P</span><span style="color:rgb(242, 221, 134);">R</span><span style="color:rgb(111, 142, 114);">I</span><span style="color:rgb(75, 85, 210);">S</span><span style="color:rgb(119, 94, 145);">M</span> members, PhD/Master students or combined B.S.-Master students to join the team!
 
 <!-- <span style="color:rgb(107, 111, 174);"> -->
 
