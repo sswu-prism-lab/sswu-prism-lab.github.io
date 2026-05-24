@@ -65,6 +65,12 @@ permalink: /publications/
 ## Patents
 
 <div style="text-align: justify; margin-bottom: 15px;">
+  <em>고원준, 윤여빈, 강윤경</em><br />
+  중환자실 재실 기간 예측 방법<br />
+  출원번호: 10-2026-0087608, 출원일자: 2026.05.14
+</div>
+
+<div style="text-align: justify; margin-bottom: 15px;">
   <em>고원준, 강윤경, 박찬미, 김연지</em><br />
   비지도 학습 기반 수면 무호흡 판별 방법<br />
   출원번호: 10-2026-0060026, 출원일자: 2026.04.02
