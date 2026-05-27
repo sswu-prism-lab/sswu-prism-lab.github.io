@@ -65,6 +65,12 @@ permalink: /publications/
 ## Patents
 
 <div style="text-align: justify; margin-bottom: 15px;">
+  <em>고원준, 조민서, 김연지</em><br />
+  교모세포종 병변 변화 예측 방법<br />
+  출원번호: 10-2026-0095562, 출원일자: 2026.05.27
+</div>
+
+<div style="text-align: justify; margin-bottom: 15px;">
   <em>고원준, 윤여빈, 강윤경</em><br />
   중환자실 재실 기간 예측 방법<br />
   출원번호: 10-2026-0087608, 출원일자: 2026.05.14
