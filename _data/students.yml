@@ -22,13 +22,13 @@
   education1: Major in Artificial Intelligence
   education2: Imaging genetics, self-supervised learning
 
-- name: Minseo Cho (조민서)
-  photo: Minseo.jpg
-  info: Undergraduate Intern
-  email: 20211404@sungshin.ac.kr
-  number_educ: 2
-  education1: Major in Artificial Intelligence
-  education2: Imaging genetics, computer vision
+# - name: Minseo Cho (조민서)
+#   photo: Minseo.jpg
+#   info: Undergraduate Intern
+#   email: 20211404@sungshin.ac.kr
+#   number_educ: 2
+#   education1: Major in Artificial Intelligence
+#   education2: Imaging genetics, computer vision
   
 - name: Chanmi Park (박찬미)
   photo: Chanmi.jpeg
@@ -62,13 +62,13 @@
   education1: Major in Artificial Intelligence
   education2: Neuroimaging analysis, graphical model
 
-- name: Yujin Na (나유진)
-  photo: Yujin.jpeg
-  info: Undergraduate Intern
-  email: 20231348@sungshin.ac.kr
-  number_educ: 2
-  education1: Major in Artificial Intelligence
-  education2: Biosignal representation
+# - name: Yujin Na (나유진)
+#   photo: Yujin.jpeg
+#   info: Undergraduate Intern
+#   email: 20231348@sungshin.ac.kr
+#   number_educ: 2
+#   education1: Major in Artificial Intelligence
+#   education2: Biosignal representation
 
 - name: "This could be you!"
   photo: sw-dragon.JPG
