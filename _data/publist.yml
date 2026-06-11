@@ -12,7 +12,7 @@
   description: "We designe a novel graph neural network architecture and data-oriented self-supervised learning strategy for imaging genetics."
   authors: C. Park* & M. Cho*, Y. Kim, W. Jung, W. Ko
   link:
-    url: https://www.sigapp.org/sac/sac2026/
+    url: https://dl.acm.org/doi/10.1145/3748522.3779733
     display: Proc. 41st ACM/SIGAPP Symposium on Applied Computing (SAC2026)
   highlight: 1
   news1: <a style="color:#6c6fa9">SAC26 Acceptance rate 24%</a>
