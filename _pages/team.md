@@ -136,7 +136,6 @@ permalink: /team/
 </div>
 {% endif %}
 
-<!--
 ## Alumni
 
 {% assign number_printed = 0 %}
@@ -196,7 +195,7 @@ permalink: /team/
 
 </div>
 
-
+<!--
 ## Administrative Support
 <a href="mailto:Rijsewijk@Physics.LeidenUniv.nl">Ellie van Rijsewijk</a> is helping us (and other groups) with administration.
 
