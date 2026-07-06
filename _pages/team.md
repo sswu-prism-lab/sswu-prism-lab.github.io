@@ -16,19 +16,18 @@ permalink: /team/
 
 {% for member in site.data.team_members %}
 <div class="row" style="margin-bottom: 20px;">
-  <div class="col-sm-12 clearfix">
-    <img src="{{ site.url }}{{ site.baseurl }}/images/teampic/{{ member.photo }}" class="img-responsive" width="15%" style="float: left; margin-right: 20px; border-radius: 4px;" />
-    <h4 style="margin-top: 0;">{{ member.name }}</h4>
-    <i>{{ member.info }} <br>email: &lt;{{ member.email }}&gt;</i>
-    
-    <ul style="overflow: hidden; margin-top: 10px; padding-left: 20px;">
-      {% if member.number_educ >= 1 %} <li>{{ member.education1 }}</li> {% endif %}
-      {% if member.number_educ >= 2 %} <li>{{ member.education2 }}</li> {% endif %}
-      {% if member.number_educ >= 3 %} <li>{{ member.education3 }}</li> {% endif %}
-      {% if member.number_educ >= 4 %} <li>{{ member.education4 }}</li> {% endif %}
-      {% if member.number_educ >= 5 %} <li>{{ member.education5 }}</li> {% endif %}
-    </ul>
-  </div>
+<div class="col-sm-12 clearfix">
+<img src="{{ site.url }}{{ site.baseurl }}/images/teampic/{{ member.photo }}" class="img-responsive" width="15%" style="float: left; margin-right: 20px; border-radius: 4px;" />
+<h4 style="margin-top: 0;">{{ member.name }}</h4>
+<i>{{ member.info }} <br>email: &lt;{{ member.email }}&gt;</i>
+<ul style="overflow: hidden; margin-top: 10px; padding-left: 20px;">
+{% if member.number_educ >= 1 %}<li>{{ member.education1 }}</li>{% endif %}
+{% if member.number_educ >= 2 %}<li>{{ member.education2 }}</li>{% endif %}
+{% if member.number_educ >= 3 %}<li>{{ member.education3 }}</li>{% endif %}
+{% if member.number_educ >= 4 %}<li>{{ member.education4 }}</li>{% endif %}
+{% if member.number_educ >= 5 %}<li>{{ member.education5 }}</li>{% endif %}
+</ul>
+</div>
 </div>
 {% endfor %}
 
