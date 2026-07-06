@@ -79,9 +79,6 @@ permalink: /team/
 </div>
 {% endif %}
 
-
-
-
 ## Students
 {% assign number_printed = 0 %}
 {% for member in site.data.students %}
@@ -169,6 +166,8 @@ permalink: /team/
 </div>
 {% endif %}
 
+<!--
+
 ## Former visitors, BSc/ MSc students
 <div class="row">
 
@@ -195,7 +194,6 @@ permalink: /team/
 
 </div>
 
-<!--
 ## Administrative Support
 <a href="mailto:Rijsewijk@Physics.LeidenUniv.nl">Ellie van Rijsewijk</a> is helping us (and other groups) with administration.
 
