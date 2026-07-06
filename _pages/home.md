@@ -6,7 +6,9 @@ sitemap: false
 permalink: /
 ---
 
-**Current Open Positions** Join us!
+**Current Open Positions**
+
+We are currently seeking motivated students to join our lab:
 
 - Prospective Ph.D./Master Student: 2
 
