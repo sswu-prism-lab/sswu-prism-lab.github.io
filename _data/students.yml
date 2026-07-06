@@ -1,11 +1,3 @@
-- name: Jeongwon Choe (최정원)
-  photo: Jeongwon.jpeg
-  info: Undergraduate Intern
-  email: 20220363@sungshin.ac.kr
-  number_educ: 2
-  education1: Major in Psychology and Artificial Intelligence
-  education2: Biosignal representation, topological deep learning
-
 - name: Chaeyoung Lee (이채영)
   photo: Chaeyoung.jpg
   info: Undergraduate Intern
@@ -21,22 +13,6 @@
   number_educ: 2
   education1: Major in Artificial Intelligence
   education2: Imaging genetics, self-supervised learning
-
-# - name: Minseo Cho (조민서)
-#   photo: Minseo.jpg
-#   info: Undergraduate Intern
-#   email: 20211404@sungshin.ac.kr
-#   number_educ: 2
-#   education1: Major in Artificial Intelligence
-#   education2: Imaging genetics, computer vision
-  
-- name: Chanmi Park (박찬미)
-  photo: Chanmi.jpeg
-  info: Undergraduate Intern
-  email: 20221633@sungshin.ac.kr
-  number_educ: 2
-  education1: Major in Intelligent IoT
-  education2: Imaging genetics, computer vision
 
 - name: Yoonkyeong Kang (강윤경)
   photo: Yoonkyeong.jpeg
@@ -61,14 +37,6 @@
   number_educ: 2
   education1: Major in Artificial Intelligence
   education2: Neuroimaging analysis, graphical model
-
-# - name: Yujin Na (나유진)
-#   photo: Yujin.jpeg
-#   info: Undergraduate Intern
-#   email: 20231348@sungshin.ac.kr
-#   number_educ: 2
-#   education1: Major in Artificial Intelligence
-#   education2: Biosignal representation
 
 - name: "This could be you!"
   photo: sw-dragon.JPG
