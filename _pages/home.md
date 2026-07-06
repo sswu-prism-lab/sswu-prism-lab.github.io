@@ -5,8 +5,9 @@ excerpt: "PRISM Lab at Sungshin Women's University &rarr; SSWU"
 sitemap: false
 permalink: /
 ---
+<!-- alert-info blue, alert-success green, alert-warning yellow -->
 
-<div class="alert alert-success" role="alert" style="margin: 20px 0; line-height: 1.6;">
+<div class="alert alert-warning" role="alert" style="margin: 20px 0; line-height: 1.6;">
   <h4 style="margin-top: 0; margin-bottom: 10px; color: #155724;"><strong>📢 Current Open Positions</strong></h4>
   <p style="margin-bottom: 8px;">We are currently seeking motivated students to join our lab:</p>
   <ul style="margin-bottom: 0; padding-left: 20px;">
