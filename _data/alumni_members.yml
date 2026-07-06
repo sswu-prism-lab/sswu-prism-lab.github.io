@@ -1,32 +1,18 @@
-# - name: Gijsbert Verdoes
-#  photo: verdoes.jpg
-#  duration: In the Allan Lab 2015 - 2018, now Project manager at the FMD
-#  info: Fine mechanical engineer associated with the FMD working in our group
-#  email: verdoes@fmd.physics.leidenuniv.nl
-#  number_educ: 1
-#  education1: Leidse instrumentmakers School
-#  education2:
-#  education3:
-#  education4:
-
-
 - name: Jeongwon Choe (최정원)
   photo: Jeongwon.jpeg
   duration: In the PRISM Lab 2023 - 2026
   info: Undergraduate Intern
   email: 20220363@sungshin.ac.kr
   number_educ: 1
-#  education1: Major in Psychology and Artificial Intelligence
   education1: Biosignal representation, topological deep learning
 
- - name: Minseo Cho (조민서)
-   photo: Minseo.jpg
-   duration: In the PRISM Lab 2024 - 2026
-   info: Undergraduate Intern
-   email: 20211404@sungshin.ac.kr
-   number_educ: 1
-#   education1: Major in Artificial Intelligence
-   education1: Imaging genetics, computer vision
+- name: Minseo Cho (조민서)
+  photo: Minseo.jpg
+  duration: In the PRISM Lab 2024 - 2026
+  info: Undergraduate Intern
+  email: 20211404@sungshin.ac.kr
+  number_educ: 1
+  education1: Imaging genetics, computer vision
   
 - name: Chanmi Park (박찬미)
   photo: Chanmi.jpeg
@@ -34,7 +20,6 @@
   info: Undergraduate Intern
   email: 20221633@sungshin.ac.kr
   number_educ: 1
-#  education1: Major in Intelligent IoT
   education1: Imaging genetics, computer vision
 
 - name: Yobin Yoon (윤여빈)
