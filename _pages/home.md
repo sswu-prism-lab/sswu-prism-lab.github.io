@@ -14,6 +14,7 @@ permalink: /
     <li><strong>Undergraduate Intern:</strong> 1</li>
   </ul>
 </div>
+
 #### We are Pattern Recognition and Intelligent System Modeling Lab :D
 
 <div style="text-align: justify;">
