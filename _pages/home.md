@@ -6,14 +6,14 @@ sitemap: false
 permalink: /
 ---
 
-**Current Open Positions**
-
-We are currently seeking motivated students to join our lab:
-
-- Prospective Ph.D./Master Student: 2
-
-- Undergraduate Intern: 1
-
+<div class="alert alert-success" role="alert" style="margin: 20px 0; line-height: 1.6;">
+  <h4 style="margin-top: 0; margin-bottom: 10px; color: #155724;"><strong>📢 Current Open Positions</strong></h4>
+  <p style="margin-bottom: 8px;">We are currently seeking motivated students to join our lab:</p>
+  <ul style="margin-bottom: 0; padding-left: 20px;">
+    <li><strong>Prospective Ph.D./Master Student:</strong> 2</li>
+    <li><strong>Undergraduate Intern:</strong> 1</li>
+  </ul>
+</div>
 #### We are Pattern Recognition and Intelligent System Modeling Lab :D
 
 <div style="text-align: justify;">
