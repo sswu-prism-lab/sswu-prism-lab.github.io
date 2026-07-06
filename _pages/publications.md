@@ -65,6 +65,12 @@ permalink: /publications/
 ## Patents
 
 <div style="text-align: justify; margin-bottom: 15px;">
+  <em>강종구, 이채린, 황은서, 고원준</em><br />
+  다중 교사 앙상블 지식 증류를 이용한 해석 가능한 표형 의료 데이터 분류 방법<br />
+  출원번호: 10-2026-0123468, 출원일자: 2026.07.06
+</div>
+
+<div style="text-align: justify; margin-bottom: 15px;">
   <em>고원준, 조민서, 김연지</em><br />
   교모세포종 병변 변화 예측 방법<br />
   출원번호: 10-2026-0095562, 출원일자: 2026.05.27
