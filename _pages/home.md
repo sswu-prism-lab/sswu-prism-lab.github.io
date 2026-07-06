@@ -6,7 +6,11 @@ sitemap: false
 permalink: /
 ---
 
-<!-- **News: Our group moved to the University of Munich (LMU)!** Join us! -->
+**Current Open Positions** Join us!
+
+- Prospective Ph.D./Master Student: 2
+
+- Undergraduate Intern: 1
 
 #### We are Pattern Recognition and Intelligent System Modeling Lab :D
 
