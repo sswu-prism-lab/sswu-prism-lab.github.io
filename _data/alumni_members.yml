@@ -5,7 +5,7 @@
   email: 20220363@sungshin.ac.kr
   number_educ: 1
   education1: Biosignal representation, topological deep learning
-  performance: One published SCIE journal, two SCIE journals (under review)
+  performance: One published SCIE journal, two SCIE journals (under review), and one presented domestic conference (win the poster award)
 
 - name: Minseo Cho (조민서)
   photo: Minseo.jpg
@@ -14,7 +14,7 @@
   email: 20211404@sungshin.ac.kr
   number_educ: 1
   education1: Imaging genetics, computer vision
-  performance: One presented top-tier CS conference, two SCIE journals (under review)
+  performance: One presented top-tier CS conference, two SCIE journals (under review), and one presented domestic conference
   
 - name: Chanmi Park (박찬미)
   photo: Chanmi.jpeg
@@ -23,7 +23,7 @@
   email: 20221633@sungshin.ac.kr
   number_educ: 1
   education1: Imaging genetics, computer vision
-  performance: One presented top-tier CS conference, two SCIE journals (under review)
+  performance: One presented top-tier CS conference, two SCIE journals (under review), and presented one domestic conference
 
 - name: Yobin Yoon (윤여빈)
   photo: Yobin.jpg
@@ -36,3 +36,4 @@
 - name: Hee Young Shin (신희영)
   duration: In PRISM Lab 2025
   info: Undergraduate Intern
+  performance: One presented domestic conference
