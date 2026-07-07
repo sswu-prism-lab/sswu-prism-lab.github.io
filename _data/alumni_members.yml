@@ -1,6 +1,6 @@
 - name: Jeongwon Choe (최정원)
   photo: Jeongwon.jpeg
-  duration: In the PRISM Lab 2023 - 2026
+  duration: In PRISM Lab 2023 - 2026
   info: Undergraduate Intern
   email: 20220363@sungshin.ac.kr
   number_educ: 1
@@ -9,7 +9,7 @@
 
 - name: Minseo Cho (조민서)
   photo: Minseo.jpg
-  duration: In the PRISM Lab 2024 - 2026
+  duration: In PRISM Lab 2024 - 2026
   info: Undergraduate Intern
   email: 20211404@sungshin.ac.kr
   number_educ: 1
@@ -18,7 +18,7 @@
   
 - name: Chanmi Park (박찬미)
   photo: Chanmi.jpeg
-  duration: In the PRISM Lab 2024 - 2026
+  duration: In PRISM Lab 2024 - 2026
   info: Undergraduate Intern
   email: 20221633@sungshin.ac.kr
   number_educ: 1
@@ -27,8 +27,12 @@
 
 - name: Yobin Yoon (윤여빈)
   photo: Yobin.jpg
-  duration: In the PRISM Lab 2025 - 2026
+  duration: In PRISM Lab 2025 - 2026
   info: Undergraduate Intern
   number_educ: 1
   education1: Electronic health record analysis, topological deep learning
   performance: One SCIE journal (under review)
+
+- name: Hee Young Shin (신희영)
+  duration: In PRISM Lab 2025
+  info: Undergraduate Intern
