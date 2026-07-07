@@ -99,7 +99,7 @@ permalink: /team/
 
 <div class="col-sm-6 clearfix" style="margin-bottom: 5px;">
   <h4 style="margin-top: 5px; margin-bottom: 2px;">{{ member.name }}</h4>
-  <i style="font-size: 0.95em; color: #555;">{{ member.duration }} <br> Role: {{ member.info }} <br> Performance: {{ member.performance }}</i>
+  <i style="font-size: 0.95em; color: #555;">{{ member.duration }} <br> Role: {{ member.info }} <br> Achievements: {{ member.performance }}</i>
   <ul style="overflow: hidden; margin-bottom: 0;">
 
   </ul>
