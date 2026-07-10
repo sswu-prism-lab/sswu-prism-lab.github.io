@@ -13,7 +13,7 @@ permalink: /
     <li><strong>Prospective Ph.D./Master Student:</strong> 1
       <ul style="margin-top: 5px; margin-bottom: 0; padding-left: 20px; list-style-type: circle;">
         <li>Topic: Biomedical data representation and/or statistical deep learning</li>
-        <li>Preferred: Experience with PyTorch</li>
+        <li>Required: Experience with PyTorch</li>
       </ul>
     </li>
     <li><strong>Undergraduate Intern:</strong> 1
