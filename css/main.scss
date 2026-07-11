@@ -90,3 +90,20 @@ firstp {
     margin-left: 30px;
     margin-right: 30px;
 }
+
+
+/* Colors */
+.orcid-link {
+  color: #A6CE39;
+}
+
+.orcid-link:hover {
+  color: #8FB82E; /* hover 시 살짝 더 진한 색 */
+}
+
+.scholar-link {
+  color: #4285F4;
+}
+.scholar-link:hover {
+  color: #3367D6; /* 살짝 진한 톤 */
+}
