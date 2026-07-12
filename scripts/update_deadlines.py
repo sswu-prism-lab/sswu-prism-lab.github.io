@@ -57,6 +57,7 @@ TRACKED_BY_TITLE = [
     {"title": "ICDE", "tag": ["DB", "AI"]},
     {"title": "WSDM", "tag": ["DB", "AI"]},
     {"title": "WACV", "tag": ["CV", "AI"]},
+    {"title": "COLT", "tag": "ML"},
 ]
 
 # ---------------------------------------------------------------------------
