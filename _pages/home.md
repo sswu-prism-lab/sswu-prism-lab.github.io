@@ -33,7 +33,7 @@ permalink: /
   <h4 style="margin-top: 0; margin-bottom: 10px; color: #5b21b6;"><strong>📢 Current Open Positions</strong></h4>
   <p style="margin-bottom: 8px;">We are currently seeking motivated students to join our lab:</p>
   <ul style="margin-bottom: 0; padding-left: 20px;">
-    <li><strong>Prospective Ph.D./Master Student:</strong> 1
+    <li><strong>Prospective Ph.D./Master Student:</strong> 2
       <ul style="margin-top: 5px; margin-bottom: 0; padding-left: 20px; list-style-type: circle;">
         <li>Topic: Biomedical data representation and/or statistical deep learning</li>
         <li>Required: Experience with PyTorch</li>
