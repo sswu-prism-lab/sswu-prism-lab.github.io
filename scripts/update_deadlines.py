@@ -1,308 +1,352 @@
-#!/usr/bin/env python3
-"""
-_data/deadlines.yml 자동 갱신 스크립트.
+<div id="deadlines-wrap">
 
-세 가지 소스에서 학회 마감일을 모아 Jekyll이 읽는 _data/deadlines.yml 형식으로 저장합니다.
+  <p class="deadlines-updated">
+    Last data update: {{ site.time | date: "%Y-%m-%d" }} (Automatic renewal everyday · <a href="https://github.com/ccfddl/ccf-deadlines" target="_blank" rel="noopener">ccf-deadlines</a> data-based)
+  </p>
 
-  1) TRACKED_BY_TITLE : ccfddl 통합 데이터(allconf.yml)에서 title로 검색해서 가져옴 (가장 간편)
-  2) TRACKED_BY_PATH  : allconf.yml에 없는 학회를, ccf-deadlines 저장소의 개별 yml 파일
-                        경로를 직접 지정해서 가져옴
-                        (https://github.com/ccfddl/ccf-deadlines/tree/main/conference 에서
-                         카테고리 폴더를 열어 원하는 학회의 .yml 경로를 확인하세요.
-                         예: "conference/AI/emnlp.yml")
-  3) MANUAL_ENTRIES   : ccfddl에 아예 없는 학회를 완전히 수동으로 등록 (자동 갱신 대상 아님,
-                        직접 날짜를 관리해야 함)
+  <div class="deadlines-filters">
+    <button class="deadlines-filter-btn active" data-tag="all">All</button>
+    {% assign tags = site.data.deadlines | map: "tag" | flatten | uniq | sort %}
+    {% for tag in tags %}
+      <button class="deadlines-filter-btn" data-tag="{{ tag }}">{{ tag }}</button>
+    {% endfor %}
+  </div>
 
-GitHub Actions(.github/workflows/update-deadlines.yml)에 의해 매일 자동 실행됩니다.
-로컬에서 수동 실행하려면:
-    pip install pyyaml requests
-    python scripts/update_deadlines.py
-"""
+  <div class="row" id="deadlines-grid">
+    {% for conf in site.data.deadlines %}
+    <div class="col-sm-4 deadlines-card-col" data-tag="{{ conf.tag | join: ' ' }}">
+      <div class="deadlines-card" data-deadline="{{ conf.deadline_utc }}">
+        <div class="deadlines-card-bar"></div>
+        <div class="deadlines-card-body">
+          <h4 class="deadlines-card-title">
+            <a href="{{ conf.link }}" target="_blank" rel="noopener">{{ conf.name }}</a>
+            {% for t in conf.tag %}
+              <span class="deadlines-tag deadlines-tag-{{ t }}">{{ t }}</span>
+            {% endfor %}
+          </h4>
+          <p class="deadlines-fullname">{{ conf.full_name }}</p>
+          <p class="deadlines-meta">📅 {{ conf.date }}</p>
+          <p class="deadlines-meta">📍 {{ conf.place }}</p>
 
-import re
-import sys
-from datetime import datetime, timezone, timedelta
-from pathlib import Path
+          <div class="deadlines-countdown">
+            <div class="deadlines-countdown-unit">
+              <span class="deadlines-num" data-unit="days">--</span>
+              <span class="deadlines-label">days</span>
+            </div>
+            <div class="deadlines-countdown-unit">
+              <span class="deadlines-num" data-unit="hours">--</span>
+              <span class="deadlines-label">hours</span>
+            </div>
+            <div class="deadlines-countdown-unit">
+              <span class="deadlines-num" data-unit="minutes">--</span>
+              <span class="deadlines-label">minutes</span>
+            </div>
+            <div class="deadlines-countdown-unit">
+              <span class="deadlines-num" data-unit="seconds">--</span>
+              <span class="deadlines-label">seconds</span>
+            </div>
+          </div>
 
-import requests
-import yaml
+          <p class="deadlines-local-time">
+            Deadline in KST: <span class="deadlines-local-time-value">-</span>
+          </p>
+          <a href="{{ conf.link }}" target="_blank" rel="noopener" class="deadlines-visit-btn">Visit website →</a>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
 
-# ---------------------------------------------------------------------------
-# 1) allconf.yml(통합 데이터)에서 title로 찾을 학회들.
-#    title 은 allconf.yml 안의 "title" 필드와 정확히 일치해야 합니다 (대소문자 구분).
-# ---------------------------------------------------------------------------
-TRACKED_BY_TITLE = [
-    {"title": "NeurIPS", "tag": "ML"},
-    {"title": "ICML", "tag": "ML"},
-    {"title": "ICLR", "tag": "ML"},
-    {"title": "AAAI", "tag": "AI"},
-    {"title": "IJCAI", "tag": "AI"},
-    {"title": "MICCAI", "tag": "BIO"},
-    {"title": "ACCV", "tag": "CV"},
-    {"title": "ACML", "tag": "ML"},
-    {"title": "AISTATS", "tag": "AI"},
-    {"title": "BMVC", "tag": "CV"},
-    {"title": "CVPR", "tag": "CV"},
-    {"title": "ECAL", "tag": "AI"},
-    {"title": "ECCV", "tag": "CV"},
-    {"title": "ICCV", "tag": "CV"},
-    {"title": "ICPR", "tag": ["ML", "AI"]},
-    {"title": "UAI", "tag": "AI"},
-    {"title": "SIGKDD", "tag": ["ML", "DB"]},
-    {"title": "ICDM", "tag": ["ML", "DB"]},
-    {"title": "WWW", "tag": ["AI", "MX"]},
-    {"title": "CogSci", "tag": ["AI", "MX"]},
-]
-
-# ---------------------------------------------------------------------------
-# 2) allconf.yml에는 없지만 ccf-deadlines 저장소엔 개별 파일로 존재하는 학회.
-#    path는 https://github.com/ccfddl/ccf-deadlines/tree/main/conference 에서
-#    직접 찾아서 "conference/카테고리/파일명.yml" 형태로 적어주세요.
-# ---------------------------------------------------------------------------
-TRACKED_BY_PATH = [
-    # 예시:
-    # {"path": "conference/AI/emnlp.yml", "tag": "AI"},
-    # {"path": "conference/HI/chi.yml", "tag": "AI"},
-]
-
-# ---------------------------------------------------------------------------
-# 3) ccfddl 데이터베이스에 아예 없는 학회 (완전 수동 등록).
-#    이 목록은 자동 갱신되지 않으므로, 매해 직접 날짜를 갱신해야 합니다.
-# ---------------------------------------------------------------------------
-MANUAL_ENTRIES = [
-    {
-        "name": "EMBC",
-        "full_name": "International Conference of the IEEE Engineering in Medicine and Biology Society",
-        "link": "https://embc.embs.org/2027/welcome/",
-        "date": "July 11-15, 2027",
-        "place": "Singapore",
-        "deadline_utc": "TBD",
-        "tag": "BIO",
-    },
-    {
-        "name": "ISBI",
-        "full_name": "IEEE International Symposium on Biomedical Imaging",
-        "link": "https://signalprocessingsociety.org/events/2027-ieee-24th-international-symposium-biomedical-imaging-isbi",
-        "date": "May 25-28, 2027",
-        "place": "Lausanne, Switzerland",
-        "deadline_utc": "TBD",
-        "tag": "BIO",
-    },  
-    # 예시:
-    # {
-    #     "name": "IEEE BCI",
-    #     "full_name": "International Winter Conference on Brain-Computer Interface",
-    #     "link": "https://example.com",
-    #     "date": "February 2027",
-    #     "place": "TBD",
-    #     "deadline_utc": "2026-11-01T14:59:00Z",
-    #     "tag": "BIO",
-    # },
-]
-
-ALLCONF_URL = (
-    "https://raw.githubusercontent.com/ccfddl/ccfddl.github.io/"
-    "page/conference/allconf.yml"
-)
-
-# 개별 학회 yml 파일은 ccf-deadlines 원본 저장소(main 브랜치)에서 직접 가져옵니다.
-CCF_DEADLINES_RAW_BASE = "https://raw.githubusercontent.com/ccfddl/ccf-deadlines/main"
-
-OUTPUT_PATH = Path(__file__).resolve().parent.parent / "_data" / "deadlines.yml"
-
-# 자주 쓰이는 timezone 표기 -> UTC와의 시차(시간)
-FIXED_OFFSETS = {
-    "AOE": -12,  # Anywhere on Earth
+<style>
+/* ---- PRISM 사이트 팔레트 기반 스타일 ---- */
+:root {
+  --prism-purple: #5b21b6;
+  --prism-purple-border: #e9d5ff;
+  --prism-bg: #fafdff;
+  --prism-red: rgb(188, 90, 93);
+  --prism-yellow: rgb(242, 221, 134);
+  --prism-green: rgb(111, 142, 114);
+  --prism-blue: rgb(75, 85, 210);
+  --prism-violet: rgb(119, 94, 145);
 }
 
+.deadlines-updated {
+  font-size: 13px;
+  color: #7c7c7c;
+  margin-bottom: 16px;
+}
+.deadlines-updated a { color: var(--prism-purple); }
 
-def parse_utc_offset(tz_str: str) -> int | None:
-    """'UTC-12', 'UTC+2', 'AoE' 같은 표기를 시간 단위 정수 오프셋으로 변환."""
-    if not tz_str:
-        return None
-    key = tz_str.strip().upper()
-    if key in FIXED_OFFSETS:
-        return FIXED_OFFSETS[key]
-    m = re.match(r"UTC([+-]\d{1,2})$", key)
-    if m:
-        return int(m.group(1))
-    m = re.match(r"GMT([+-]\d{1,2})$", key)
-    if m:
-        return int(m.group(1))
-    return None
+.deadlines-filters {
+  margin-bottom: 20px;
+}
+.deadlines-filter-btn {
+  display: inline-block;
+  margin: 0 6px 8px 0;
+  padding: 5px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--prism-purple-border);
+  background: #fff;
+  color: var(--prism-purple);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.deadlines-filter-btn:hover {
+  background: #f3e8ff;
+}
+.deadlines-filter-btn.active {
+  background: var(--prism-purple);
+  color: #fff;
+  border-color: var(--prism-purple);
+}
+
+.deadlines-card-col {
+  margin-bottom: 24px;
+}
+
+.deadlines-card {
+  background-color: var(--prism-bg);
+  border: 1px solid var(--prism-purple-border);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 2px 2px 5px rgba(0,0,0,0.06);
+  height: 100%;
+  transition: transform 0.15s ease;
+}
+.deadlines-card:hover {
+  transform: translateY(-2px);
+}
+
+/* 상단 무지개 바 - PRISM 로고의 P R I S M 색상을 순서대로 사용 */
+.deadlines-card-bar {
+  height: 5px;
+  background: linear-gradient(
+    90deg,
+    var(--prism-red) 0%,
+    var(--prism-yellow) 25%,
+    var(--prism-green) 50%,
+    var(--prism-blue) 75%,
+    var(--prism-violet) 100%
+  );
+}
+
+.deadlines-card-body {
+  padding: 16px 18px 18px;
+}
+
+.deadlines-card-title {
+  margin: 0 0 6px 0;
+  font-size: 19px;
+}
+.deadlines-card-title a {
+  color: var(--prism-purple);
+  font-weight: bold;
+  text-decoration: none;
+}
+.deadlines-card-title a:hover {
+  text-decoration: underline;
+}
+
+.deadlines-tag {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: #f3e8ff;      /* 기본값(fallback) - 아래 태그별 규칙이 없으면 이 색이 적용됨 */
+  color: var(--prism-purple);
+  font-size: 11px;
+  vertical-align: middle;
+}
+
+/* ---- 태그별 색상 (필요한 만큼 자유롭게 추가/수정하세요) ---- */
+.deadlines-tag-ML  { background: #dbeafe; color: #1d4ed8; }  /* 파랑 */
+.deadlines-tag-AI  { background: #ede9fe; color: #6d28d9; }  /* 보라 */
+.deadlines-tag-BIO { background: #dcfce7; color: #15803d; }  /* 초록 */
+.deadlines-tag-CV  { background: #ffedd5; color: #c2410c; }  /* 주황 */
+.deadlines-tag-DB  { background: #fce7f3; color: #be185d; }  /* 분홍 */
+.deadlines-tag-MX  { background: #ccfbf1; color: #0f766e; }  /* 청록 (WWW, CogSci 등 혼합 분야) */
+
+.deadlines-fullname {
+  font-size: 13px;
+  color: #555;
+  margin-bottom: 8px;
+}
+
+.deadlines-meta {
+  font-size: 13px;
+  color: #666;
+  margin: 2px 0;
+}
+
+.deadlines-countdown {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--prism-purple-border);
+}
+.deadlines-countdown-unit {
+  text-align: center;
+  flex: 1;
+}
+.deadlines-num {
+  display: block;
+  font-size: 20px;
+  font-weight: bold;
+  color: var(--prism-purple);
+}
+.deadlines-label {
+  font-size: 11px;
+  color: #999;
+}
+
+.deadlines-local-time {
+  margin-top: 10px;
+  font-size: 12px;
+  color: #888;
+}
+
+.deadlines-card.deadlines-past {
+  opacity: 0.5;
+}
+.deadlines-card.deadlines-past .deadlines-num {
+  color: #999;
+}
+.deadlines-card.deadlines-past .deadlines-card-bar {
+  filter: grayscale(1);
+}
+
+.deadlines-card.deadlines-tbd .deadlines-num {
+  color: #b8b8b8;
+}
+
+.deadlines-card-col.deadlines-hidden {
+  display: none;
+}
+
+.deadlines-visit-btn {
+  display: inline-block;
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--prism-purple);
+  text-decoration: none;
+  font-weight: 600;
+}
+.deadlines-visit-btn:hover {
+  text-decoration: underline;
+}
+</style>
+
+<script>
+(function () {
+  // ---- 카운트다운 갱신 ----
+  function updateCountdowns() {
+    var cards = document.querySelectorAll(".deadlines-card");
+    var now = new Date().getTime();
+
+    cards.forEach(function (card) {
+      var daysEl = card.querySelector('[data-unit="days"]');
+      var hoursEl = card.querySelector('[data-unit="hours"]');
+      var minutesEl = card.querySelector('[data-unit="minutes"]');
+      var secondsEl = card.querySelector('[data-unit="seconds"]');
+      var localTimeEl = card.querySelector(".deadlines-local-time-value");
+
+      // ---- 마감일이 아직 미정(TBD)이거나 날짜 파싱이 안 되는 경우 ----
+      var deadlineAttr = card.getAttribute("data-deadline") || "";
+      var deadlineDate = new Date(deadlineAttr);
+      var isUnknown = !deadlineAttr.trim() || isNaN(deadlineDate.getTime());
+
+      if (isUnknown) {
+        card.classList.add("deadlines-tbd");
+        daysEl.textContent = "–";
+        hoursEl.textContent = "–";
+        minutesEl.textContent = "–";
+        secondsEl.textContent = "–";
+        if (localTimeEl) {
+          localTimeEl.textContent = "TBD";
+        }
+        return;
+      }
+
+      var diff = deadlineDate.getTime() - now;
+
+      if (localTimeEl && !localTimeEl.dataset.filled) {
+        localTimeEl.textContent = deadlineDate.toLocaleString("en-US", {
+          year: "numeric", month: "short", day: "numeric",
+          hour: "2-digit", minute: "2-digit"
+        });
+        localTimeEl.dataset.filled = "1";
+      }
 
 
-def to_utc_iso(deadline_str: str, tz_str: str) -> str | None:
-    """'2026-05-15 11:59:00' + 'UTC-12' -> '2026-05-15T23:59:00Z' 형태로 변환."""
-    if not deadline_str:
-        return None
-    deadline_str = deadline_str.strip()
-    try:
-        naive = datetime.strptime(deadline_str, "%Y-%m-%d %H:%M:%S")
-    except ValueError:
-        try:
-            naive = datetime.strptime(deadline_str, "%Y-%m-%d %H:%M")
-        except ValueError:
-            print(f"  ! 날짜 파싱 실패, 건너뜀: {deadline_str!r}")
-            return None
+      if (diff <= 0) {
+        card.classList.add("deadlines-past");
+        daysEl.textContent = "0";
+        hoursEl.textContent = "0";
+        minutesEl.textContent = "0";
+        secondsEl.textContent = "0";
+        return;
+      }
 
-    offset_hours = parse_utc_offset(tz_str)
-    if offset_hours is None:
-        # 오프셋을 못 찾으면 IANA 타임존 이름일 수 있음 -> zoneinfo 시도
-        try:
-            from zoneinfo import ZoneInfo
+      var days = Math.floor(diff / (1000 * 60 * 60 * 24));
+      var hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      var minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      var seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
-            local = naive.replace(tzinfo=ZoneInfo(tz_str))
-            utc_dt = local.astimezone(timezone.utc)
-            return utc_dt.strftime("%Y-%m-%dT%H:%M:%SZ")
-        except Exception:
-            print(f"  ! 알 수 없는 타임존 '{tz_str}', UTC로 가정")
-            offset_hours = 0
+      daysEl.textContent = days;
+      hoursEl.textContent = hours;
+      minutesEl.textContent = minutes;
+      secondsEl.textContent = seconds;
+    });
 
-    # naive 시각은 "그 타임존의 로컬 시각" -> UTC = local - offset
-    utc_dt = naive - timedelta(hours=offset_hours)
-    return utc_dt.strftime("%Y-%m-%dT%H:%M:%SZ")
+    reorderCards();
+  }
 
+  // ---- 카드 재정렬: 마감이 남은 카드(무지개 상단) 먼저, 지난 카드(무채색 상단)는 뒤로.
+  // 같은 그룹 안에서는 기존 시간순(서버에서 렌더링된 순서)을 그대로 유지합니다.
+  function reorderCards() {
+    var grid = document.getElementById("deadlines-grid");
+    if (!grid) return;
 
-def pick_latest_upcoming_conf(confs: list) -> dict | None:
-    """confs(연도별 목록) 중 '가장 이른 미래 마감일'을 가진 연도를 고른다.
-    모든 마감일이 지났다면 가장 최근(과거) 것을 반환."""
-    now_utc = datetime.now(timezone.utc)
-    upcoming = []
-    past = []
+    var cols = Array.prototype.slice.call(grid.querySelectorAll(".deadlines-card-col"));
 
-    for c in confs:
-        timeline = c.get("timeline") or []
-        if not timeline:
-            continue
-        # timeline의 마지막 항목을 '본 논문 마감'으로 간주
-        last_entry = timeline[-1]
-        deadline_raw = last_entry.get("deadline")
-        tz = c.get("timezone", "UTC+0")
-        utc_iso = to_utc_iso(deadline_raw, tz)
-        if not utc_iso:
-            continue
-        dt = datetime.strptime(utc_iso, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
-        entry = {"conf": c, "utc_iso": utc_iso, "dt": dt}
-        if dt >= now_utc:
-            upcoming.append(entry)
-        else:
-            past.append(entry)
+    var sorted = cols.slice().sort(function (a, b) {
+      var aPast = a.querySelector(".deadlines-card").classList.contains("deadlines-past") ? 1 : 0;
+      var bPast = b.querySelector(".deadlines-card").classList.contains("deadlines-past") ? 1 : 0;
+      return aPast - bPast; // stable sort: 그룹 내부 순서는 유지됨
+    });
 
-    if upcoming:
-        upcoming.sort(key=lambda e: e["dt"])
-        return upcoming[0]
-    if past:
-        past.sort(key=lambda e: e["dt"], reverse=True)
-        return past[0]
-    return None
-
-
-def normalize_tags(tag) -> list:
-    """tag가 "ML"처럼 문자열 하나든, ["CV", "ML"]처럼 리스트든 항상 리스트로 통일."""
-    if isinstance(tag, (list, tuple)):
-        return list(tag)
-    return [tag]
-
-
-def build_entry(title: str, conf: dict, tag) -> dict | None:
-    """ccfddl 스키마의 conf 객체(title/description/confs...) 하나를 사이트용 항목으로 변환."""
-    confs_list = conf.get("confs") or []
-    picked = pick_latest_upcoming_conf(confs_list)
-    if not picked:
-        print(f"  ! '{title}' 에 유효한 마감일 정보가 없음")
-        return None
-
-    c = picked["conf"]
-    print(f"  ✓ {title}: {picked['utc_iso']}")
-    return {
-        "name": title,
-        "full_name": conf.get("description", title),
-        "link": c.get("link", ""),
-        "date": c.get("date", "TBD"),
-        "place": c.get("place", "TBD"),
-        "deadline_utc": picked["utc_iso"],
-        "tag": normalize_tags(tag),
+    // 순서가 실제로 바뀐 경우에만 DOM을 건드려 불필요한 리플로우를 피함
+    var changed = sorted.some(function (col, i) { return col !== cols[i]; });
+    if (changed) {
+      sorted.forEach(function (col) { grid.appendChild(col); });
     }
+  }
 
+  updateCountdowns();
+  setInterval(updateCountdowns, 1000);
 
-def fetch_by_title(results: list) -> None:
-    if not TRACKED_BY_TITLE:
-        return
-    print(f"Fetching {ALLCONF_URL} ...")
-    resp = requests.get(ALLCONF_URL, timeout=30)
-    resp.raise_for_status()
-    all_conferences = yaml.safe_load(resp.text)
-    by_title = {c.get("title", "").strip(): c for c in all_conferences if c.get("title")}
+  // ---- 필터 버튼 ----
+  var filterButtons = document.querySelectorAll(".deadlines-filter-btn");
+  var cardCols = document.querySelectorAll(".deadlines-card-col");
 
-    for tracked in TRACKED_BY_TITLE:
-        title = tracked["title"]
-        conf = by_title.get(title)
-        if not conf:
-            print(f"  ! '{title}' 을(를) allconf.yml에서 찾지 못함 (TRACKED_BY_PATH로 개별 파일을 지정해보세요)")
-            continue
-        entry = build_entry(title, conf, tracked["tag"])
-        if entry:
-            results.append(entry)
+  filterButtons.forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      filterButtons.forEach(function (b) { b.classList.remove("active"); });
+      btn.classList.add("active");
 
-
-def fetch_by_path(results: list) -> None:
-    for tracked in TRACKED_BY_PATH:
-        path = tracked["path"]
-        url = f"{CCF_DEADLINES_RAW_BASE}/{path}"
-        print(f"Fetching {url} ...")
-        try:
-            resp = requests.get(url, timeout=30)
-            resp.raise_for_status()
-        except requests.RequestException as e:
-            print(f"  ! '{path}' 가져오기 실패: {e}")
-            continue
-
-        data = yaml.safe_load(resp.text)
-        # ccf-deadlines의 개별 파일은 보통 "- title: ... confs: [...]" 형태의 리스트(원소 1개)
-        conf = data[0] if isinstance(data, list) else data
-        if not conf or not conf.get("title"):
-            print(f"  ! '{path}' 형식을 인식하지 못함")
-            continue
-
-        entry = build_entry(conf["title"], conf, tracked["tag"])
-        if entry:
-            results.append(entry)
-
-
-def main():
-    results = []
-    fetch_by_title(results)
-    fetch_by_path(results)
-
-    if MANUAL_ENTRIES:
-        print(f"수동 등록 항목 {len(MANUAL_ENTRIES)}개 추가")
-        for entry in MANUAL_ENTRIES:
-            entry = dict(entry)
-            entry["tag"] = normalize_tags(entry.get("tag"))
-            results.append(entry)
-
-    if not results:
-        print("갱신할 데이터가 없어 종료합니다 (기존 파일 유지).")
-        sys.exit(0)
-
-    # 마감일이 가까운 순으로 정렬
-    results.sort(key=lambda r: r["deadline_utc"])
-
-    header = (
-        "# _data/deadlines.yml\n"
-        "# 이 파일은 scripts/update_deadlines.py 에 의해 자동으로 생성됩니다.\n"
-        f"# 마지막 자동 갱신: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}\n"
-        "# 수동으로 편집한 내용은 다음 자동 실행 때 덮어써질 수 있습니다.\n\n"
-    )
-
-    yaml_body = yaml.safe_dump(
-        results, allow_unicode=True, sort_keys=False, default_flow_style=False
-    )
-
-    OUTPUT_PATH.write_text(header + yaml_body, encoding="utf-8")
-    print(f"\n{OUTPUT_PATH} 갱신 완료 ({len(results)}개 학회)")
-
-
-if __name__ == "__main__":
-    main()
+      var tag = btn.getAttribute("data-tag");
+      cardCols.forEach(function (col) {
+        var colTags = (col.getAttribute("data-tag") || "").split(" ");
+        if (tag === "all" || colTags.indexOf(tag) !== -1) {
+          col.classList.remove("deadlines-hidden");
+        } else {
+          col.classList.add("deadlines-hidden");
+        }
+      });
+    });
+  });
+})();
+</script>
