@@ -108,11 +108,7 @@ Our research addresses fundamental problems in developing theoretically sound re
 
 </div>
 
-**We are looking for passionate new PhD/Master students to join the team!**
-
-
-
-
+<!-- **We are looking for passionate new PhD/Master students to join the team!** -->
 
 <figure class="fifth">
   <img src="{{ site.url }}{{ site.baseurl }}/images/logopic/logo2.jpeg" style="width: 120px">
