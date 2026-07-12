@@ -6,6 +6,29 @@ sitemap: false
 permalink: /
 ---
 
+<style>
+.rainbow-link {
+  background: linear-gradient(90deg,
+    rgb(188,90,93), rgb(242,221,134), rgb(111,142,114),
+    rgb(75,85,210), rgb(119,94,145), rgb(188,90,93));
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  font-weight: bold;
+  text-decoration: underline;
+  animation: rainbow-shift 4s linear infinite;
+}
+.rainbow-link:hover {
+  animation-duration: 1.5s;
+}
+@keyframes rainbow-shift {
+  0%   { background-position: 0% center; }
+  100% { background-position: 200% center; }
+}
+</style>
+
 <div class="alert" role="alert" style="margin: 20px 0; line-height: 1.6; background-color: #fafdff; border: 1px solid #e9d5ff; color: #5b21b6; border-radius: 6px;">
   <h4 style="margin-top: 0; margin-bottom: 10px; color: #5b21b6;"><strong>📢 Current Open Positions</strong></h4>
   <p style="margin-bottom: 8px;">We are currently seeking motivated students to join our lab:</p>
@@ -23,7 +46,7 @@ permalink: /
       </ul>
     </li>
   </ul>
-  <p style="margin-bottom: 0;">If you are interested, please contact <a href="mailto:wjko@sungshin.ac.kr" style="font-weight: bold;">Prof. Wonjun Ko</a>😄</p>
+  <p style="margin-bottom: 0;">If you are interested, please contact <a href="mailto:wjko@sungshin.ac.kr" class="rainbow-link">Prof. Wonjun Ko</a>😄</p>
 </div>
 
 #### We are Pattern Recognition and Intelligent System Modeling Lab :D
