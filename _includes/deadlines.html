@@ -48,6 +48,7 @@
           <p class="deadlines-local-time">
             Deadline in KST: <span class="deadlines-local-time-value">-</span>
           </p>
+          <a href="{{ conf.link }}" target="_blank" rel="noopener" class="deadlines-visit-btn">Visit website →</a>
         </div>
       </div>
     </div>
@@ -209,6 +210,18 @@
 
 .deadlines-card-col.deadlines-hidden {
   display: none;
+}
+
+.deadlines-visit-btn {
+  display: inline-block;
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--prism-purple);
+  text-decoration: none;
+  font-weight: 600;
+}
+.deadlines-visit-btn:hover {
+  text-decoration: underline;
 }
 </style>
 
