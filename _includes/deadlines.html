@@ -6,7 +6,7 @@
 
   <div class="deadlines-filters">
     <button class="deadlines-filter-btn active" data-tag="all">All</button>
-    {% assign tags = site.data.deadlines | map: "tag" | uniq %}
+    {% assign tags = site.data.deadlines | map: "tag" | flatten | uniq | sort %}
     {% for tag in tags %}
       <button class="deadlines-filter-btn" data-tag="{{ tag }}">{{ tag }}</button>
     {% endfor %}
@@ -14,13 +14,15 @@
 
   <div class="row" id="deadlines-grid">
     {% for conf in site.data.deadlines %}
-    <div class="col-sm-4 deadlines-card-col" data-tag="{{ conf.tag }}">
+    <div class="col-sm-4 deadlines-card-col" data-tag="{{ conf.tag | join: ' ' }}">
       <div class="deadlines-card" data-deadline="{{ conf.deadline_utc }}">
         <div class="deadlines-card-bar"></div>
         <div class="deadlines-card-body">
           <h4 class="deadlines-card-title">
             <a href="{{ conf.link }}" target="_blank" rel="noopener">{{ conf.name }}</a>
-            <span class="deadlines-tag">{{ conf.tag }}</span>
+            {% for t in conf.tag %}
+              <span class="deadlines-tag deadlines-tag-{{ t }}">{{ t }}</span>
+            {% endfor %}
           </h4>
           <p class="deadlines-fullname">{{ conf.full_name }}</p>
           <p class="deadlines-meta">📅 {{ conf.date }}</p>
@@ -152,11 +154,19 @@
   margin-left: 6px;
   padding: 1px 8px;
   border-radius: 999px;
-  background: #f3e8ff;
+  background: #f3e8ff;      /* 기본값(fallback) - 아래 태그별 규칙이 없으면 이 색이 적용됨 */
   color: var(--prism-purple);
   font-size: 11px;
   vertical-align: middle;
 }
+
+/* ---- 태그별 색상 (필요한 만큼 자유롭게 추가/수정하세요) ---- */
+.deadlines-tag-ML  { background: #dbeafe; color: #1d4ed8; }  /* 파랑 */
+.deadlines-tag-AI  { background: #ede9fe; color: #6d28d9; }  /* 보라 */
+.deadlines-tag-BIO { background: #dcfce7; color: #15803d; }  /* 초록 */
+.deadlines-tag-CV  { background: #ffedd5; color: #c2410c; }  /* 주황 */
+.deadlines-tag-DB  { background: #fce7f3; color: #be185d; }  /* 분홍 */
+.deadlines-tag-MX  { background: #ccfbf1; color: #0f766e; }  /* 청록 (WWW, CogSci 등 혼합 분야) */
 
 .deadlines-fullname {
   font-size: 13px;
@@ -270,6 +280,29 @@
       minutesEl.textContent = minutes;
       secondsEl.textContent = seconds;
     });
+
+    reorderCards();
+  }
+
+  // ---- 카드 재정렬: 마감이 남은 카드(무지개 상단) 먼저, 지난 카드(무채색 상단)는 뒤로.
+  // 같은 그룹 안에서는 기존 시간순(서버에서 렌더링된 순서)을 그대로 유지합니다.
+  function reorderCards() {
+    var grid = document.getElementById("deadlines-grid");
+    if (!grid) return;
+
+    var cols = Array.prototype.slice.call(grid.querySelectorAll(".deadlines-card-col"));
+
+    var sorted = cols.slice().sort(function (a, b) {
+      var aPast = a.querySelector(".deadlines-card").classList.contains("deadlines-past") ? 1 : 0;
+      var bPast = b.querySelector(".deadlines-card").classList.contains("deadlines-past") ? 1 : 0;
+      return aPast - bPast; // stable sort: 그룹 내부 순서는 유지됨
+    });
+
+    // 순서가 실제로 바뀐 경우에만 DOM을 건드려 불필요한 리플로우를 피함
+    var changed = sorted.some(function (col, i) { return col !== cols[i]; });
+    if (changed) {
+      sorted.forEach(function (col) { grid.appendChild(col); });
+    }
   }
 
   updateCountdowns();
@@ -286,7 +319,8 @@
 
       var tag = btn.getAttribute("data-tag");
       cardCols.forEach(function (col) {
-        if (tag === "all" || col.getAttribute("data-tag") === tag) {
+        var colTags = (col.getAttribute("data-tag") || "").split(" ");
+        if (tag === "all" || colTags.indexOf(tag) !== -1) {
           col.classList.remove("deadlines-hidden");
         } else {
           col.classList.add("deadlines-hidden");
