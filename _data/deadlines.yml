@@ -1,29 +1,82 @@
 # _data/deadlines.yml
 # 이 파일은 scripts/update_deadlines.py 에 의해 자동으로 생성됩니다.
-# 마지막 자동 갱신: 2026-07-12 08:25 UTC
+# 마지막 자동 갱신: 2026-07-12 09:11 UTC
 # 수동으로 편집한 내용은 다음 자동 실행 때 덮어써질 수 있습니다.
 
+- name: ICCV
+  full_name: IEEE International Conference on Computer Vision
+  link: https://iccv.thecvf.com/Conferences/2025
+  date: October 19-25, 2025
+  place: Honolulu, Hawaii
+  deadline_utc: '2025-03-08T09:59:59Z'
+  tag:
+  - CV
 - name: ICLR
   full_name: International Conference on Learning Representations
   link: https://iclr.cc/Conferences/2026
   date: May 01-05, 2026
   place: Brazil
   deadline_utc: '2025-09-25T11:59:59Z'
-  tag: ML
+  tag:
+  - ML
+- name: AISTATS
+  full_name: International Conference on Artificial Intelligence and Statistics
+  link: https://virtual.aistats.org/Conferences/2026
+  date: May 2-5, 2026
+  place: Morocco
+  deadline_utc: '2025-10-03T11:59:59Z'
+  tag:
+  - AI
+- name: CVPR
+  full_name: IEEE/CVF Conference on Computer Vision and Pattern Recognition
+  link: https://cvpr.thecvf.com/Conferences/2026
+  date: June 3-7, 2026
+  place: Denver, Colorado, United States
+  deadline_utc: '2025-11-14T11:59:00Z'
+  tag:
+  - CV
+- name: ICPR
+  full_name: International Conference on Pattern Recognition
+  link: https://icpr2026.org/
+  date: August 17-21, 2026
+  place: Lyon, France
+  deadline_utc: '2025-12-21T11:59:59Z'
+  tag:
+  - ML
+  - AI
 - name: IJCAI
   full_name: International Joint Conference on Artificial Intelligence
   link: https://2026.ijcai.org/
   date: August 15-21, 2026
   place: Bremen, Germany
   deadline_utc: '2026-01-20T11:59:59Z'
-  tag: AI
+  tag:
+  - AI
 - name: ICML
   full_name: International Conference on Machine Learning
   link: https://icml.cc/Conferences/2026
   date: July 6-12, 2026
   place: Seoul, Korea
   deadline_utc: '2026-01-29T11:59:59Z'
-  tag: ML
+  tag:
+  - ML
+- name: CogSci
+  full_name: Annual Meeting of the Cognitive Science Society
+  link: https://cognitivesciencesociety.org/cogsci-2026/
+  date: July 22-25, 2026
+  place: Rio de Janeiro, Brazil
+  deadline_utc: '2026-02-03T11:59:59Z'
+  tag:
+  - AI
+  - MX
+- name: UAI
+  full_name: Conference on Uncertainty in Artificial Intelligence
+  link: https://www.auai.org/uai2026/
+  date: August 17-21, 2026
+  place: Amsterdam, Netherlands
+  deadline_utc: '2026-02-26T11:59:59Z'
+  tag:
+  - AI
 - name: MICCAI
   full_name: International Conference on Medical Image Computing and Computer Assisted
     Intervention
@@ -31,18 +84,97 @@
   date: Oct 4-8, 2026
   place: ADNEC Centre, Abu Dhabi, U.A.E.
   deadline_utc: '2026-02-27T07:59:00Z'
-  tag: BIO
+  tag:
+  - BIO
+- name: ECCV
+  full_name: European Conference on Computer Vision
+  link: https://eccv.ecva.net/
+  date: September 8 - 13, 2026
+  place: Malmö, Sweden
+  deadline_utc: '2026-03-05T22:00:00Z'
+  tag:
+  - CV
 - name: NeurIPS
   full_name: Conference on Neural Information Processing Systems
   link: https://neurips.cc/Conferences/2026
   date: December 6, 2026
   place: Sydney, Australia
   deadline_utc: '2026-05-07T11:59:00Z'
-  tag: ML
+  tag:
+  - ML
+- name: BMVC
+  full_name: British Machine Vision Conference
+  link: https://bmvc2026.bmva.org/
+  date: November 23-26, 2026
+  place: Lancaster, UK
+  deadline_utc: '2026-05-29T23:59:59Z'
+  tag:
+  - CV
+- name: ICDM
+  full_name: IEEE International Conference on Data Mining
+  link: http://icdm2026.neu.edu.cn/
+  date: November 12-15, 2026
+  place: Shenyang, China
+  deadline_utc: '2026-06-07T11:59:59Z'
+  tag:
+  - ML
+  - DB
+- name: ACCV
+  full_name: Asian Conference on Computer Vision
+  link: https://accv2026.org/
+  date: December 14-18, 2026
+  place: Osaka, Japan
+  deadline_utc: '2026-07-06T11:59:59Z'
+  tag:
+  - CV
+- name: ACML
+  full_name: Asian Conference on Machine Learning
+  link: https://www.acml-conf.org/2026/
+  date: December 1-4, 2026
+  place: Melbourne, Australia
+  deadline_utc: '2026-07-06T11:59:59Z'
+  tag:
+  - ML
+- name: SIGKDD
+  full_name: ACM Knowledge Discovery and Data Mining
+  link: https://kdd2027.kdd.org/
+  date: August 2027 (exact dates TBD)
+  place: San Jose, California, USA
+  deadline_utc: '2026-07-27T11:59:59Z'
+  tag:
+  - ML
+  - DB
 - name: AAAI
   full_name: AAAI Conference on Artificial Intelligence
   link: https://aaai.org/conference/aaai/aaai-27/
   date: February 16-23, 2027
   place: Montréal, Québec, Canada
   deadline_utc: '2026-07-28T11:59:59Z'
-  tag: AI
+  tag:
+  - AI
+- name: WWW
+  full_name: International World Wide Web Conferences
+  link: https://acmweb2027.org/
+  date: May 10 - 14, 2027
+  place: Dublin, Ireland
+  deadline_utc: '2026-10-19T11:59:59Z'
+  tag:
+  - AI
+  - MX
+- name: EMBC
+  full_name: International Conference of the IEEE Engineering in Medicine and Biology
+    Society
+  link: https://embc.embs.org/2027/welcome/
+  date: July 11-15, 2027
+  place: Singapore
+  deadline_utc: TBD
+  tag:
+  - BIO
+- name: ISBI
+  full_name: IEEE International Symposium on Biomedical Imaging
+  link: https://signalprocessingsociety.org/events/2027-ieee-24th-international-symposium-biomedical-imaging-isbi
+  date: May 25-28, 2027
+  place: Lausanne, Switzerland
+  deadline_utc: TBD
+  tag:
+  - BIO
