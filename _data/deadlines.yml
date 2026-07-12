@@ -1,6 +1,6 @@
 # _data/deadlines.yml
 # 이 파일은 scripts/update_deadlines.py 에 의해 자동으로 생성됩니다.
-# 마지막 자동 갱신: 2026-07-12 11:02 UTC
+# 마지막 자동 갱신: 2026-07-12 12:30 UTC
 # 수동으로 편집한 내용은 다음 자동 실행 때 덮어써질 수 있습니다.
 
 - name: ICCV
@@ -12,6 +12,7 @@
   conf_end_utc: '2025-10-25T23:59:59Z'
   tag:
   - CV
+  - AI
 - name: ICLR
   full_name: International Conference on Learning Representations
   link: https://iclr.cc/Conferences/2026
@@ -29,6 +30,7 @@
   deadline_utc: '2025-10-03T11:59:59Z'
   conf_end_utc: '2026-05-05T23:59:59Z'
   tag:
+  - STAT
   - AI
 - name: CVPR
   full_name: IEEE/CVF Conference on Computer Vision and Pattern Recognition
@@ -39,6 +41,7 @@
   conf_end_utc: '2026-06-07T23:59:59Z'
   tag:
   - CV
+  - AI
 - name: ICPR
   full_name: International Conference on Pattern Recognition
   link: https://icpr2026.org/
@@ -85,6 +88,7 @@
   deadline_utc: '2026-02-26T11:59:59Z'
   conf_end_utc: '2026-08-21T23:59:59Z'
   tag:
+  - STAT
   - AI
 - name: MICCAI
   full_name: International Conference on Medical Image Computing and Computer Assisted
@@ -96,6 +100,7 @@
   conf_end_utc: '2026-10-08T23:59:59Z'
   tag:
   - BIO
+  - AI
 - name: ECCV
   full_name: European Conference on Computer Vision
   link: https://eccv.ecva.net/
@@ -105,6 +110,7 @@
   conf_end_utc: '2026-09-13T23:59:59Z'
   tag:
   - CV
+  - AI
 - name: NeurIPS
   full_name: Conference on Neural Information Processing Systems
   link: https://neurips.cc/Conferences/2026
@@ -114,6 +120,7 @@
   conf_end_utc: '2026-12-06T23:59:59Z'
   tag:
   - ML
+  - AI
 - name: BMVC
   full_name: British Machine Vision Conference
   link: https://bmvc2026.bmva.org/
@@ -123,6 +130,7 @@
   conf_end_utc: '2026-11-26T23:59:59Z'
   tag:
   - CV
+  - AI
 - name: ICDM
   full_name: IEEE International Conference on Data Mining
   link: http://icdm2026.neu.edu.cn/
@@ -152,6 +160,7 @@
   conf_end_utc: '2026-12-18T23:59:59Z'
   tag:
   - CV
+  - AI
 - name: ACML
   full_name: Asian Conference on Machine Learning
   link: https://www.acml-conf.org/2026/
@@ -180,6 +189,46 @@
   conf_end_utc: '2027-02-23T23:59:59Z'
   tag:
   - AI
+- name: WSDM
+  full_name: International Conference on Web Search and Data Mining
+  link: https://wsdm-conference.org/2027/
+  date: February 15 - 19, 2027
+  place: Cordis, Hong Kong SAR, China
+  deadline_utc: '2026-08-25T11:59:59Z'
+  conf_end_utc: '2027-02-19T23:59:59Z'
+  tag:
+  - DB
+  - AI
+- name: WACV
+  full_name: IEEE/CVF Winter Conference on Applications of Computer Vision
+  link: https://wacv.thecvf.com/
+  date: January 5 - 9, 2027
+  place: Disney Springs, Buena Vista, FL, USA
+  deadline_utc: '2026-08-29T11:59:59Z'
+  conf_end_utc: '2027-01-09T23:59:59Z'
+  tag:
+  - CV
+  - AI
+- name: ICASSP
+  full_name: IEEE International Conference on Acoustics, Speech, and Signal Processing
+  link: https://2027.ieeeicassp.org/
+  date: May 16-21, 2027
+  place: Toronto, Canada
+  deadline_utc: '2026-09-17T11:59:59Z'
+  conf_end_utc: '2027-05-21T23:59:59Z'
+  tag:
+  - SP
+  - AI
+- name: ECIR
+  full_name: European Conference on Information Retrieval
+  link: https://ecir2027.co.uk/
+  date: March 21-25, 2027
+  place: Southampton, UK
+  deadline_utc: '2026-10-02T23:59:59Z'
+  conf_end_utc: '2027-03-25T23:59:59Z'
+  tag:
+  - ML
+  - AI
 - name: WWW
   full_name: International World Wide Web Conferences
   link: https://acmweb2027.org/
@@ -190,6 +239,26 @@
   tag:
   - AI
   - MX
+- name: ICDE
+  full_name: IEEE International Conference on Data Engineering
+  link: https://icde2027.github.io/
+  date: May 17-21, 2027
+  place: Copenhagen, Denmark
+  deadline_utc: '2026-11-12T00:00:00Z'
+  conf_end_utc: '2027-05-21T23:59:59Z'
+  tag:
+  - DB
+  - AI
+- name: MVA
+  full_name: International Conference on Machine Vision Applications
+  link: https://www.mva-org.jp/mva2027/
+  date: May 12 - May 14, 2027
+  place: Kyushu University, Fukuoka, Japan
+  deadline_utc: '2027-01-15T11:59:59'
+  tag:
+  - CV
+  - AI
+  conf_end_utc: '2027-01-15T11:59:59'
 - name: EMBC
   full_name: International Conference of the IEEE Engineering in Medicine and Biology
     Society
