@@ -215,6 +215,38 @@ MONTH_NAMES = {
     "dec": 12, "december": 12,
 }
 
+# 축약형 -> 완전한 이름. 이미 완전한 형태(예: "may", "june")는 넣지 않아도 됨
+# (아래 expand_month_abbreviations가 매핑에 없는 단어는 그대로 둠).
+MONTH_ABBR_TO_FULL = {
+    "jan": "January",
+    "feb": "February",
+    "mar": "March",
+    "apr": "April",
+    "jun": "June",
+    "jul": "July",
+    "aug": "August",
+    "sep": "September",
+    "sept": "September",
+    "oct": "October",
+    "nov": "November",
+    "dec": "December",
+}
+
+
+def expand_month_abbreviations(date_str: str) -> str:
+    """"Oct 8-13, 2026" -> "October 8-13, 2026" 처럼, 표시용 date 문자열 안의
+    축약형 월 이름을 완전한 이름으로 통일. (allconf.yml 소스마다 표기가 제각각이라
+    카드에 그대로 노출될 때 들쭉날쭉해 보이는 것을 방지)"""
+    if not date_str:
+        return date_str
+
+    def repl(m: "re.Match") -> str:
+        word = m.group(0)
+        full = MONTH_ABBR_TO_FULL.get(word.lower())
+        return full if full else word
+
+    return re.sub(r"[A-Za-z]+", repl, date_str)
+
 
 def parse_conf_end_date(date_str: str) -> str | None:
     """"September 8 - 13, 2026" 같은 표시용 날짜 문자열에서 '학회 마지막 날'을
@@ -276,7 +308,7 @@ def build_entry(title: str, conf: dict, tag) -> dict | None:
         return None
 
     c = picked["conf"]
-    date_str = c.get("date", "TBD")
+    date_str = expand_month_abbreviations(c.get("date", "TBD"))
     conf_end_utc = parse_conf_end_date(date_str) or picked["utc_iso"]
     # ↑ 종료일 파싱에 실패하면, 예전과 동일하게 "마감 = 종료"로 취급 (Awaiting Conference 구간 없이 바로 Completed)
 
@@ -347,6 +379,7 @@ def main():
         for entry in MANUAL_ENTRIES:
             entry = dict(entry)
             entry["tag"] = normalize_tags(entry.get("tag"))
+            entry["date"] = expand_month_abbreviations(entry.get("date", "TBD"))
             entry.setdefault("conf_end_utc", entry.get("deadline_utc"))
             results.append(entry)
 
