@@ -1,0 +1,57 @@
+# _data/deadlines.yml
+#
+# 이 파일은 scripts/update_deadlines.py 에 의해 자동으로 갱신됩니다.
+# (.github/workflows/update-deadlines.yml 이 매일 정기 실행)
+#
+# 수동으로 학회를 추가/삭제하고 싶다면:
+#   1) scripts/update_deadlines.py 안의 TRACKED_CONFERENCES 리스트를 수정 (자동 갱신 대상 추가/삭제)
+#   2) 또는 아래 목록에 직접 항목을 추가 (다음 자동 갱신 때 덮어써질 수 있으니 주의)
+#
+# 필드 설명:
+#   name         : 짧은 학회명 (예: NeurIPS)
+#   full_name    : 전체 이름
+#   link         : 학회 공식 홈페이지
+#   date         : 개최 일정 (표시용 문자열)
+#   place        : 개최 장소
+#   deadline_utc : 논문 마감 시각 (UTC, ISO8601). JS가 방문자의 로컬 시간대로 자동 변환해서 보여줍니다.
+#   tag          : 분야 태그 (필터링에 사용). 예: AI, ML, CV, NLP, BIO
+
+- name: NeurIPS
+  full_name: "Conference on Neural Information Processing Systems"
+  link: "https://neurips.cc/"
+  date: "예시 값 — 자동 갱신 예정"
+  place: "TBD"
+  deadline_utc: "2026-05-15T11:59:00Z"
+  tag: "ML"
+
+- name: ICML
+  full_name: "International Conference on Machine Learning"
+  link: "https://icml.cc/"
+  date: "예시 값 — 자동 갱신 예정"
+  place: "TBD"
+  deadline_utc: "2026-01-23T11:59:00Z"
+  tag: "ML"
+
+- name: ICLR
+  full_name: "International Conference on Learning Representations"
+  link: "https://iclr.cc/"
+  date: "예시 값 — 자동 갱신 예정"
+  place: "TBD"
+  deadline_utc: "2026-09-24T11:59:59Z"
+  tag: "ML"
+
+- name: MICCAI
+  full_name: "International Conference on Medical Image Computing and Computer Assisted Intervention"
+  link: "https://miccai.org/"
+  date: "예시 값 — 자동 갱신 예정"
+  place: "TBD"
+  deadline_utc: "2026-06-15T11:59:00Z"
+  tag: "BIO"
+
+- name: EMBC
+  full_name: "IEEE Engineering in Medicine & Biology Conference"
+  link: "https://embs.org/embc/"
+  date: "예시 값 — 자동 갱신 예정"
+  place: "TBD"
+  deadline_utc: "2026-02-15T11:59:00Z"
+  tag: "BIO"
