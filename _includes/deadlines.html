@@ -1,3 +1,4 @@
+
 <div id="deadlines-wrap">
 
   <p class="deadlines-updated">
@@ -218,6 +219,10 @@
   filter: grayscale(1);
 }
 
+.deadlines-card.deadlines-tbd .deadlines-num {
+  color: #b8b8b8;
+}
+
 .deadlines-card-col.deadlines-hidden {
   display: none;
 }
@@ -243,23 +248,39 @@
     var now = new Date().getTime();
 
     cards.forEach(function (card) {
-      var deadline = new Date(card.getAttribute("data-deadline")).getTime();
-      var diff = deadline - now;
-
       var daysEl = card.querySelector('[data-unit="days"]');
       var hoursEl = card.querySelector('[data-unit="hours"]');
       var minutesEl = card.querySelector('[data-unit="minutes"]');
       var secondsEl = card.querySelector('[data-unit="seconds"]');
       var localTimeEl = card.querySelector(".deadlines-local-time-value");
 
+      // ---- 마감일이 아직 미정(TBD)이거나 날짜 파싱이 안 되는 경우 ----
+      var deadlineAttr = card.getAttribute("data-deadline") || "";
+      var deadlineDate = new Date(deadlineAttr);
+      var isUnknown = !deadlineAttr.trim() || isNaN(deadlineDate.getTime());
+
+      if (isUnknown) {
+        card.classList.add("deadlines-tbd");
+        daysEl.textContent = "-";
+        hoursEl.textContent = "-";
+        minutesEl.textContent = "-";
+        secondsEl.textContent = "-";
+        if (localTimeEl) {
+          localTimeEl.textContent = "TBD";
+        }
+        return;
+      }
+
+      var diff = deadlineDate.getTime() - now;
+
       if (localTimeEl && !localTimeEl.dataset.filled) {
-        var d = new Date(card.getAttribute("data-deadline"));
-        localTimeEl.textContent = d.toLocaleString("en-US", {
+        localTimeEl.textContent = deadlineDate.toLocaleString("en-US", {
           year: "numeric", month: "short", day: "numeric",
           hour: "2-digit", minute: "2-digit"
         });
         localTimeEl.dataset.filled = "1";
       }
+
 
       if (diff <= 0) {
         card.classList.add("deadlines-past");
