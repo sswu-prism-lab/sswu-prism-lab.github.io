@@ -107,3 +107,13 @@ firstp {
 .scholar-link:hover {
   color: #3367D6; /* 살짝 진한 톤 */
 }
+
+.navbar-rainbow {
+  background: linear-gradient(90deg,
+    rgb(188,90,93), rgb(242,221,134), rgb(111,142,114),
+    rgb(75,85,210), rgb(119,94,145));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
