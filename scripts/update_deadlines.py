@@ -102,6 +102,7 @@ MANUAL_ENTRIES = [
      "place": "Kyushu University, Fukuoka, Japan",
      "deadline_utc": "2027-01-15T11:59:59",
      "tag": ["CV", "AI"]
+   },
     # 예시:
     # {
     #     "name": "IEEE BCI",
