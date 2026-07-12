@@ -46,7 +46,7 @@
           </div>
 
           <p class="deadlines-local-time">
-            내 시간대 마감: <span class="deadlines-local-time-value">-</span>
+            Deadline in KST: <span class="deadlines-local-time-value">-</span>
           </p>
         </div>
       </div>
@@ -231,7 +231,7 @@
 
       if (localTimeEl && !localTimeEl.dataset.filled) {
         var d = new Date(card.getAttribute("data-deadline"));
-        localTimeEl.textContent = d.toLocaleString(undefined, {
+        localTimeEl.textContent = d.toLocaleString("en-US", {
           year: "numeric", month: "short", day: "numeric",
           hour: "2-digit", minute: "2-digit"
         });
