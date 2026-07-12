@@ -23,7 +23,7 @@ permalink: /
       </ul>
     </li>
   </ul>
-  <p style="margin-bottom: 8px;", href="mailto:wjko@sungshin.ac.kr">If you are interested, please contact Prof. Wonjun Ko😄</p>
+  <p style="margin-bottom: 0;">If you are interested, please contact <a href="mailto:wjko@sungshin.ac.kr" style="color: #5b21b6; font-weight: bold;">Prof. Wonjun Ko</a>😄</p>
 </div>
 
 #### We are Pattern Recognition and Intelligent System Modeling Lab :D
