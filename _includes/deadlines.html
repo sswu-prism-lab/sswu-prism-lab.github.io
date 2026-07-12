@@ -1,3 +1,4 @@
+
 <div id="deadlines-wrap">
 
   <p class="deadlines-updated">
@@ -16,17 +17,17 @@
 
     <div class="deadlines-section" id="deadlines-section-upcoming">
       <h2 class="deadlines-section-title">Open for Submission</h2>
-      <div class="row deadlines-grid" id="deadlines-grid-upcoming"></div>
+      <div class="deadlines-grid" id="deadlines-grid-upcoming"></div>
     </div>
 
     <div class="deadlines-section" id="deadlines-section-ongoing">
       <h2 class="deadlines-section-title">Awaiting Conferences</h2>
-      <div class="row deadlines-grid" id="deadlines-grid-ongoing"></div>
+      <div class="deadlines-grid" id="deadlines-grid-ongoing"></div>
     </div>
 
     <div class="deadlines-section" id="deadlines-section-past">
       <h2 class="deadlines-section-title">Completed</h2>
-      <div class="row deadlines-grid" id="deadlines-grid-past"></div>
+      <div class="deadlines-grid" id="deadlines-grid-past"></div>
     </div>
 
   </div>
@@ -35,7 +36,7 @@
        위 세 섹션 중 알맞은 곳으로 옮겨줍니다. -->
   <div id="deadlines-grid-source" style="display:none;">
     {% for conf in site.data.deadlines %}
-    <div class="col-sm-4 deadlines-card-col" data-tag="{{ conf.tag | join: ' ' }}">
+    <div class="deadlines-card-col" data-tag="{{ conf.tag | join: ' ' }}">
       <div class="deadlines-card" data-deadline="{{ conf.deadline_utc }}" data-conf-end="{{ conf.conf_end_utc }}">
         <div class="deadlines-card-bar"></div>
         <div class="deadlines-card-body">
@@ -150,7 +151,23 @@
   vertical-align: middle;
 }
 
+/* ---- Masonry(벽돌쌓기) 레이아웃: 각 섹션 안에서 카드 높이가 제각각이어도 빈 공간 없이 채워짐 ---- */
+.deadlines-grid {
+  column-count: 3;
+  column-gap: 24px;
+}
+@media (max-width: 991px) {
+  .deadlines-grid { column-count: 2; }
+}
+@media (max-width: 600px) {
+  .deadlines-grid { column-count: 1; }
+}
+
 .deadlines-card-col {
+  display: inline-block;    /* 다단 레이아웃에서 블록이 온전히 한 칸에 들어가도록 */
+  width: 100%;
+  break-inside: avoid;       /* 카드 하나가 두 단으로 쪼개지지 않도록 */
+  -webkit-column-break-inside: avoid;
   margin-bottom: 24px;
 }
 
@@ -160,7 +177,6 @@
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 2px 2px 5px rgba(0,0,0,0.06);
-  height: 100%;
   transition: transform 0.15s ease;
 }
 .deadlines-card:hover {
