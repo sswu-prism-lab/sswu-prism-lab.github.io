@@ -2,9 +2,16 @@
 """
 _data/deadlines.yml 자동 갱신 스크립트.
 
-ccfddl/ccf-deadlines 프로젝트가 관리하는 통합 데이터 파일(allconf.yml)에서
-TRACKED_CONFERENCES 에 지정된 학회만 뽑아, 가장 최근(미래) 마감일을 계산해
-Jekyll이 읽는 _data/deadlines.yml 형식으로 저장합니다.
+세 가지 소스에서 학회 마감일을 모아 Jekyll이 읽는 _data/deadlines.yml 형식으로 저장합니다.
+
+  1) TRACKED_BY_TITLE : ccfddl 통합 데이터(allconf.yml)에서 title로 검색해서 가져옴 (가장 간편)
+  2) TRACKED_BY_PATH  : allconf.yml에 없는 학회를, ccf-deadlines 저장소의 개별 yml 파일
+                        경로를 직접 지정해서 가져옴
+                        (https://github.com/ccfddl/ccf-deadlines/tree/main/conference 에서
+                         카테고리 폴더를 열어 원하는 학회의 .yml 경로를 확인하세요.
+                         예: "conference/AI/emnlp.yml")
+  3) MANUAL_ENTRIES   : ccfddl에 아예 없는 학회를 완전히 수동으로 등록 (자동 갱신 대상 아님,
+                        직접 날짜를 관리해야 함)
 
 GitHub Actions(.github/workflows/update-deadlines.yml)에 의해 매일 자동 실행됩니다.
 로컬에서 수동 실행하려면:
@@ -21,25 +28,85 @@ import requests
 import yaml
 
 # ---------------------------------------------------------------------------
-# 1) 추적하고 싶은 학회 목록을 여기서 관리하세요.
+# 1) allconf.yml(통합 데이터)에서 title로 찾을 학회들.
 #    title 은 allconf.yml 안의 "title" 필드와 정확히 일치해야 합니다 (대소문자 구분).
-#    tag 는 사이트 필터 버튼에 표시될 카테고리입니다 (자유롭게 지정 가능).
 # ---------------------------------------------------------------------------
-TRACKED_CONFERENCES = [
+TRACKED_BY_TITLE = [
     {"title": "NeurIPS", "tag": "ML"},
     {"title": "ICML", "tag": "ML"},
     {"title": "ICLR", "tag": "ML"},
     {"title": "AAAI", "tag": "AI"},
     {"title": "IJCAI", "tag": "AI"},
     {"title": "MICCAI", "tag": "BIO"},
-    {"title": "EMBC", "tag": "BIO"},
-    {"title": "ISBI", "tag": "BIO"},
+    {"title": "ACCV", "tag": "CV"},
+    {"title": "ACML", "tag": "ML"},
+    {"title": "AISTATS", "tag": "AI"},
+    {"title": "BMVC", "tag": "CV"},
+    {"title": "CVPR", "tag": "CV"},
+    {"title": "ECAL", "tag": "AI"},
+    {"title": "ECCV", "tag": "CV"},
+    {"title": "ICCV", "tag": "CV"},
+    {"title": "ICPR", "tag": ["ML", "AI"]},
+    {"title": "UAI", "tag": "AI"},
+    {"title": "SIGKDD", "tag": ["ML", "DB"]},
+    {"title": "ICDM", "tag": ["ML", "DB"]},
+    {"title": "WWW", "tag": ["AI", "MX"]},
+    {"title": "CogSci", "tag": ["AI", "MX"]},
+]
+
+# ---------------------------------------------------------------------------
+# 2) allconf.yml에는 없지만 ccf-deadlines 저장소엔 개별 파일로 존재하는 학회.
+#    path는 https://github.com/ccfddl/ccf-deadlines/tree/main/conference 에서
+#    직접 찾아서 "conference/카테고리/파일명.yml" 형태로 적어주세요.
+# ---------------------------------------------------------------------------
+TRACKED_BY_PATH = [
+    # 예시:
+    # {"path": "conference/AI/emnlp.yml", "tag": "AI"},
+    # {"path": "conference/HI/chi.yml", "tag": "AI"},
+]
+
+# ---------------------------------------------------------------------------
+# 3) ccfddl 데이터베이스에 아예 없는 학회 (완전 수동 등록).
+#    이 목록은 자동 갱신되지 않으므로, 매해 직접 날짜를 갱신해야 합니다.
+# ---------------------------------------------------------------------------
+MANUAL_ENTRIES = [
+    {
+        "name": "EMBC",
+        "full_name": "International Conference of the IEEE Engineering in Medicine and Biology Society",
+        "link": "https://embc.embs.org/2027/welcome/",
+        "date": "July 11-15, 2027",
+        "place": "Singapore",
+        "deadline_utc": "TBD",
+        "tag": "BIO",
+    },
+    {
+        "name": "ISBI",
+        "full_name": "IEEE International Symposium on Biomedical Imaging",
+        "link": "https://signalprocessingsociety.org/events/2027-ieee-24th-international-symposium-biomedical-imaging-isbi",
+        "date": "May 25-28, 2027",
+        "place": "Lausanne, Switzerland",
+        "deadline_utc": "TBD",
+        "tag": "BIO",
+    },  
+    # 예시:
+    # {
+    #     "name": "IEEE BCI",
+    #     "full_name": "International Winter Conference on Brain-Computer Interface",
+    #     "link": "https://example.com",
+    #     "date": "February 2027",
+    #     "place": "TBD",
+    #     "deadline_utc": "2026-11-01T14:59:00Z",
+    #     "tag": "BIO",
+    # },
 ]
 
 ALLCONF_URL = (
     "https://raw.githubusercontent.com/ccfddl/ccfddl.github.io/"
     "page/conference/allconf.yml"
 )
+
+# 개별 학회 yml 파일은 ccf-deadlines 원본 저장소(main 브랜치)에서 직접 가져옵니다.
+CCF_DEADLINES_RAW_BASE = "https://raw.githubusercontent.com/ccfddl/ccf-deadlines/main"
 
 OUTPUT_PATH = Path(__file__).resolve().parent.parent / "_data" / "deadlines.yml"
 
@@ -131,41 +198,89 @@ def pick_latest_upcoming_conf(confs: list) -> dict | None:
     return None
 
 
-def main():
+def normalize_tags(tag) -> list:
+    """tag가 "ML"처럼 문자열 하나든, ["CV", "ML"]처럼 리스트든 항상 리스트로 통일."""
+    if isinstance(tag, (list, tuple)):
+        return list(tag)
+    return [tag]
+
+
+def build_entry(title: str, conf: dict, tag) -> dict | None:
+    """ccfddl 스키마의 conf 객체(title/description/confs...) 하나를 사이트용 항목으로 변환."""
+    confs_list = conf.get("confs") or []
+    picked = pick_latest_upcoming_conf(confs_list)
+    if not picked:
+        print(f"  ! '{title}' 에 유효한 마감일 정보가 없음")
+        return None
+
+    c = picked["conf"]
+    print(f"  ✓ {title}: {picked['utc_iso']}")
+    return {
+        "name": title,
+        "full_name": conf.get("description", title),
+        "link": c.get("link", ""),
+        "date": c.get("date", "TBD"),
+        "place": c.get("place", "TBD"),
+        "deadline_utc": picked["utc_iso"],
+        "tag": normalize_tags(tag),
+    }
+
+
+def fetch_by_title(results: list) -> None:
+    if not TRACKED_BY_TITLE:
+        return
     print(f"Fetching {ALLCONF_URL} ...")
     resp = requests.get(ALLCONF_URL, timeout=30)
     resp.raise_for_status()
     all_conferences = yaml.safe_load(resp.text)
-
     by_title = {c.get("title", "").strip(): c for c in all_conferences if c.get("title")}
 
-    results = []
-    for tracked in TRACKED_CONFERENCES:
+    for tracked in TRACKED_BY_TITLE:
         title = tracked["title"]
         conf = by_title.get(title)
         if not conf:
-            print(f"  ! '{title}' 을(를) allconf.yml에서 찾지 못함 (제목 철자를 확인하세요)")
+            print(f"  ! '{title}' 을(를) allconf.yml에서 찾지 못함 (TRACKED_BY_PATH로 개별 파일을 지정해보세요)")
+            continue
+        entry = build_entry(title, conf, tracked["tag"])
+        if entry:
+            results.append(entry)
+
+
+def fetch_by_path(results: list) -> None:
+    for tracked in TRACKED_BY_PATH:
+        path = tracked["path"]
+        url = f"{CCF_DEADLINES_RAW_BASE}/{path}"
+        print(f"Fetching {url} ...")
+        try:
+            resp = requests.get(url, timeout=30)
+            resp.raise_for_status()
+        except requests.RequestException as e:
+            print(f"  ! '{path}' 가져오기 실패: {e}")
             continue
 
-        confs_list = conf.get("confs") or []
-        picked = pick_latest_upcoming_conf(confs_list)
-        if not picked:
-            print(f"  ! '{title}' 에 유효한 마감일 정보가 없음")
+        data = yaml.safe_load(resp.text)
+        # ccf-deadlines의 개별 파일은 보통 "- title: ... confs: [...]" 형태의 리스트(원소 1개)
+        conf = data[0] if isinstance(data, list) else data
+        if not conf or not conf.get("title"):
+            print(f"  ! '{path}' 형식을 인식하지 못함")
             continue
 
-        c = picked["conf"]
-        results.append(
-            {
-                "name": title,
-                "full_name": conf.get("description", title),
-                "link": c.get("link", ""),
-                "date": c.get("date", "TBD"),
-                "place": c.get("place", "TBD"),
-                "deadline_utc": picked["utc_iso"],
-                "tag": tracked["tag"],
-            }
-        )
-        print(f"  ✓ {title}: {picked['utc_iso']}")
+        entry = build_entry(conf["title"], conf, tracked["tag"])
+        if entry:
+            results.append(entry)
+
+
+def main():
+    results = []
+    fetch_by_title(results)
+    fetch_by_path(results)
+
+    if MANUAL_ENTRIES:
+        print(f"수동 등록 항목 {len(MANUAL_ENTRIES)}개 추가")
+        for entry in MANUAL_ENTRIES:
+            entry = dict(entry)
+            entry["tag"] = normalize_tags(entry.get("tag"))
+            results.append(entry)
 
     if not results:
         print("갱신할 데이터가 없어 종료합니다 (기존 파일 유지).")
