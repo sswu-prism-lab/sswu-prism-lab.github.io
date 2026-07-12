@@ -32,27 +32,32 @@ import yaml
 #    title 은 allconf.yml 안의 "title" 필드와 정확히 일치해야 합니다 (대소문자 구분).
 # ---------------------------------------------------------------------------
 TRACKED_BY_TITLE = [
-    {"title": "NeurIPS", "tag": "ML"},
+    {"title": "NeurIPS", "tag": ["ML", "AI"]},
     {"title": "ICML", "tag": "ML"},
     {"title": "ICLR", "tag": "ML"},
     {"title": "AAAI", "tag": "AI"},
     {"title": "IJCAI", "tag": "AI"},
-    {"title": "MICCAI", "tag": "BIO"},
+    {"title": "MICCAI", "tag": ["BIO", "AI"]},
     # 태그를 2개 이상 주고 싶으면 이렇게 리스트로 감싸주세요:
     {"title": "ACCV", "tag": ["CV", "ML"]},
     {"title": "SIGKDD", "tag": ["ML", "DB"]},
     {"title": "WWW", "tag": ["AI", "MX"]},
-    {"title": "ICCV", "tag": "CV"},
+    {"title": "ICCV", "tag": ["CV", "AI"]},
     {"title": "AISTATS", "tag": "AI"},
-    {"title": "CVPR", "tag": "CV"},
+    {"title": "CVPR", "tag": ["CV", "AI"]},
     {"title": "ICPR", "tag": ["ML", "AI"]},
     {"title": "CogSci", "tag": ["MX", "AI"]},
     {"title": "UAI", "tag": "AI"},
-    {"title": "ECCV", "tag": "CV"},
-    {"title": "BMVC", "tag": "CV"},
+    {"title": "ECCV", "tag": ["CV", "AI"]},
+    {"title": "BMVC", "tag": ["CV", "AI"]},
     {"title": "ICDM", "tag": ["ML", "DB"]},
-    {"title": "ACCV", "tag": "CV"},
+    {"title": "ACCV", "tag": ["CV", "AI"]},
     {"title": "ACML", "tag": "ML"},
+    {"title": "ICASSP", "tag": ["SP", "AI"]},
+    {"title": "ECIR", "tag": ["ML", "AI"]},
+    {"title": "ICDE", "tag": ["DB", "AI"]},
+    {"title": "WSDM", "tag": ["DB", "AI"]},
+    {"title": "WACV", "tag": ["CV", "AI"]},
 ]
 
 # ---------------------------------------------------------------------------
@@ -89,6 +94,14 @@ MANUAL_ENTRIES = [
      "deadline_utc": "TBD",
      "tag": "BIO"
    },
+   {
+     "name": "MVA",
+     "full_name": "International Conference on Machine Vision Applications",
+     "link": "https://www.mva-org.jp/mva2027/",
+     "date": "May 12 - May 14, 2027",
+     "place": "Kyushu University, Fukuoka, Japan",
+     "deadline_utc": "2027-01-15T11:59:59",
+     "tag": ["CV", "AI"]
     # 예시:
     # {
     #     "name": "IEEE BCI",
