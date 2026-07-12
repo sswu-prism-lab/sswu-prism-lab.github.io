@@ -39,7 +39,6 @@ TRACKED_BY_TITLE = [
     {"title": "IJCAI", "tag": "AI"},
     {"title": "MICCAI", "tag": ["BIO", "AI"]},
     # 태그를 2개 이상 주고 싶으면 이렇게 리스트로 감싸주세요:
-    {"title": "ACCV", "tag": ["CV", "ML"]},
     {"title": "SIGKDD", "tag": ["ML", "DB"]},
     {"title": "WWW", "tag": ["AI", "MX"]},
     {"title": "ICCV", "tag": ["CV", "AI"]},
