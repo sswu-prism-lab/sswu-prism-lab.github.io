@@ -1,4 +1,3 @@
-
 <div id="deadlines-wrap">
 
   <p class="deadlines-updated">
@@ -13,10 +12,31 @@
     {% endfor %}
   </div>
 
-  <div class="row" id="deadlines-grid">
+  <div id="deadlines-sections">
+
+    <div class="deadlines-section" id="deadlines-section-upcoming">
+      <h2 class="deadlines-section-title">Open for Submission</h2>
+      <div class="row deadlines-grid" id="deadlines-grid-upcoming"></div>
+    </div>
+
+    <div class="deadlines-section" id="deadlines-section-ongoing">
+      <h2 class="deadlines-section-title">Awaiting Conferences</h2>
+      <div class="row deadlines-grid" id="deadlines-grid-ongoing"></div>
+    </div>
+
+    <div class="deadlines-section" id="deadlines-section-past">
+      <h2 class="deadlines-section-title">Completed</h2>
+      <div class="row deadlines-grid" id="deadlines-grid-past"></div>
+    </div>
+
+  </div>
+
+  <!-- 카드는 처음엔 전부 여기 안에서 생성된 뒤, 스크립트가 상태(마감/학회 종료 여부)를 계산해서
+       위 세 섹션 중 알맞은 곳으로 옮겨줍니다. -->
+  <div id="deadlines-grid-source" style="display:none;">
     {% for conf in site.data.deadlines %}
     <div class="col-sm-4 deadlines-card-col" data-tag="{{ conf.tag | join: ' ' }}">
-      <div class="deadlines-card" data-deadline="{{ conf.deadline_utc }}">
+      <div class="deadlines-card" data-deadline="{{ conf.deadline_utc }}" data-conf-end="{{ conf.conf_end_utc }}">
         <div class="deadlines-card-bar"></div>
         <div class="deadlines-card-body">
           <h4 class="deadlines-card-title">
@@ -24,6 +44,7 @@
             {% for t in conf.tag %}
               <span class="deadlines-tag deadlines-tag-{{ t }}">{{ t }}</span>
             {% endfor %}
+            <span class="deadlines-status-badge"></span>
           </h4>
           <p class="deadlines-fullname">{{ conf.full_name }}</p>
           <p class="deadlines-meta">📅 {{ conf.date }}</p>
@@ -49,7 +70,7 @@
           </div>
 
           <p class="deadlines-local-time">
-            Deadline in KST: <span class="deadlines-local-time-value">-</span>
+            <span class="deadlines-local-time-label">Deadline in KST</span>: <span class="deadlines-local-time-value">-</span>
           </p>
           <a href="{{ conf.link }}" target="_blank" rel="noopener" class="deadlines-visit-btn">Visit website →</a>
         </div>
@@ -101,6 +122,32 @@
   background: var(--prism-purple);
   color: #fff;
   border-color: var(--prism-purple);
+}
+
+.deadlines-section-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--prism-purple);
+  margin: 32px 0 16px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--prism-purple-border);
+}
+.deadlines-section:first-child .deadlines-section-title {
+  margin-top: 0;
+}
+.deadlines-section.deadlines-section-empty {
+  display: none;
+}
+
+.deadlines-status-badge {
+  display: none; /* 기본은 숨김 - JS가 "Awaiting Conference" 상태일 때만 텍스트를 채우고 보여줌 */
+  margin-left: 6px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: #fef3c7;
+  color: #92400e;
+  font-size: 11px;
+  vertical-align: middle;
 }
 
 .deadlines-card-col {
@@ -242,7 +289,20 @@
 
 <script>
 (function () {
-  // ---- 카운트다운 갱신 ----
+  var SECTION_MAP = {
+    upcoming: document.getElementById("deadlines-grid-upcoming"),
+    ongoing: document.getElementById("deadlines-grid-ongoing"),
+    past: document.getElementById("deadlines-grid-past")
+  };
+
+  function formatDate(d) {
+    return d.toLocaleString("en-US", {
+      year: "numeric", month: "short", day: "numeric",
+      hour: "2-digit", minute: "2-digit"
+    });
+  }
+
+  // ---- 카운트다운 갱신 + 상태(제출 가능 / 학회 대기 / 완료) 판정 ----
   function updateCountdowns() {
     var cards = document.querySelectorAll(".deadlines-card");
     var now = new Date().getTime();
@@ -252,38 +312,58 @@
       var hoursEl = card.querySelector('[data-unit="hours"]');
       var minutesEl = card.querySelector('[data-unit="minutes"]');
       var secondsEl = card.querySelector('[data-unit="seconds"]');
+      var localLabelEl = card.querySelector(".deadlines-local-time-label");
       var localTimeEl = card.querySelector(".deadlines-local-time-value");
+      var badgeEl = card.querySelector(".deadlines-status-badge");
 
-      // ---- 마감일이 아직 미정(TBD)이거나 날짜 파싱이 안 되는 경우 ----
+      card.classList.remove("deadlines-past", "deadlines-tbd", "deadlines-ongoing");
+      if (badgeEl) { badgeEl.style.display = "none"; badgeEl.textContent = ""; }
+
       var deadlineAttr = card.getAttribute("data-deadline") || "";
       var deadlineDate = new Date(deadlineAttr);
-      var isUnknown = !deadlineAttr.trim() || isNaN(deadlineDate.getTime());
+      var deadlineUnknown = !deadlineAttr.trim() || isNaN(deadlineDate.getTime());
 
-      if (isUnknown) {
+      // ---- 1) 제출 마감 자체가 아직 미정(TBD)인 경우 ----
+      if (deadlineUnknown) {
         card.classList.add("deadlines-tbd");
+        card.dataset.status = "upcoming";
         daysEl.textContent = "-";
         hoursEl.textContent = "-";
         minutesEl.textContent = "-";
         secondsEl.textContent = "-";
-        if (localTimeEl) {
-          localTimeEl.textContent = "TBD";
-        }
+        if (localLabelEl) localLabelEl.textContent = "Deadline in KST";
+        if (localTimeEl) localTimeEl.textContent = "TBD";
         return;
       }
 
-      var diff = deadlineDate.getTime() - now;
+      var confEndAttr = card.getAttribute("data-conf-end") || "";
+      var confEndDate = new Date(confEndAttr);
+      var confEndUnknown = !confEndAttr.trim() || isNaN(confEndDate.getTime());
+      // 종료일을 모르면 "마감 = 종료"로 취급 (기존 2단계 동작과 동일하게 안전한 기본값)
+      var effectiveEnd = confEndUnknown ? deadlineDate : confEndDate;
 
-      if (localTimeEl && !localTimeEl.dataset.filled) {
-        localTimeEl.textContent = deadlineDate.toLocaleString("en-US", {
-          year: "numeric", month: "short", day: "numeric",
-          hour: "2-digit", minute: "2-digit"
-        });
-        localTimeEl.dataset.filled = "1";
+      // ---- 2) 제출 마감이 아직 안 지남: Open for Submission ----
+      if (now < deadlineDate.getTime()) {
+        card.dataset.status = "upcoming";
+        if (localLabelEl) localLabelEl.textContent = "Deadline in KST";
+        if (localTimeEl && !localTimeEl.dataset.filled) {
+          localTimeEl.textContent = formatDate(deadlineDate);
+          localTimeEl.dataset.filled = "1";
+        }
+        renderCountdown(deadlineDate.getTime() - now, daysEl, hoursEl, minutesEl, secondsEl);
+        return;
       }
 
-
-      if (diff <= 0) {
-        card.classList.add("deadlines-past");
+      // ---- 3) 마감은 지났지만 학회는 아직 안 끝남: Awaiting Conferences ----
+      if (now < effectiveEnd.getTime()) {
+        card.classList.add("deadlines-ongoing");
+        card.dataset.status = "ongoing";
+        if (badgeEl) { badgeEl.textContent = "Awaiting Conference"; badgeEl.style.display = "inline-block"; }
+        if (localLabelEl) localLabelEl.textContent = "Deadline in KST";
+        if (localTimeEl && !localTimeEl.dataset.filled) {
+          localTimeEl.textContent = formatDate(deadlineDate);
+          localTimeEl.dataset.filled = "1";
+        }
         daysEl.textContent = "0";
         hoursEl.textContent = "0";
         minutesEl.textContent = "0";
@@ -291,39 +371,52 @@
         return;
       }
 
-      var days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      var hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      var minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      var seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-      daysEl.textContent = days;
-      hoursEl.textContent = hours;
-      minutesEl.textContent = minutes;
-      secondsEl.textContent = seconds;
+      // ---- 4) 학회까지 완전히 끝남: Completed ----
+      card.classList.add("deadlines-past");
+      card.dataset.status = "past";
+      if (localLabelEl) localLabelEl.textContent = confEndUnknown ? "Deadline in KST" : "Conference ended (KST)";
+      localTimeEl.textContent = formatDate(effectiveEnd);
+      daysEl.textContent = "0";
+      hoursEl.textContent = "0";
+      minutesEl.textContent = "0";
+      secondsEl.textContent = "0";
     });
 
-    reorderCards();
+    groupCards();
   }
 
-  // ---- 카드 재정렬: 마감이 남은 카드(무지개 상단) 먼저, 지난 카드(무채색 상단)는 뒤로.
-  // 같은 그룹 안에서는 기존 시간순(서버에서 렌더링된 순서)을 그대로 유지합니다.
-  function reorderCards() {
-    var grid = document.getElementById("deadlines-grid");
-    if (!grid) return;
+  function renderCountdown(diff, daysEl, hoursEl, minutesEl, secondsEl) {
+    var days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    var hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    var minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    var seconds = Math.floor((diff % (1000 * 60)) / 1000);
+    daysEl.textContent = days;
+    hoursEl.textContent = hours;
+    minutesEl.textContent = minutes;
+    secondsEl.textContent = seconds;
+  }
 
-    var cols = Array.prototype.slice.call(grid.querySelectorAll(".deadlines-card-col"));
+  // ---- 카드를 상태에 맞는 섹션(Open for Submission / Awaiting Conference / Completed)으로 이동 ----
+  // 각 섹션 내부에서는 기존 시간순(서버에서 렌더링된 순서)을 그대로 유지합니다.
+  function groupCards() {
+    var allCols = Array.prototype.slice.call(document.querySelectorAll(".deadlines-card-col"));
 
-    var sorted = cols.slice().sort(function (a, b) {
-      var aPast = a.querySelector(".deadlines-card").classList.contains("deadlines-past") ? 1 : 0;
-      var bPast = b.querySelector(".deadlines-card").classList.contains("deadlines-past") ? 1 : 0;
-      return aPast - bPast; // stable sort: 그룹 내부 순서는 유지됨
+    allCols.forEach(function (col) {
+      var card = col.querySelector(".deadlines-card");
+      var status = card.dataset.status || "upcoming";
+      var target = SECTION_MAP[status];
+      if (target && col.parentElement !== target) {
+        target.appendChild(col);
+      }
     });
 
-    // 순서가 실제로 바뀐 경우에만 DOM을 건드려 불필요한 리플로우를 피함
-    var changed = sorted.some(function (col, i) { return col !== cols[i]; });
-    if (changed) {
-      sorted.forEach(function (col) { grid.appendChild(col); });
-    }
+    // 카드가 하나도 없는 섹션은 통째로 숨김
+    Object.keys(SECTION_MAP).forEach(function (status) {
+      var grid = SECTION_MAP[status];
+      var section = grid.closest(".deadlines-section");
+      var visibleCount = grid.querySelectorAll(".deadlines-card-col:not(.deadlines-hidden)").length;
+      section.classList.toggle("deadlines-section-empty", visibleCount === 0);
+    });
   }
 
   updateCountdowns();
@@ -331,7 +424,6 @@
 
   // ---- 필터 버튼 ----
   var filterButtons = document.querySelectorAll(".deadlines-filter-btn");
-  var cardCols = document.querySelectorAll(".deadlines-card-col");
 
   filterButtons.forEach(function (btn) {
     btn.addEventListener("click", function () {
@@ -339,6 +431,7 @@
       btn.classList.add("active");
 
       var tag = btn.getAttribute("data-tag");
+      var cardCols = document.querySelectorAll(".deadlines-card-col");
       cardCols.forEach(function (col) {
         var colTags = (col.getAttribute("data-tag") || "").split(" ");
         if (tag === "all" || colTags.indexOf(tag) !== -1) {
@@ -346,6 +439,14 @@
         } else {
           col.classList.add("deadlines-hidden");
         }
+      });
+
+      // 필터 결과에 따라 빈 섹션 다시 갱신
+      Object.keys(SECTION_MAP).forEach(function (status) {
+        var grid = SECTION_MAP[status];
+        var section = grid.closest(".deadlines-section");
+        var visibleCount = grid.querySelectorAll(".deadlines-card-col:not(.deadlines-hidden)").length;
+        section.classList.toggle("deadlines-section-empty", visibleCount === 0);
       });
     });
   });
