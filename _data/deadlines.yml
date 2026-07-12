@@ -1,6 +1,6 @@
 # _data/deadlines.yml
 # 이 파일은 scripts/update_deadlines.py 에 의해 자동으로 생성됩니다.
-# 마지막 자동 갱신: 2026-07-12 09:11 UTC
+# 마지막 자동 갱신: 2026-07-12 10:42 UTC
 # 수동으로 편집한 내용은 다음 자동 실행 때 덮어써질 수 있습니다.
 
 - name: ICCV
@@ -9,6 +9,7 @@
   date: October 19-25, 2025
   place: Honolulu, Hawaii
   deadline_utc: '2025-03-08T09:59:59Z'
+  conf_end_utc: '2025-10-25T23:59:59Z'
   tag:
   - CV
 - name: ICLR
@@ -17,6 +18,7 @@
   date: May 01-05, 2026
   place: Brazil
   deadline_utc: '2025-09-25T11:59:59Z'
+  conf_end_utc: '2026-05-05T23:59:59Z'
   tag:
   - ML
 - name: AISTATS
@@ -25,6 +27,7 @@
   date: May 2-5, 2026
   place: Morocco
   deadline_utc: '2025-10-03T11:59:59Z'
+  conf_end_utc: '2026-05-05T23:59:59Z'
   tag:
   - AI
 - name: CVPR
@@ -33,6 +36,7 @@
   date: June 3-7, 2026
   place: Denver, Colorado, United States
   deadline_utc: '2025-11-14T11:59:00Z'
+  conf_end_utc: '2026-06-07T23:59:59Z'
   tag:
   - CV
 - name: ICPR
@@ -41,6 +45,7 @@
   date: August 17-21, 2026
   place: Lyon, France
   deadline_utc: '2025-12-21T11:59:59Z'
+  conf_end_utc: '2026-08-21T23:59:59Z'
   tag:
   - ML
   - AI
@@ -50,6 +55,7 @@
   date: August 15-21, 2026
   place: Bremen, Germany
   deadline_utc: '2026-01-20T11:59:59Z'
+  conf_end_utc: '2026-08-21T23:59:59Z'
   tag:
   - AI
 - name: ICML
@@ -58,6 +64,7 @@
   date: July 6-12, 2026
   place: Seoul, Korea
   deadline_utc: '2026-01-29T11:59:59Z'
+  conf_end_utc: '2026-07-12T23:59:59Z'
   tag:
   - ML
 - name: CogSci
@@ -66,15 +73,17 @@
   date: July 22-25, 2026
   place: Rio de Janeiro, Brazil
   deadline_utc: '2026-02-03T11:59:59Z'
+  conf_end_utc: '2026-07-25T23:59:59Z'
   tag:
-  - AI
   - MX
+  - AI
 - name: UAI
   full_name: Conference on Uncertainty in Artificial Intelligence
   link: https://www.auai.org/uai2026/
   date: August 17-21, 2026
   place: Amsterdam, Netherlands
   deadline_utc: '2026-02-26T11:59:59Z'
+  conf_end_utc: '2026-08-21T23:59:59Z'
   tag:
   - AI
 - name: MICCAI
@@ -84,6 +93,7 @@
   date: Oct 4-8, 2026
   place: ADNEC Centre, Abu Dhabi, U.A.E.
   deadline_utc: '2026-02-27T07:59:00Z'
+  conf_end_utc: '2026-10-08T23:59:59Z'
   tag:
   - BIO
 - name: ECCV
@@ -92,6 +102,7 @@
   date: September 8 - 13, 2026
   place: Malmö, Sweden
   deadline_utc: '2026-03-05T22:00:00Z'
+  conf_end_utc: '2026-09-13T23:59:59Z'
   tag:
   - CV
 - name: NeurIPS
@@ -100,6 +111,7 @@
   date: December 6, 2026
   place: Sydney, Australia
   deadline_utc: '2026-05-07T11:59:00Z'
+  conf_end_utc: '2026-12-06T23:59:59Z'
   tag:
   - ML
 - name: BMVC
@@ -108,6 +120,7 @@
   date: November 23-26, 2026
   place: Lancaster, UK
   deadline_utc: '2026-05-29T23:59:59Z'
+  conf_end_utc: '2026-11-26T23:59:59Z'
   tag:
   - CV
 - name: ICDM
@@ -116,6 +129,7 @@
   date: November 12-15, 2026
   place: Shenyang, China
   deadline_utc: '2026-06-07T11:59:59Z'
+  conf_end_utc: '2026-11-15T23:59:59Z'
   tag:
   - ML
   - DB
@@ -125,6 +139,17 @@
   date: December 14-18, 2026
   place: Osaka, Japan
   deadline_utc: '2026-07-06T11:59:59Z'
+  conf_end_utc: '2026-12-18T23:59:59Z'
+  tag:
+  - CV
+  - ML
+- name: ACCV
+  full_name: Asian Conference on Computer Vision
+  link: https://accv2026.org/
+  date: December 14-18, 2026
+  place: Osaka, Japan
+  deadline_utc: '2026-07-06T11:59:59Z'
+  conf_end_utc: '2026-12-18T23:59:59Z'
   tag:
   - CV
 - name: ACML
@@ -133,6 +158,7 @@
   date: December 1-4, 2026
   place: Melbourne, Australia
   deadline_utc: '2026-07-06T11:59:59Z'
+  conf_end_utc: '2026-12-04T23:59:59Z'
   tag:
   - ML
 - name: SIGKDD
@@ -141,6 +167,7 @@
   date: August 2027 (exact dates TBD)
   place: San Jose, California, USA
   deadline_utc: '2026-07-27T11:59:59Z'
+  conf_end_utc: '2026-07-27T11:59:59Z'
   tag:
   - ML
   - DB
@@ -150,6 +177,7 @@
   date: February 16-23, 2027
   place: Montréal, Québec, Canada
   deadline_utc: '2026-07-28T11:59:59Z'
+  conf_end_utc: '2027-02-23T23:59:59Z'
   tag:
   - AI
 - name: WWW
@@ -158,6 +186,7 @@
   date: May 10 - 14, 2027
   place: Dublin, Ireland
   deadline_utc: '2026-10-19T11:59:59Z'
+  conf_end_utc: '2027-05-14T23:59:59Z'
   tag:
   - AI
   - MX
@@ -165,16 +194,18 @@
   full_name: International Conference of the IEEE Engineering in Medicine and Biology
     Society
   link: https://embc.embs.org/2027/welcome/
-  date: July 11-15, 2027
+  date: July 11 - July 15, 2027
   place: Singapore
   deadline_utc: TBD
   tag:
   - BIO
+  conf_end_utc: TBD
 - name: ISBI
   full_name: IEEE International Symposium on Biomedical Imaging
   link: https://signalprocessingsociety.org/events/2027-ieee-24th-international-symposium-biomedical-imaging-isbi
-  date: May 25-28, 2027
+  date: May 25 - May 28, 2027
   place: Lausanne, Switzerland
   deadline_utc: TBD
   tag:
   - BIO
+  conf_end_utc: TBD
