@@ -17,6 +17,7 @@ permalink: /teaching/
   - [Midterm Test (001)](https://drive.google.com/file/d/1PsGuZGVeKOmPrL3E2BRf_vA4kaarYbi1/view)
   - [Midterm Test (002)](https://drive.google.com/file/d/1PraRPqfHYds235nOVCQ05AR0hajm-P-1/view)
 - Advanced Machine Learning (LH002800-001/002)
+  - [Slides](https://sswu-prism-lab.github.io/slides/advanced-machine-learning-2027/)
   - [Notes](https://drive.google.com/file/d/1PpKQZ9PjJMnUCUsrCRxH3D9SbV_-z2_5/view)
   - [Midterm Test (001)](https://drive.google.com/file/d/1PqOb66ySi3Iw_XW_1av23VljRolGdaPT/view)
   - [Final Test (001)](https://drive.google.com/file/d/1Pqf3TewOvEldKq-sxxv0cSYUhPZGAOMA/view)
