@@ -27,9 +27,28 @@ permalink: /
   0%   { background-position: 0% center; }
   100% { background-position: 200% center; }
 }
+
+/* ---- Dark mode: "Current Open Positions" box ---- */
+html[data-theme="dark"] #open-positions {
+  background-color: #201a2e !important;
+  border-color: #4a3d6b !important;
+  color: #d8c9f5 !important;
+}
+html[data-theme="dark"] #open-positions h4,
+html[data-theme="dark"] #open-positions h4 strong {
+  color: #ecdfff !important;
+}
+html[data-theme="dark"] #open-positions a:not(.rainbow-link) {
+  color: #b79cf0;
+}
+
+/* ---- Light / dark logo swap (bottom of the page) ---- */
+.logo-dark { display: none; }
+html[data-theme="dark"] .logo-light { display: none; }
+html[data-theme="dark"] .logo-dark { display: inline; }
 </style>
 
-<div class="alert" role="alert" style="margin: 20px 0; line-height: 1.6; background-color: #fafdff; border: 1px solid #e9d5ff; color: #5b21b6; border-radius: 6px;">
+<div id="open-positions" class="alert" role="alert" style="margin: 20px 0; line-height: 1.6; background-color: #fafdff; border: 1px solid #e9d5ff; color: #5b21b6; border-radius: 6px;">
   <h4 style="margin-top: 0; margin-bottom: 10px; color: #5b21b6;"><strong>📢 Current Open Positions</strong></h4>
   <p style="margin-bottom: 8px;">We are currently seeking motivated students to join our lab:</p>
   <ul style="margin-bottom: 0; padding-left: 20px;">
@@ -111,7 +130,9 @@ Our research addresses fundamental problems in developing theoretically sound re
 <!-- **We are looking for passionate new PhD/Master students to join the team!** -->
 
 <figure class="fifth">
-  <img src="{{ site.url }}{{ site.baseurl }}/images/logopic/logo2.jpeg" style="width: 120px">
-  <img src="{{ site.url }}{{ site.baseurl }}/images/logopic/logo1.png" style="width: 50px">
+  <img class="logo-light" src="{{ site.url }}{{ site.baseurl }}/images/logopic/sswu_logo.png" style="width: 120px">
+  <img class="logo-dark" src="{{ site.url }}{{ site.baseurl }}/images/logopic/sswu_logo_dark.png" style="width: 120px">
+  <img class="logo-light" src="{{ site.url }}{{ site.baseurl }}/images/logopic/PRISM.png" style="width: 50px">
+  <img class="logo-dark" src="{{ site.url }}{{ site.baseurl }}/images/logopic/PRISM_dark.png" style="width: 50px">
   <img src="{{ site.url }}{{ site.baseurl }}/images/logopic/logo3.png" style="width: 50px">
 </figure>
