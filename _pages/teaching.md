@@ -8,7 +8,7 @@ permalink: /teaching/
 
 ## Advanced Machine Learning (LH002800 @ Spring 2025)
 - <a href="https://sswu-prism-lab.github.io/slides/advanced-machine-learning-2027/" target="_blank">Slides</a>
-- [Notes & Exams](https://sswu-prism-lab.github.io/slides/notes/)
+- <a href="https://sswu-prism-lab.github.io/slides/notes/" target="_blank">Notes & Exams</a>
 
 ## Introduction to AI Convergence (LH000100 @ Spring 2025)
 - Slides: TBA
