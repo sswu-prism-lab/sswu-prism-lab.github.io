@@ -192,6 +192,15 @@ html[data-theme="dark"] a:focus {
   color: var(--link-hover);
 }
 
+/* Keep identity-branded links color-coded in dark mode
+   (e.g. the PI's Google Scholar / ORCiD links in the Team section) */
+html[data-theme="dark"] .orcid-link { color: #A6CE39; }
+html[data-theme="dark"] .orcid-link:hover,
+html[data-theme="dark"] .orcid-link:focus { color: #8FB82E; }
+html[data-theme="dark"] .scholar-link { color: #4285F4; }
+html[data-theme="dark"] .scholar-link:hover,
+html[data-theme="dark"] .scholar-link:focus { color: #3367D6; }
+
 /* Navbar */
 html[data-theme="dark"] .navbar-default {
   background-color: var(--surface);
