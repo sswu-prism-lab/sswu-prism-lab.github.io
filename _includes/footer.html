@@ -27,3 +27,38 @@
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 <script src="{{ site.url }}{{ site.baseurl }}/js/bootstrap.min.js"></script>
+
+<!-- Dark / light theme toggle -->
+<script>
+  (function () {
+    var root = document.documentElement;
+
+    function setTheme(theme, persist) {
+      root.setAttribute('data-theme', theme);
+      if (persist) {
+        try { localStorage.setItem('theme', theme); } catch (e) {}
+      }
+    }
+
+    var toggle = document.getElementById('theme-toggle');
+    if (toggle) {
+      toggle.addEventListener('click', function (e) {
+        e.preventDefault();
+        var current = root.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+        setTheme(current === 'dark' ? 'light' : 'dark', true);
+      });
+    }
+
+    // Follow the OS setting until the user makes an explicit choice.
+    if (window.matchMedia) {
+      var mq = window.matchMedia('(prefers-color-scheme: dark)');
+      var onChange = function (ev) {
+        var hasChoice = false;
+        try { hasChoice = !!localStorage.getItem('theme'); } catch (e) {}
+        if (!hasChoice) { setTheme(ev.matches ? 'dark' : 'light', false); }
+      };
+      if (mq.addEventListener) { mq.addEventListener('change', onChange); }
+      else if (mq.addListener) { mq.addListener(onChange); }
+    }
+  })();
+</script>
