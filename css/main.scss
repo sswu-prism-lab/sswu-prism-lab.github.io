@@ -117,3 +117,215 @@ firstp {
   color: transparent;
   -webkit-text-fill-color: transparent;
 }
+
+
+/* =========================================================
+   Dark mode
+   Activated by data-theme="dark" on the <html> element
+   (set by the inline script in _includes/head.html and
+   toggled by the button in the navbar).
+   ========================================================= */
+
+/* Theme toggle button in the navbar */
+#theme-toggle {
+  cursor: pointer;
+  background: none;
+  border: 0;
+}
+#theme-toggle .theme-icon {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  vertical-align: middle;
+  fill: currentColor;
+}
+/* Show moon in light mode, sun in dark mode */
+#theme-toggle .theme-icon-sun { display: none; }
+html[data-theme="dark"] #theme-toggle .theme-icon-moon { display: none; }
+html[data-theme="dark"] #theme-toggle .theme-icon-sun  { display: inline-block; }
+
+/* Smooth transition when switching themes */
+body,
+.navbar-default,
+.panel,
+.panel-footer,
+.well,
+.jumbotron,
+.table,
+.dropdown-menu,
+.form-control {
+  transition: background-color 0.25s ease, color 0.25s ease,
+              border-color 0.25s ease;
+}
+
+html[data-theme="dark"] {
+  --bg:         #15181e;
+  --surface:    #1d212a;
+  --surface-2:  #252b36;
+  --border:     #2e343f;
+  --text:       #c9d1d9;
+  --muted:      #8b949e;
+  --heading:    #e6edf3;
+  --link:       #5cb8e6;
+  --link-hover: #86cdf0;
+}
+
+html[data-theme="dark"] body {
+  background-color: var(--bg);
+  color: var(--text);
+}
+
+html[data-theme="dark"] h1,
+html[data-theme="dark"] h2,
+html[data-theme="dark"] h3,
+html[data-theme="dark"] h4,
+html[data-theme="dark"] h5,
+html[data-theme="dark"] h6 {
+  color: var(--heading);
+}
+
+html[data-theme="dark"] a {
+  color: var(--link);
+}
+html[data-theme="dark"] a:hover,
+html[data-theme="dark"] a:focus {
+  color: var(--link-hover);
+}
+
+/* Navbar */
+html[data-theme="dark"] .navbar-default {
+  background-color: var(--surface);
+  border-color: var(--border);
+}
+html[data-theme="dark"] .navbar-default .navbar-nav > li > a {
+  color: var(--muted);
+}
+html[data-theme="dark"] .navbar-default .navbar-nav > li > a:hover,
+html[data-theme="dark"] .navbar-default .navbar-nav > li > a:focus,
+html[data-theme="dark"] .navbar-default .navbar-nav > .active > a,
+html[data-theme="dark"] .navbar-default .navbar-nav > .active > a:hover {
+  color: var(--heading);
+  background-color: var(--surface-2);
+}
+html[data-theme="dark"] .navbar-default .navbar-brand {
+  color: var(--heading);
+}
+html[data-theme="dark"] .navbar-default .navbar-toggle {
+  border-color: var(--border);
+}
+html[data-theme="dark"] .navbar-default .navbar-toggle:hover,
+html[data-theme="dark"] .navbar-default .navbar-toggle:focus {
+  background-color: var(--surface-2);
+}
+html[data-theme="dark"] .navbar-default .navbar-toggle .icon-bar {
+  background-color: var(--muted);
+}
+html[data-theme="dark"] .navbar-default .navbar-collapse,
+html[data-theme="dark"] .navbar-default .navbar-form {
+  border-color: var(--border);
+}
+
+/* Panels, footer, wells, jumbotron */
+html[data-theme="dark"] .panel {
+  background-color: var(--surface);
+  border-color: var(--border);
+}
+html[data-theme="dark"] .panel-default > .panel-heading {
+  background-color: var(--surface-2);
+  color: var(--heading);
+  border-color: var(--border);
+}
+html[data-theme="dark"] .panel-footer,
+html[data-theme="dark"] #footer .panel-footer {
+  background-color: var(--surface);
+  border-color: var(--border);
+  color: var(--muted);
+}
+html[data-theme="dark"] .well,
+html[data-theme="dark"] .jumbotron {
+  background-color: var(--surface);
+  border-color: var(--border);
+}
+
+/* Tables (e.g. Deadlines page) */
+html[data-theme="dark"] .table {
+  color: var(--text);
+}
+html[data-theme="dark"] .table > thead > tr > th,
+html[data-theme="dark"] .table > tbody > tr > th,
+html[data-theme="dark"] .table > tfoot > tr > th,
+html[data-theme="dark"] .table > thead > tr > td,
+html[data-theme="dark"] .table > tbody > tr > td,
+html[data-theme="dark"] .table > tfoot > tr > td {
+  border-color: var(--border);
+}
+html[data-theme="dark"] .table > thead > tr > th {
+  border-bottom-color: var(--border);
+  color: var(--heading);
+}
+html[data-theme="dark"] .table-striped > tbody > tr:nth-of-type(odd) {
+  background-color: var(--surface);
+}
+html[data-theme="dark"] .table-hover > tbody > tr:hover {
+  background-color: var(--surface-2);
+}
+html[data-theme="dark"] .table-bordered,
+html[data-theme="dark"] .table-bordered > thead > tr > th,
+html[data-theme="dark"] .table-bordered > tbody > tr > td {
+  border-color: var(--border);
+}
+
+/* Forms, dropdowns, code */
+html[data-theme="dark"] .form-control {
+  background-color: var(--surface-2);
+  border-color: var(--border);
+  color: var(--text);
+}
+html[data-theme="dark"] .form-control::placeholder { color: var(--muted); }
+html[data-theme="dark"] .dropdown-menu {
+  background-color: var(--surface);
+  border-color: var(--border);
+}
+html[data-theme="dark"] .dropdown-menu > li > a { color: var(--text); }
+html[data-theme="dark"] .dropdown-menu > li > a:hover,
+html[data-theme="dark"] .dropdown-menu > li > a:focus {
+  background-color: var(--surface-2);
+  color: var(--heading);
+}
+html[data-theme="dark"] code {
+  background-color: var(--surface-2);
+  color: #e685b5;
+}
+html[data-theme="dark"] pre {
+  background-color: var(--surface-2);
+  border-color: var(--border);
+  color: var(--text);
+}
+html[data-theme="dark"] blockquote {
+  border-left-color: var(--border);
+  color: var(--muted);
+}
+html[data-theme="dark"] hr {
+  border-top-color: var(--border);
+}
+
+/* Muted / secondary text */
+html[data-theme="dark"] .text-muted,
+html[data-theme="dark"] small,
+html[data-theme="dark"] .small {
+  color: var(--muted);
+}
+
+/* Carousel controls stay visible on dark backgrounds */
+html[data-theme="dark"] .carousel-indicators li {
+  border-color: var(--muted);
+}
+html[data-theme="dark"] .carousel-indicators .active {
+  background-color: var(--heading);
+}
+
+/* Slightly soften image drop-shadows in the dark theme */
+html[data-theme="dark"] #gridid img,
+html[data-theme="dark"] #picid img {
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.6);
+}
