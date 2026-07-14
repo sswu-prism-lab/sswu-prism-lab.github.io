@@ -6,6 +6,39 @@ sitemap: false
 permalink: /teaching/
 ---
 
+# Advanced Machine Learning (LH002800 @ Spring 2025)
+- [Slides](https://sswu-prism-lab.github.io/slides/advanced-machine-learning-2027/)
+- [Notes & Exams](https://sswu-prism-lab.github.io/slides/notes/)
+
+# Introduction to AI Convergence (LH000100 @ Spring 2025)
+- Slides: TBA
+- Exams: TBA
+
+# Introduction to Brain and Cognitive Science (LH000100 @ Fall 2024)
+- Slides: TBA
+- Exams: TBA
+
+# Mathematics for Artificial Intelligence (LH002500 @ Fall 2024)
+- Slides: TBA
+- Notes & Exams: TBA
+
+# Artificial Intelligence (LZ001600 @ Fall 2024, Spring 2024)
+- Slides: TBA
+- Exams: TBA
+
+# Data Structures (LZ000500 @ Spring 2024)
+- Slides: TBA
+- Notes & Exams: TBA
+
+# Data Structures and Applications (LH000500 @ Fall 2023)
+- Slides: TBA
+- Notes & Exams: TBA
+
+# C++ Programming (LZ000500 @ Fall 2023)
+- Slides: TBA
+- Notes & Exams: TBA
+
+<!---
 # 2025 Summer
 - PyTorch를 이용한 딥러닝 모델 설계 및 구현
   - [1일차](https://drive.google.com/file/d/1xWt_q7zX3GArMEiCuXyXPYD7C-Pk87_4/view)
@@ -63,3 +96,4 @@ permalink: /teaching/
   - [Final Test (015)](https://drive.google.com/file/d/1k9kOnnMz943PWT3auHNjDwTCVCQmbw1W/view)
   - [Midterm Test (016)](https://drive.google.com/file/d/13G2IClDcl-jTyR6jODMY9ST2J-I0GQcE/view)
   - [Final Test (016)](https://drive.google.com/file/d/1QfSL9Gq4srLX48Y_TRuSWOlxWWtRLo1m/view)
+--->
