@@ -302,6 +302,38 @@
 .deadlines-visit-btn:hover {
   text-decoration: underline;
 }
+
+/* ============================================================
+   Dark mode overrides (activated by data-theme="dark" on <html>)
+   Cards are darkened and text lightened for readability.
+   ============================================================ */
+html[data-theme="dark"] #deadlines-wrap {
+  --prism-purple: #b79cf0;        /* titles, links, numbers -> lighter purple */
+  --prism-purple-border: #34304a; /* borders / dashed lines -> dark */
+  --prism-bg: #171b22;            /* card background -> darker than the page */
+}
+html[data-theme="dark"] .deadlines-updated { color: #8b939f; }
+html[data-theme="dark"] .deadlines-filter-btn {
+  background: #1d212a;
+  border-color: #34304a;
+  color: #b79cf0;
+}
+html[data-theme="dark"] .deadlines-filter-btn:hover { background: #2a2440; }
+html[data-theme="dark"] .deadlines-filter-btn.active {
+  background: #6d4bb0;
+  border-color: #6d4bb0;
+  color: #fff;
+}
+html[data-theme="dark"] .deadlines-card {
+  box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.5);
+}
+html[data-theme="dark"] .deadlines-fullname { color: #a9b1bd; }
+html[data-theme="dark"] .deadlines-meta { color: #99a1ad; }
+html[data-theme="dark"] .deadlines-label { color: #808894; }
+html[data-theme="dark"] .deadlines-local-time { color: #8b939f; }
+html[data-theme="dark"] .deadlines-card.deadlines-past .deadlines-num { color: #808894; }
+html[data-theme="dark"] .deadlines-card.deadlines-tbd .deadlines-num { color: #6b7480; }
+html[data-theme="dark"] .deadlines-status-badge { background: #4a3a12; color: #f5d58a; }
 </style>
 
 <script>
