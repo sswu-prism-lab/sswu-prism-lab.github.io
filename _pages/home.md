@@ -86,7 +86,7 @@ Our research addresses fundamental problems in developing theoretically sound re
     <!-- Menu -->
     <ol class="carousel-indicators">
         <li data-target="#carousel" data-slide-to="0" class="active"></li>
-        <!-- <li data-target="#carousel" data-slide-to="1"></li> -->
+        <li data-target="#carousel" data-slide-to="1"></li>
         <li data-target="#carousel" data-slide-to="2"></li>
         <li data-target="#carousel" data-slide-to="3"></li>
         <li data-target="#carousel" data-slide-to="4"></li>
@@ -110,10 +110,12 @@ Our research addresses fundamental problems in developing theoretically sound re
         </div>
         <div class="item">
             <img src="{{ site.url }}{{ site.baseurl }}/images/slider/slide7.png" alt="Slide 7" />
-        </div>       
-         <div class="item">
+        </div>
+        <!--
+        <div class="item">
             <img src="{{ site.url }}{{ site.baseurl }}/images/slider/slide1.png" alt="Slide 1" />
         </div>
+        -->
     </div>
   <a class="left carousel-control" href="#carousel" role="button" data-slide="prev">
     <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
