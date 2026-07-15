@@ -91,11 +91,14 @@ Our research addresses fundamental problems in developing theoretically sound re
         <li data-target="#carousel" data-slide-to="3"></li>
         <li data-target="#carousel" data-slide-to="4"></li>
         <li data-target="#carousel" data-slide-to="5"></li>
-        <li data-target="#carousel" data-slide-to="6"></li>
+        <!-- <li data-target="#carousel" data-slide-to="6"></li> -->
     </ol>
 
     <!-- Items -->
     <div class="carousel-inner" markdown="0">
+        <div class="item active">
+            <img src="{{ site.url }}{{ site.baseurl }}/images/slider/slide10.png" alt="Slide 10" />
+        </div>
         <div class="item active">
             <img src="{{ site.url }}{{ site.baseurl }}/images/slider/slide6.png" alt="Slide 6" />
         </div>
