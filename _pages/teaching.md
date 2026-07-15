@@ -19,7 +19,7 @@ permalink: /teaching/
 - Exams: TBA
 
 ### Mathematics for Artificial Intelligence (LH002500 @ Fall 2024)
-- <a href="https://sswu-prism-lab.github.io/slides/mathematics-for-artificial-intelligence-2027//" target="_blank">Slides</a>
+- <a href="https://sswu-prism-lab.github.io/slides/mathematics-for-artificial-intelligence-2027/" target="_blank">Slides</a>
 - <a href="https://sswu-prism-lab.github.io/slides/notes/mathematics-for-artificial-intelligence-2027/" target="_blank">Notes & Exams</a>
 
 ### Artificial Intelligence (LZ001600 @ Fall 2024, Spring 2024)
@@ -27,8 +27,8 @@ permalink: /teaching/
 - Exams: TBA
 
 ### Data Structures (LZ000500 @ Spring 2024)
-- Slides: TBA
-- Notes & Exams: <a href="https://sswu-prism-lab.github.io/slides/notes/data-structure-2027/" target="_blank">Notes & Exams</a>
+- <a href="https://sswu-prism-lab.github.io/slides/data-structure-2027/" target="_blank">Slides</a>
+- <a href="https://sswu-prism-lab.github.io/slides/notes/data-structure-2027/" target="_blank">Notes & Exams</a>
 
 ### Data Structures and Applications (LH000500 @ Fall 2023)
 - Slides: TBA
