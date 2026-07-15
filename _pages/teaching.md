@@ -28,7 +28,7 @@ permalink: /teaching/
 
 ### Data Structures (LZ000500 @ Spring 2024)
 - Slides: TBA
-- Notes & Exams: TBA
+- Notes & Exams: <a href="https://sswu-prism-lab.github.io/slides/notes/data-structure-2027/" target="_blank">Notes & Exams</a>
 
 ### Data Structures and Applications (LH000500 @ Fall 2023)
 - Slides: TBA
