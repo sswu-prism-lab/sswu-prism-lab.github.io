@@ -23,6 +23,12 @@
   <link rel="stylesheet" href="{{ "/css/main.css" | prepend: site.baseurl | prepend: site.url}}">
   <link rel="canonical" href="{{ page.url | replace:'index.html','' | prepend: site.baseurl | prepend: site.url }}">
 
+  <link rel="icon" type="image/svg+xml" href="{{ '/images/favicon.svg' | prepend: site.baseurl | prepend: site.url }}">
+  <link rel="alternate icon" href="{{ '/images/favicon_penrose.ico' | prepend: site.baseurl | prepend: site.url }}">
+  <link rel="icon" type="image/png" sizes="32x32" href="{{ '/images/favicon-32.png' | prepend: site.baseurl | prepend: site.url }}">
+  <link rel="icon" type="image/png" sizes="16x16" href="{{ '/images/favicon-16.png' | prepend: site.baseurl | prepend: site.url }}">
+  <link rel="apple-touch-icon" sizes="180x180" href="{{ '/images/apple-touch-icon.png' | prepend: site.baseurl | prepend: site.url }}">
+
 {% if jekyll.environment == 'production' %}
 {% include analytics.html %}
 {% endif %}

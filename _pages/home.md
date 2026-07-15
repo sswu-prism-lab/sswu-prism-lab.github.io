@@ -134,7 +134,6 @@ Our research addresses fundamental problems in developing theoretically sound re
 <figure class="fifth">
   <img class="logo-light" src="{{ site.url }}{{ site.baseurl }}/images/logopic/sswu_logo.png" style="width: 120px">
   <img class="logo-dark" src="{{ site.url }}{{ site.baseurl }}/images/logopic/sswu_logo_dark.png" style="width: 120px">
-  <img class="logo-light" src="{{ site.url }}{{ site.baseurl }}/images/logopic/PRISM.png" style="width: 120px">
-  <img class="logo-dark" src="{{ site.url }}{{ site.baseurl }}/images/logopic/PRISM_dark.png" style="width: 120px">
+  <img src="{{ site.url }}{{ site.baseurl }}/images/logopic/penrose_logo_light.svg" style="width: 90px">
   <img src="{{ site.url }}{{ site.baseurl }}/images/logopic/logo3.png" style="width: 50px">
 </figure>

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="logo" viewBox="0 0 3696 4272" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      
+<linearGradient id="paint0_linear_766_100" x1="902" y1="311" x2="902" y2="4151.5" gradientUnits="userSpaceOnUse">
+<stop stop-color="#F4CA3A"/>
+<stop offset="1" stop-color="#BA6300"/>
+</linearGradient>
+<linearGradient id="paint1_linear_766_100" x1="979.375" y1="855.122" x2="979.375" y2="4151.5" gradientUnits="userSpaceOnUse">
+<stop stop-color="#D41217"/>
+<stop offset="1" stop-color="#662669"/>
+</linearGradient>
+<linearGradient id="paint2_linear_766_100" x1="2629.62" y1="1034.25" x2="2629.63" y2="3410" gradientUnits="userSpaceOnUse">
+<stop stop-color="#D41217"/>
+<stop offset="1" stop-color="#662669"/>
+</linearGradient>
+<linearGradient id="paint3_linear_766_100" x1="1064.38" y1="120" x2="1064.38" y2="1216" gradientUnits="userSpaceOnUse">
+<stop stop-color="#0055F3"/>
+<stop offset="1" stop-color="#00D841"/>
+</linearGradient>
+<linearGradient id="paint4_linear_766_100" x1="2708.5" y1="1128" x2="2708.5" y2="2868.75" gradientUnits="userSpaceOnUse">
+<stop stop-color="#0055F3"/>
+<stop offset="1" stop-color="#00D841"/>
+</linearGradient>
+<linearGradient id="paint5_linear_766_100" x1="1140.88" y1="2963" x2="1140.88" y2="3599" gradientUnits="userSpaceOnUse">
+<stop stop-color="#0055F3"/>
+<stop offset="1" stop-color="#00D841"/>
+</linearGradient>
+<linearGradient id="paint6_linear_766_100" x1="2390.21" y1="1317" x2="2390.21" y2="2132.5" gradientUnits="userSpaceOnUse">
+<stop stop-color="#F4CA3A"/>
+<stop offset="1" stop-color="#BA6300"/>
+</linearGradient>
+
+      <radialGradient id="glowGrad" gradientUnits="userSpaceOnUse" cx="1588" cy="2360" r="3000">
+        <stop id="g0" offset="0" stop-color="#ffffff" stop-opacity="1"/>
+        <stop id="g1" offset="0.55" stop-color="#ffffff" stop-opacity="0.300"/>
+        <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+      </radialGradient>
+      <mask id="shapeMask" maskUnits="userSpaceOnUse" x="0" y="0" width="3696" height="4272"><path d="M426 484.5L1684 1216V3410L1380 3230.5V1408.62L426 855.122V4151.5L120 3975V311L426 484.5Z" fill="#fff" stroke="#fff" stroke-width="30" stroke-linejoin="round" stroke-linecap="round"/><path d="M749 1044V3599L1532.75 3148L1532 3512L749 3968L426 4151.5V855.122L749 1044Z" fill="#fff" stroke="#fff" stroke-width="30" stroke-linejoin="round" stroke-linecap="round"/><path d="M2005.75 2868.75L3575.25 1953V2322L2007 3236.5L1684 3410V1216L2008.75 1034.25L2005.75 2868.75Z" fill="#fff" stroke="#fff" stroke-width="30" stroke-linejoin="round" stroke-linecap="round"/><path d="M443 120L2008.75 1034.25L1684 1216L120 311L443 120Z" fill="#fff" stroke="#fff" stroke-width="30" stroke-linejoin="round" stroke-linecap="round"/><path d="M3575.25 1953L3260.75 2136.85L2005.75 2868.75L2008.5 2479L2939.42 1951.75L1841.75 1317L2166 1128L3575.25 1953Z" fill="#fff" stroke="#fff" stroke-width="30" stroke-linejoin="round" stroke-linecap="round"/><path d="M1222.5 2963L1532.75 3148L749 3599V3233L1222.5 2963Z" fill="#fff" stroke="#fff" stroke-width="30" stroke-linejoin="round" stroke-linecap="round"/><path d="M1841.75 1317L2939.42 1951.75L2621 2132.5L1841 1678.58L1841.75 1317Z" fill="#fff" stroke="#fff" stroke-width="30" stroke-linejoin="round" stroke-linecap="round"/></mask>
+      <filter id="specFilter" x="-20%" y="-20%" width="140%" height="140%">
+        <feGaussianBlur in="SourceAlpha" stdDeviation="63" result="blur" id="fBlur"/>
+        <feSpecularLighting in="blur" surfaceScale="22" specularConstant="0.1" specularExponent="60" lighting-color="#ffffff" result="spec" id="fSpec">
+          <fePointLight id="fLight" x="1588" y="2360" z="1660"/>
+        </feSpecularLighting>
+        <feComposite in="spec" in2="SourceAlpha" operator="in" result="specClip"/>
+        <feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="specClip"/></feMerge>
+      </filter>
+    </defs>
+    <g id="shapeGroup">
+    <path d="M426 484.5L1684 1216V3410L1380 3230.5V1408.62L426 855.122V4151.5L120 3975V311L426 484.5Z" fill="url(#paint0_linear_766_100)" fill-opacity="1" stroke="#111111" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M749 1044V3599L1532.75 3148L1532 3512L749 3968L426 4151.5V855.122L749 1044Z" fill="url(#paint1_linear_766_100)" fill-opacity="1" stroke="#111111" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M2005.75 2868.75L3575.25 1953V2322L2007 3236.5L1684 3410V1216L2008.75 1034.25L2005.75 2868.75Z" fill="url(#paint2_linear_766_100)" fill-opacity="1" stroke="#111111" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M443 120L2008.75 1034.25L1684 1216L120 311L443 120Z" fill="url(#paint3_linear_766_100)" fill-opacity="1" stroke="#111111" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M3575.25 1953L3260.75 2136.85L2005.75 2868.75L2008.5 2479L2939.42 1951.75L1841.75 1317L2166 1128L3575.25 1953Z" fill="url(#paint4_linear_766_100)" fill-opacity="1" stroke="#111111" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M1222.5 2963L1532.75 3148L749 3599V3233L1222.5 2963Z" fill="url(#paint5_linear_766_100)" fill-opacity="1" stroke="#111111" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M1841.75 1317L2939.42 1951.75L2621 2132.5L1841 1678.58L1841.75 1317Z" fill="url(#paint6_linear_766_100)" fill-opacity="1" stroke="#111111" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+    <rect id="glowRect" x="0" y="0" width="3696" height="4272" fill="url(#glowGrad)" mask="url(#shapeMask)" style="mix-blend-mode: overlay; display: none;"/>
+  </svg>
