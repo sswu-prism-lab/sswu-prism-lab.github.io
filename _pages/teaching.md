@@ -19,7 +19,7 @@ permalink: /teaching/
 - Exams: TBA
 
 ### Mathematics for Artificial Intelligence (LH002500 @ Fall 2024)
-- Slides: TBA
+- <a href="https://sswu-prism-lab.github.io/slides/mathematics-for-artificial-intelligence-2027//" target="_blank">Slides</a>
 - Notes & Exams: TBA
 
 ### Artificial Intelligence (LZ001600 @ Fall 2024, Spring 2024)
