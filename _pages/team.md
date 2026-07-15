@@ -19,7 +19,7 @@ permalink: /team/
 <div class="col-sm-12 clearfix">
 <img src="{{ site.url }}{{ site.baseurl }}/images/teampic/{{ member.photo }}" class="img-responsive" style="float: left; width: 15%; min-width: 100px; max-width: 150px; margin-right: 20px; border-radius: 4px;" />
 <h4 style="margin-top: 0;">{{ member.name }}</h4>
-<i>{{ member.info }} <br>email: &lt;{{ member.email }}&gt;</i>
+<i>{{ member.info }}</i>
 <ul style="overflow: hidden; margin-top: 10px; padding-left: 20px;">
 {% if member.number_educ >= 1 %}<li>{{ member.education1 }}</li>{% endif %}
 {% if member.number_educ >= 2 %}<li>{{ member.education2 }}</li>{% endif %}
