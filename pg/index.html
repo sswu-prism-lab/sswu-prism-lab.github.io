@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -61,6 +61,7 @@
   .c-logo{border-top-color:#8b7cff}
   a.c-flat:hover{border-color:var(--warm-a)} a.c-kura:hover{border-color:var(--cool)}
   a.c-logo:hover{border-color:#8b7cff}
+  a.c-ising:hover{border-color:var(--sharp)}
 
   .glyph{height:98px;display:flex;align-items:center;justify-content:center;
     background:var(--panel-2);border-bottom:1px solid var(--line)}
@@ -108,7 +109,7 @@
     A collection of <b>interactive demos</b> bridging physical intuition and learning algorithms.
     Move a slider to feel phase transitions, free energy, and synchronization first-hand. Click a card to enter.
   </p>
-  <p class="count">3 live · more coming</p>
+  <p class="count">4 live · more coming</p>
 
   <div class="deck">
 
@@ -194,8 +195,8 @@
       </div>
     </a>
 
-    <!-- ===== SOON: Ising ===== -->
-    <div class="card-demo c-ising soon">
+    <!-- ===== ACTIVE: Ising ===== -->
+    <a class="card-demo c-ising" href="ising-inverse-ising.html">
       <div class="glyph">
         <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <g>
@@ -208,10 +209,10 @@
       <div class="body">
         <div class="tags"><span>Spin systems</span><span>Max-entropy</span></div>
         <h3>Ising · Inverse-Ising</h3>
-        <p>Magnetization transition and critical fluctuations; infer couplings from correlations (inverse Ising).</p>
-        <div class="go">Coming soon</div>
+        <p>2D Ising phase transition (χ peaks at Tc) plus inverse-Ising: recover couplings from binarized signals as a connectivity graph.</p>
+        <div class="go">Open →</div>
       </div>
-    </div>
+    </a>
 
     <!-- ===== SOON: Hopfield → Attention ===== -->
     <div class="card-demo c-hop soon">
