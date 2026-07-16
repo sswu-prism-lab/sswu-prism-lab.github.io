@@ -26,7 +26,7 @@ html[data-theme="dark"] .studio-frame-wrap { border-color: #333; box-shadow: 0 1
 ### Logo Playground
 
 <div class="pg-intro" markdown="1">
-Our lab logo is an **impossible Penrose triangle** rendered as a rainbow prism.
+Our lab logo is an **impossible object inspired by Penrose triangle** rendered as a rainbow prism.
 Play with the palette, presets, center glow, and specular shine below — then export
 your own version as **SVG** or **PNG**.
 </div>
