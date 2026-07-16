@@ -302,7 +302,8 @@
 
 <script>
 /* ---------- palette + mapping ---------- */
-const PAL_DEFAULT = { red:'#bc5a5d', yellow:'#f2dd86', green:'#6f8e72', blue:'#4b55d2', purple:'#775e91' };
+const PAL_DEFAULT = { red:'#D41217', yellow:'#F4CA3A', green:'#00D841', blue:'#0055F3', purple:'#662669' };
+const EXACT_DEFAULT = [['#F4CA3A','#BA6300'],['#D41217','#662669'],['#D41217','#662669'],['#0055F3','#00D841'],['#0055F3','#00D841'],['#0055F3','#00D841'],['#F4CA3A','#BA6300']];
 let pal = {...PAL_DEFAULT};
 
 // each face gradient: stop0 -> stop1, drawn from palette keys
@@ -317,6 +318,7 @@ const MAP = [
 ];
 
 const PRESETS = [
+  {name:'Current', c:['#D41217','#F4CA3A','#00D841','#0055F3','#662669'], exact:EXACT_DEFAULT},
   {name:'PRISM',   c:['#bc5a5d','#f2dd86','#6f8e72','#4b55d2','#775e91']},
   {name:'Vivid',   c:['#e63946','#ffd166','#06d6a0','#4361ee','#9b5de5']},
   {name:'Pastel',  c:['#f4a3a6','#f7e9a0','#a8d5b5','#a3b4f0','#c9addc']},
@@ -328,11 +330,17 @@ const PRESETS = [
 
 const $ = id => document.getElementById(id);
 let flip = false;
+// When set (e.g. the "Current" preset), each face uses these exact [top,bottom]
+// stops instead of the 5-color palette — lets presets reproduce gradients that
+// the shared-palette model can't (e.g. the yellow bar's yellow→orange).
+let exactStops = EXACT_DEFAULT;
 
 function applyGradients(){
-  MAP.forEach(m=>{
-    const s0 = flip ? pal[m.b] : pal[m.a];
-    const s1 = flip ? pal[m.a] : pal[m.b];
+  MAP.forEach((m,i)=>{
+    const c0 = exactStops ? exactStops[i][0] : pal[m.a];
+    const c1 = exactStops ? exactStops[i][1] : pal[m.b];
+    const s0 = flip ? c1 : c0;
+    const s1 = flip ? c0 : c1;
     $(m.id+'_0').setAttribute('stop-color', s0);
     $(m.id+'_1').setAttribute('stop-color', s1);
   });
@@ -393,7 +401,7 @@ function applySpec(){
 
 /* ---------- wire up ---------- */
 ['c_red','c_yellow','c_green','c_blue','c_purple'].forEach(id=>{
-  $(id).addEventListener('input', e=>{ pal[id.slice(2)] = e.target.value; applyGradients(); });
+  $(id).addEventListener('input', e=>{ exactStops=null; pal[id.slice(2)] = e.target.value; applyGradients(); });
 });
 $('flip').addEventListener('change', e=>{ flip=e.target.checked; applyGradients(); });
 ['opacity','stroke','strokeColor'].forEach(id=>$(id).addEventListener('input', applyAppearance));
@@ -406,14 +414,14 @@ PRESETS.forEach(p=>{
   const b=document.createElement('button'); b.className='preset';
   const dots=p.c.map(c=>`<i style="background:${c}"></i>`).join('');
   b.innerHTML=`<span class="dots">${dots}</span>${p.name}`;
-  b.onclick=()=>{ pal={red:p.c[0],yellow:p.c[1],green:p.c[2],blue:p.c[3],purple:p.c[4]}; applyGradients(); };
+  b.onclick=()=>{ exactStops = p.exact || null; pal={red:p.c[0],yellow:p.c[1],green:p.c[2],blue:p.c[3],purple:p.c[4]}; applyGradients(); };
   pw.appendChild(b);
 });
 
 // randomize
 $('randomize').onclick=()=>{
   const rnd=()=>'#'+[0,0,0].map(()=>('0'+Math.floor(40+Math.random()*180).toString(16)).slice(-2)).join('');
-  pal={red:rnd(),yellow:rnd(),green:rnd(),blue:rnd(),purple:rnd()}; applyGradients();
+  exactStops=null; pal={red:rnd(),yellow:rnd(),green:rnd(),blue:rnd(),purple:rnd()}; applyGradients();
 };
 
 // background buttons
@@ -427,7 +435,7 @@ document.querySelectorAll('.bgbtns button').forEach(b=>{
 
 // reset
 $('reset').onclick=()=>{
-  pal={...PAL_DEFAULT}; flip=false; $('flip').checked=false;
+  pal={...PAL_DEFAULT}; exactStops=EXACT_DEFAULT; flip=false; $('flip').checked=false;
   $('opacity').value=1; $('stroke').value=30; $('strokeColor').value='#111111';
   $('glowOn').checked=false; $('glowInt').value=0.35; $('glowR').value=3000; $('glowX').value=1588; $('glowY').value=2360; $('glowBlend').value='overlay';
   $('specOn').checked=false; $('spSurf').value=22; $('spExp').value=60; $('spBlur').value=63; $('spX').value=1588; $('spY').value=2360; $('spZ').value=1660;
