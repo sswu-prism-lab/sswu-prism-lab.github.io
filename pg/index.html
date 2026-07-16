@@ -62,6 +62,7 @@
   a.c-flat:hover{border-color:var(--warm-a)} a.c-kura:hover{border-color:var(--cool)}
   a.c-logo:hover{border-color:#8b7cff}
   a.c-ising:hover{border-color:var(--sharp)}
+  a.c-hop:hover{border-color:var(--test)}
 
   .glyph{height:98px;display:flex;align-items:center;justify-content:center;
     background:var(--panel-2);border-bottom:1px solid var(--line)}
@@ -109,7 +110,7 @@
     A collection of <b>interactive demos</b> bridging physical intuition and learning algorithms.
     Move a slider to feel phase transitions, free energy, and synchronization first-hand. Click a card to enter.
   </p>
-  <p class="count">4 live · more coming</p>
+  <p class="count">5 live · more coming</p>
 
   <div class="deck">
 
@@ -214,8 +215,8 @@
       </div>
     </a>
 
-    <!-- ===== SOON: Hopfield → Attention ===== -->
-    <div class="card-demo c-hop soon">
+    <!-- ===== ACTIVE: Hopfield → Attention ===== -->
+    <a class="card-demo c-hop" href="hopfield-attention.html">
       <div class="glyph">
         <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <g stroke="#33415e" stroke-width="1.2">
@@ -231,10 +232,10 @@
       <div class="body">
         <div class="tags"><span>Associative memory</span><span>Transformers</span></div>
         <h3>Hopfield → Attention</h3>
-        <p>The math linking energy-based memory recall to attention. Store patterns and recover them from noise.</p>
-        <div class="go">Coming soon</div>
+        <p>Store, corrupt, and recover patterns; hit the ≈0.14N capacity cliff; then watch modern Hopfield become softmax attention.</p>
+        <div class="go">Open →</div>
       </div>
-    </div>
+    </a>
 
     <!-- ===== SOON: Marchenko–Pastur ===== -->
     <div class="card-demo c-mp soon">
