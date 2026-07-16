@@ -59,10 +59,13 @@
   .c-ising{border-top-color:var(--sharp)} .c-hop{border-top-color:var(--test)}
   .c-mp{border-top-color:var(--blue)} .c-eeg{border-top-color:var(--cool)}
   .c-logo{border-top-color:#8b7cff}
+  .c-bold{border-top-color:#ff8a5c} .c-conn{border-top-color:#4fd1a0}
   a.c-flat:hover{border-color:var(--warm-a)} a.c-kura:hover{border-color:var(--cool)}
   a.c-logo:hover{border-color:#8b7cff}
   a.c-ising:hover{border-color:var(--sharp)}
   a.c-hop:hover{border-color:var(--test)}
+  a.c-mp:hover{border-color:var(--blue)}
+  a.c-eeg:hover{border-color:var(--cool)}
 
   .glyph{height:98px;display:flex;align-items:center;justify-content:center;
     background:var(--panel-2);border-bottom:1px solid var(--line)}
@@ -110,7 +113,7 @@
     A collection of <b>interactive demos</b> bridging physical intuition and learning algorithms.
     Move a slider to feel phase transitions, free energy, and synchronization first-hand. Click a card to enter.
   </p>
-  <p class="count">5 live · more coming</p>
+  <p class="count">7 live · more coming</p>
 
   <div class="deck">
 
@@ -237,8 +240,8 @@
       </div>
     </a>
 
-    <!-- ===== SOON: Marchenko–Pastur ===== -->
-    <div class="card-demo c-mp soon">
+    <!-- ===== ACTIVE: Marchenko–Pastur ===== -->
+    <a class="card-demo c-mp" href="marchenko-pastur.html">
       <div class="glyph">
         <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <g fill="#5eead4" fill-opacity="0.28">
@@ -255,12 +258,12 @@
         <div class="tags"><span>RMT</span><span>Covariance</span></div>
         <h3>Marchenko–Pastur</h3>
         <p>The eigenvalue spectrum of sample covariance — the line separating random noise from real signal.</p>
-        <div class="go">Coming soon</div>
+        <div class="go">Open →</div>
       </div>
-    </div>
+    </a>
 
-    <!-- ===== SOON: EEG rhythms ===== -->
-    <div class="card-demo c-eeg soon">
+    <!-- ===== ACTIVE: EEG rhythms ===== -->
+    <a class="card-demo c-eeg" href="eeg-rhythms.html">
       <div class="glyph">
         <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <path d="M10,24 Q22,14 34,24 T58,24 T82,24 T106,24 T130,24 T154,24 T178,24 T202,24" stroke="#5eead4" stroke-width="1.8" stroke-opacity=".75"/>
@@ -272,6 +275,53 @@
         <div class="tags"><span>Neural signals</span><span>Spectrum</span></div>
         <h3>EEG Rhythm Explorer</h3>
         <p>Frequency bands and phase from delta to gamma — brain rhythms in time and frequency at once.</p>
+        <div class="go">Open →</div>
+      </div>
+    </a>
+
+    <!-- ===== SOON: BOLD / HRF ===== -->
+    <div class="card-demo c-bold soon">
+      <div class="glyph">
+        <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <line x1="24" y1="56" x2="180" y2="56" stroke="#33415e" stroke-width="1"/>
+          <line x1="44" y1="56" x2="44" y2="40" stroke="#a78bff" stroke-width="2.4" stroke-linecap="round"/>
+          <line x1="56" y1="56" x2="56" y2="40" stroke="#a78bff" stroke-width="2.4" stroke-linecap="round"/>
+          <line x1="68" y1="56" x2="68" y2="40" stroke="#a78bff" stroke-width="2.4" stroke-linecap="round"/>
+          <path d="M44,56 C64,56 66,18 87,18 C104,18 104,54 119,61 C132,67 148,60 176,57"
+            stroke="#ff8a5c" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="body">
+        <div class="tags"><span>fMRI</span><span>Deconvolution</span></div>
+        <h3>BOLD / HRF</h3>
+        <p>Convolve a stimulus train with the hemodynamic response to build the BOLD signal — then add noise and feel why deconvolution is hard.</p>
+        <div class="go">Coming soon</div>
+      </div>
+    </div>
+
+    <!-- ===== SOON: Connectivity → graph ===== -->
+    <div class="card-demo c-conn soon">
+      <div class="glyph">
+        <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <g>
+            <rect x="26" y="22" width="9" height="9" fill="#5eead4" fill-opacity="0.9"/><rect x="36" y="22" width="9" height="9" fill="#ff6b5a" fill-opacity="0.45"/><rect x="46" y="22" width="9" height="9" fill="#5eead4" fill-opacity="0.3"/><rect x="56" y="22" width="9" height="9" fill="#5eead4" fill-opacity="0.65"/>
+            <rect x="26" y="32" width="9" height="9" fill="#ff6b5a" fill-opacity="0.45"/><rect x="36" y="32" width="9" height="9" fill="#5eead4" fill-opacity="0.9"/><rect x="46" y="32" width="9" height="9" fill="#5eead4" fill-opacity="0.55"/><rect x="56" y="32" width="9" height="9" fill="#ff6b5a" fill-opacity="0.3"/>
+            <rect x="26" y="42" width="9" height="9" fill="#5eead4" fill-opacity="0.3"/><rect x="36" y="42" width="9" height="9" fill="#5eead4" fill-opacity="0.55"/><rect x="46" y="42" width="9" height="9" fill="#5eead4" fill-opacity="0.9"/><rect x="56" y="42" width="9" height="9" fill="#5eead4" fill-opacity="0.5"/>
+            <rect x="26" y="52" width="9" height="9" fill="#5eead4" fill-opacity="0.65"/><rect x="36" y="52" width="9" height="9" fill="#ff6b5a" fill-opacity="0.3"/><rect x="46" y="52" width="9" height="9" fill="#5eead4" fill-opacity="0.5"/><rect x="56" y="52" width="9" height="9" fill="#5eead4" fill-opacity="0.9"/>
+          </g>
+          <path d="M82,41 L102,41" stroke="#8493b8" stroke-width="1.5"/><path d="M102,41 l-5,-3 v6 z" fill="#8493b8"/>
+          <g stroke="#4fd1a0" stroke-width="1.6" stroke-opacity="0.85">
+            <line x1="140" y1="24" x2="165" y2="35"/><line x1="140" y1="24" x2="126" y2="47"/>
+            <line x1="165" y1="35" x2="157" y2="59"/><line x1="126" y1="47" x2="157" y2="59"/><line x1="140" y1="24" x2="157" y2="59"/>
+          </g>
+          <circle cx="140" cy="24" r="5" fill="#4fd1a0"/><circle cx="165" cy="35" r="5" fill="#4fd1a0"/>
+          <circle cx="126" cy="47" r="5" fill="#4fd1a0"/><circle cx="157" cy="59" r="5" fill="#4fd1a0"/>
+        </svg>
+      </div>
+      <div class="body">
+        <div class="tags"><span>Connectivity</span><span>Graph</span></div>
+        <h3>Connectivity → Graph</h3>
+        <p>Turn multichannel signals into a correlation / coherence matrix, threshold it, and watch brain-graph metrics shift — the bridge from signals to graph learning.</p>
         <div class="go">Coming soon</div>
       </div>
     </div>

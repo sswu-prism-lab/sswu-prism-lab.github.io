@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<script>
+(function(){
+  function cur(){ try{ return localStorage.getItem('theme') || (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark':'light'); }catch(e){ return 'dark'; } }
+  var t=cur(); window.__theme=t; document.documentElement.setAttribute('data-theme', t);
+  window.addEventListener('storage', function(e){ if(e.key==='theme'){ var n=e.newValue||'dark'; window.__theme=n; document.documentElement.setAttribute('data-theme', n); if(window.__onTheme) window.__onTheme(n); } });
+})();
+</script>
+<title>EEG Rhythm Explorer — PRISM Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --void:#0b1020; --panel:#111a30; --panel-2:#0d1526; --line:#26314f;
+    --ink:#e7ecff; --muted:#8493b8;
+    --cool:#5eead4; --sharp:#ff6b5a; --warm-a:#ffc24b; --warm-b:#ff5a3c; --test:#a78bff; --blue:#6ea8ff;
+    --focus:#9cc7ff; --cool-dim:#2f8c80;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:radial-gradient(1200px 700px at 78% -10%, #16223f 0%, rgba(22,34,63,0) 55%), var(--void);
+    color:var(--ink); font-family:"Inter",system-ui,-apple-system,sans-serif; line-height:1.5;
+    -webkit-font-smoothing:antialiased; padding:24px 20px 48px;
+  }
+  .wrap{max-width:1180px;margin:0 auto}
+  .topbar{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+  .back{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--muted);text-decoration:none;
+    border:1px solid var(--line);padding:6px 12px;border-radius:20px;transition:.14s}
+  .back:hover{color:var(--cool);border-color:var(--cool)}
+  .eyebrow{font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--cool);margin:0 0 10px;display:flex;align-items:center;gap:10px}
+  .eyebrow::before{content:"";width:22px;height:1px;background:var(--cool);opacity:.7}
+  .title{font-family:"Space Grotesk",system-ui,sans-serif;font-weight:700;font-size:clamp(28px,4.6vw,46px);
+    line-height:1.02;margin:0 0 10px;letter-spacing:-.02em}
+  .title .thin{color:var(--muted);font-weight:500}
+  .subtitle{color:var(--muted);max-width:72ch;margin:0 0 26px;font-size:15px}
+  .subtitle b{color:var(--ink);font-weight:600}
+
+  .grid{display:grid;grid-template-columns:1.35fr 1fr;gap:18px;align-items:start}
+  @media (max-width:900px){ .grid{grid-template-columns:1fr} }
+
+  .card{background:linear-gradient(180deg,var(--panel) 0%,var(--panel-2) 100%);
+    border:1px solid var(--line);border-radius:16px;padding:16px}
+  .card + .card{margin-top:14px}
+  .card-h{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--muted);margin:0 0 12px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .card-h .hint{color:var(--cool-dim);letter-spacing:.02em;text-transform:none;font-size:11px}
+
+  .stage{padding:14px 12px 10px}
+  .canvas-hold{position:relative;width:100%}
+  canvas{display:block;width:100%;height:auto;border-radius:8px}
+  #wave{height:130px}
+  #spectro{height:190px}
+  #spectrum{height:170px}
+  .axis-cap{font-family:"JetBrains Mono",monospace;font-size:10.5px;color:var(--muted);
+    display:flex;justify-content:space-between;margin:2px 6px 0}
+
+  .band-ctl{display:flex;align-items:center;gap:10px;margin-bottom:11px}
+  .band-ctl .bl{display:flex;align-items:center;gap:7px;width:112px;flex:none;font-size:13px}
+  .band-ctl .bl i{width:11px;height:11px;border-radius:3px;display:block}
+  .band-ctl .bl .hz{color:var(--muted);font-size:11px;font-family:"JetBrains Mono",monospace}
+  .band-ctl input[type=range]{flex:1}
+  input[type=range]{-webkit-appearance:none;appearance:none;height:4px;border-radius:3px;
+    background:var(--line);outline:none;margin:0}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;
+    background:var(--ink);border:2px solid var(--void);cursor:pointer;box-shadow:0 0 0 1px var(--line)}
+  input[type=range]::-moz-range-thumb{width:15px;height:15px;border-radius:50%;background:var(--ink);
+    border:2px solid var(--void);cursor:pointer}
+  .band-ctl .bv{width:34px;text-align:right;font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--cool)}
+
+  .divider{height:1px;background:var(--line);margin:14px 0}
+  .btn{width:100%;border:1px solid var(--line);background:var(--panel-2);color:var(--ink);font-family:"Inter",sans-serif;
+    font-size:13px;font-weight:500;padding:10px 8px;border-radius:9px;cursor:pointer;transition:.14s}
+  .btn:hover{border-color:#3a486e;background:#152238}
+  .btn-primary{background:var(--cool);border-color:var(--cool);color:#04231f;font-weight:600}
+  .noteline{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--muted);margin-top:10px;min-height:16px}
+  .noteline b{color:var(--cool)}
+
+  .powbars{display:flex;gap:6px;margin-top:6px}
+  .powbars .pb{flex:1;text-align:center}
+  .powbars .pb .track{height:46px;background:var(--panel-2);border:1px solid var(--line);border-radius:6px;
+    display:flex;align-items:flex-end;overflow:hidden}
+  .powbars .pb .fill{width:100%;border-radius:0 0 5px 5px;transition:height .12s}
+  .powbars .pb .lab{font-family:"JetBrains Mono",monospace;font-size:11px;margin-top:4px;color:var(--muted)}
+
+  .explain{margin-top:26px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media (max-width:900px){ .explain{grid-template-columns:1fr} }
+  .ex{border-top:2px solid var(--line);padding-top:12px}
+  .ex.a{border-color:var(--warm-a)} .ex.b{border-color:var(--test)} .ex.c{border-color:var(--cool)}
+  .ex h4{font-family:"Space Grotesk",sans-serif;font-size:15px;margin:0 0 7px;font-weight:500}
+  .ex p{margin:0;font-size:13px;color:var(--muted)}
+  .ex code{font-family:"JetBrains Mono",monospace;color:var(--ink);font-size:12.5px;background:var(--panel);padding:1px 5px;border-radius:4px}
+
+  footer{margin-top:30px;color:var(--muted);font-size:12px;font-family:"JetBrains Mono",monospace;letter-spacing:.04em}
+  footer a{color:var(--cool);text-decoration:none}
+
+  html[data-theme="light"]{
+    --void:#eef2f8; --panel:#ffffff; --panel-2:#f3f6fb; --line:#d9e0ec;
+    --ink:#141b33; --muted:#5a6488;
+    --cool:#12a08d; --cool-dim:#2f8c80; --sharp:#e04a37; --warm-a:#c98a12; --warm-b:#cf4a24;
+    --test:#6d4fe0; --blue:#2f6fd6; --focus:#2f6fd6;
+  }
+  html[data-theme="light"] body{ background:radial-gradient(1200px 700px at 78% -10%, #dbe6f8 0%, rgba(219,230,248,0) 55%), var(--void); }
+  html[data-theme="light"] .btn:hover{ border-color:#b9c4da; background:#e9eef7; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar"><a class="back" href="index.html">← Playground</a></div>
+  <p class="eyebrow">PRISM · Statistical-Mechanics Playground</p>
+  <h1 class="title">EEG Rhythm Explorer<br><span class="thin">Delta to gamma, in time and frequency at once</span></h1>
+  <p class="subtitle">
+    Brain signals are a mixture of rhythms: <b>δ</b> (slow) up to <b>γ</b> (fast). Dial each band's amplitude to
+    shape the waveform, then read it back out with the <b>Fourier transform</b> — a power spectrum and a
+    <b>spectrogram</b> that shows which rhythms are present over time. Add noise to see how peaks get buried.
+  </p>
+
+  <div class="grid">
+    <div>
+      <div class="card stage">
+        <div class="card-h">Signal <span class="hint">4 s · fs = 256 Hz</span></div>
+        <div class="canvas-hold"><canvas id="wave"></canvas></div>
+        <div class="axis-cap"><span>t = 0 s</span><span>time</span><span>t = 4 s</span></div>
+      </div>
+      <div class="card stage">
+        <div class="card-h">Spectrogram <span class="hint">time × frequency · STFT power</span></div>
+        <div class="canvas-hold"><canvas id="spectro"></canvas></div>
+        <div class="axis-cap"><span>0 Hz</span><span>time →</span><span>50 Hz</span></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <div class="card-h">Band amplitudes <span class="hint" id="domTag">dominant: —</span></div>
+        <div id="bands"></div>
+        <div class="divider"></div>
+        <div class="band-ctl">
+          <div class="bl"><i style="background:var(--muted)"></i><span>Noise</span></div>
+          <input type="range" id="noise" min="0" max="1" step="0.01" value="0.25" aria-label="Noise" />
+          <span class="bv" id="noiseV">0.25</span>
+        </div>
+        <button class="btn btn-primary" id="regen" style="margin-top:6px">↻ New random phases</button>
+        <div class="noteline" id="eegNote">Turn up one band and watch a single peak rise in the spectrum.</div>
+      </div>
+
+      <div class="card stage">
+        <div class="card-h">Power spectrum <span class="hint">|FFT|² · bands shaded</span></div>
+        <div class="canvas-hold"><canvas id="spectrum"></canvas></div>
+        <div class="axis-cap"><span>0 Hz</span><span>frequency</span><span>50 Hz</span></div>
+        <div class="powbars" id="powbars"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="explain">
+    <div class="ex a">
+      <h4>Rhythms as oscillations</h4>
+      <p>Delta (&lt;4 Hz) tracks deep sleep, alpha (8–13 Hz) idle occipital rhythm, beta/gamma (&gt;13 Hz) active processing. Each shows up as power in its frequency band — the signal is their superposition plus noise.</p>
+    </div>
+    <div class="ex b">
+      <h4>Time <em>and</em> frequency</h4>
+      <p>The FFT gives frequency but loses time. The <code>spectrogram</code> is a short-time FFT over a sliding window — a trade-off (uncertainty principle) that shows <em>when</em> each rhythm is active, essential for non-stationary brain signals.</p>
+    </div>
+    <div class="ex c">
+      <h4>Why noise matters</h4>
+      <p>Real EEG is buried in noise and artifacts. As you raise noise, band peaks sink toward the floor — the same detection problem PRISM tackles with representation learning on biosignals.</p>
+    </div>
+  </div>
+
+  <footer>PRISM Lab · prototype · <a href="https://sswu-prism-lab.github.io" target="_blank" rel="noopener">sswu-prism-lab.github.io</a></footer>
+</div>
+
+<script>
+(() => {
+  "use strict";
+  const clamp=(x,a,b)=> x<a?a : x>b?b : x;
+  const PAL={
+    dark:{ ink:"#e7ecff", muted:"#8493b8", grid:a=>`rgba(38,49,79,${a})`, cool:"#5eead4", sharp:"#ff6b5a", warmA:"#ffc24b", test:"#a78bff", blue:"#6ea8ff", specLo:"#0d1526" },
+    light:{ ink:"#141b33", muted:"#5a6488", grid:a=>`rgba(150,162,190,${a})`, cool:"#12a08d", sharp:"#e04a37", warmA:"#c98a12", test:"#6d4fe0", blue:"#2f6fd6", specLo:"#eef2f8" }
+  };
+  let C = PAL[(window.__theme==='light')?'light':'dark'];
+  const hexRGB=h=>[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];
+  const rgba=(h,a)=>{ const c=hexRGB(h); return `rgba(${c[0]},${c[1]},${c[2]},${a})`; };
+  function lerp3(stops,t){ // stops: array of [hex, pos]
+    for(let i=1;i<stops.length;i++){ if(t<=stops[i][1]||i===stops.length-1){ const a=stops[i-1],b=stops[i];
+      const u=clamp((t-a[1])/(b[1]-a[1]),0,1); const A=hexRGB(a[0]),B=hexRGB(b[0]);
+      return `rgb(${A[0]+(B[0]-A[0])*u|0},${A[1]+(B[1]-A[1])*u|0},${A[2]+(B[2]-A[2])*u|0})`; } } }
+
+  const fs=256, Ns=1024;
+  const BANDS=[
+    {name:"δ Delta", key:"delta", lo:0.5, hi:4,  comps:[2,3.2],       colVar:"--blue"},
+    {name:"θ Theta", key:"theta", lo:4,   hi:8,  comps:[5,6.7],       colVar:"--cool"},
+    {name:"α Alpha", key:"alpha", lo:8,   hi:13, comps:[10,11.5],     colVar:"--warm-a"},
+    {name:"β Beta",  key:"beta",  lo:13,  hi:30, comps:[16,22,26],    colVar:"--test"},
+    {name:"γ Gamma", key:"gamma", lo:30,  hi:50, comps:[36,42],       colVar:"--sharp"},
+  ];
+  function bandColor(b){ return getComputedStyle(document.documentElement).getPropertyValue(b.colVar).trim(); }
+  const amp={delta:0.7, theta:0.3, alpha:1.0, beta:0.4, gamma:0.25};
+  let noise=0.25;
+  let phases=null, noiseArr=null;
+  function reroll(){ phases={}; for(const b of BANDS) phases[b.key]=b.comps.map(()=>Math.random()*2*Math.PI);
+    noiseArr=new Float64Array(Ns); let sp=null; const g=()=>{ if(sp!==null){const v=sp;sp=null;return v;} let u=0;do{u=Math.random();}while(u<=1e-12); const w=Math.sqrt(-2*Math.log(u)),a=2*Math.PI*Math.random(); sp=w*Math.sin(a); return w*Math.cos(a);};
+    for(let i=0;i<Ns;i++) noiseArr[i]=g(); }
+  reroll();
+
+  function buildSignal(){
+    const s=new Float64Array(Ns);
+    for(const b of BANDS){ const A=amp[b.key]; if(A<=0) continue; const ph=phases[b.key];
+      b.comps.forEach((f,ci)=>{ const w=2*Math.PI*f/fs, p=ph[ci], a=A/b.comps.length*1.4;
+        for(let t=0;t<Ns;t++) s[t]+=a*Math.sin(w*t+p); }); }
+    for(let t=0;t<Ns;t++) s[t]+=noise*1.1*noiseArr[t];
+    return s;
+  }
+
+  // ---- iterative radix-2 FFT ----
+  function fft(re,im){ const n=re.length;
+    for(let i=1,j=0;i<n;i++){ let bit=n>>1; for(;j&bit;bit>>=1) j^=bit; j^=bit;
+      if(i<j){ let tr=re[i];re[i]=re[j];re[j]=tr; tr=im[i];im[i]=im[j];im[j]=tr; } }
+    for(let len=2;len<=n;len<<=1){ const ang=-2*Math.PI/len, wr=Math.cos(ang), wi=Math.sin(ang);
+      for(let i=0;i<n;i+=len){ let cr=1,ci=0;
+        for(let k=0;k<len/2;k++){ const ur=re[i+k],ui=im[i+k];
+          const vr=re[i+k+len/2]*cr-im[i+k+len/2]*ci, vi=re[i+k+len/2]*ci+im[i+k+len/2]*cr;
+          re[i+k]=ur+vr; im[i+k]=ui+vi; re[i+k+len/2]=ur-vr; im[i+k+len/2]=ui-vi;
+          const ncr=cr*wr-ci*wi; ci=cr*wi+ci*wr; cr=ncr; } } }
+  }
+  function powerSpectrum(sig){ const n=Ns, re=new Float64Array(n), im=new Float64Array(n);
+    for(let i=0;i<n;i++){ const win=0.5-0.5*Math.cos(2*Math.PI*i/(n-1)); re[i]=sig[i]*win; }
+    fft(re,im); const half=n/2, p=new Float64Array(half);
+    for(let k=0;k<half;k++) p[k]=(re[k]*re[k]+im[k]*im[k])/n; return p; } // index k -> freq k*fs/n
+
+  function stft(sig){ const win=128, hop=32, nWin=Math.floor((Ns-win)/hop)+1, half=win/2;
+    const cols=[]; const re=new Float64Array(win), im=new Float64Array(win);
+    for(let c=0;c<nWin;c++){ const off=c*hop;
+      for(let i=0;i<win;i++){ const w=0.5-0.5*Math.cos(2*Math.PI*i/(win-1)); re[i]=sig[off+i]*w; im[i]=0; }
+      fft(re,im); const col=new Float64Array(half);
+      for(let k=0;k<half;k++) col[k]=Math.log10(1e-4+(re[k]*re[k]+im[k]*im[k])/win); cols.push(col); }
+    return {cols, binHz:fs/win}; }
+
+  // ---------- canvases ----------
+  const cvW=document.getElementById("wave"), cxW=cvW.getContext("2d");
+  const cvSp=document.getElementById("spectro"), cxSp=cvSp.getContext("2d");
+  const cvF=document.getElementById("spectrum"), cxF=cvF.getContext("2d");
+  function fit(cv,ctx){ const dpr=Math.min(window.devicePixelRatio||1,2);
+    const w=cv.clientWidth,h=cv.clientHeight; cv.width=Math.round(w*dpr); cv.height=Math.round(h*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0); return {w,h}; }
+
+  let SIG=null, PSD=null, STFTD=null;
+  function recompute(){ SIG=buildSignal(); PSD=powerSpectrum(SIG); STFTD=stft(SIG); drawAll(); updatePow(); }
+
+  function drawWave(){
+    const {w,h}=fit(cvW,cxW); cxW.clearRect(0,0,w,h);
+    cxW.strokeStyle=C.grid(.6); cxW.lineWidth=1; cxW.beginPath(); cxW.moveTo(0,h/2); cxW.lineTo(w,h/2); cxW.stroke();
+    let mx=1e-6; for(let i=0;i<Ns;i++) mx=Math.max(mx,Math.abs(SIG[i]));
+    cxW.strokeStyle=C.cool; cxW.lineWidth=1.4; cxW.beginPath();
+    for(let i=0;i<Ns;i++){ const x=i/(Ns-1)*w, y=h/2 - SIG[i]/mx*(h/2-8); i?cxW.lineTo(x,y):cxW.moveTo(x,y); }
+    cxW.stroke();
+  }
+  function drawSpectro(){
+    const {w,h}=fit(cvSp,cxSp); cxSp.clearRect(0,0,w,h);
+    const cols=STFTD.cols, nWin=cols.length, binHz=STFTD.binHz;
+    const fMax=50, nRow=Math.min(cols[0].length, Math.ceil(fMax/binHz));
+    let vmin=1e9,vmax=-1e9; for(const col of cols) for(let k=0;k<nRow;k++){ vmin=Math.min(vmin,col[k]); vmax=Math.max(vmax,col[k]); }
+    const cw=w/nWin, ch=h/nRow;
+    const stops=[[C.specLo,0],[C.blue,0.4],[C.warmA,0.72],[C.sharp,1]];
+    for(let c=0;c<nWin;c++){ const col=cols[c];
+      for(let k=0;k<nRow;k++){ const t=clamp((col[k]-vmin)/(vmax-vmin+1e-9),0,1);
+        cxSp.fillStyle=lerp3(stops,t); cxSp.fillRect(c*cw, h-(k+1)*ch, cw+0.6, ch+0.6); } }
+    // band guide lines
+    cxSp.font='9px "JetBrains Mono",monospace'; cxSp.textBaseline="bottom";
+    for(const b of BANDS){ const y=h - (b.hi/binHz)*ch; if(y<2||y>h) continue;
+      cxSp.strokeStyle=rgba(C.ink,.12); cxSp.lineWidth=1; cxSp.beginPath(); cxSp.moveTo(0,y); cxSp.lineTo(w,y); cxSp.stroke(); }
+  }
+  function drawSpectrum(){
+    const {w,h}=fit(cvF,cxF); cxF.clearRect(0,0,w,h);
+    const pl=8,pr=8,pt=8,pb=16, fMax=50;
+    const kMax=Math.ceil(fMax*Ns/fs);
+    const X=f=>pl+f/fMax*(w-pl-pr);
+    let mx=1e-9; for(let k=1;k<=kMax;k++) mx=Math.max(mx,PSD[k]);
+    const Y=p=>h-pb-Math.sqrt(p/mx)*(h-pt-pb);
+    // band shading
+    for(const b of BANDS){ const x0=X(b.lo), x1=X(Math.min(b.hi,fMax));
+      cxF.fillStyle=rgba(bandColor(b),0.10); cxF.fillRect(x0,pt,x1-x0,h-pt-pb); }
+    // spectrum curve
+    cxF.strokeStyle=C.ink; cxF.lineWidth=1.6; cxF.beginPath();
+    for(let k=1;k<=kMax;k++){ const f=k*fs/Ns, x=X(f), y=Y(PSD[k]); k===1?cxF.moveTo(x,y):cxF.lineTo(x,y); }
+    cxF.stroke();
+    // fill under
+    cxF.lineTo(X(fMax),h-pb); cxF.lineTo(X(0),h-pb); cxF.closePath();
+    cxF.fillStyle=rgba(C.cool,.12); cxF.fill();
+    // band labels
+    cxF.font='9px "JetBrains Mono",monospace'; cxF.textBaseline="top"; cxF.textAlign="center";
+    for(const b of BANDS){ const xc=X((b.lo+Math.min(b.hi,fMax))/2); cxF.fillStyle=rgba(bandColor(b),.9);
+      cxF.fillText(b.name.split(" ")[0], xc, h-pb+3); }
+  }
+  function drawAll(){ drawWave(); drawSpectro(); drawSpectrum(); }
+
+  // band power (integrate PSD in each band)
+  function bandPower(b){ let s=0; const k0=Math.max(1,Math.round(b.lo*Ns/fs)), k1=Math.round(b.hi*Ns/fs);
+    for(let k=k0;k<=k1;k++) s+=PSD[k]; return s; }
+  function updatePow(){
+    const pw=BANDS.map(bandPower); const mx=Math.max(...pw,1e-9);
+    const bars=document.getElementById("powbars"); bars.innerHTML="";
+    let domI=0; for(let i=1;i<pw.length;i++) if(pw[i]>pw[domI]) domI=i;
+    BANDS.forEach((b,i)=>{ const col=bandColor(b);
+      const el=document.createElement("div"); el.className="pb";
+      el.innerHTML=`<div class="track"><div class="fill" style="height:${(pw[i]/mx*100).toFixed(0)}%;background:${col}"></div></div><div class="lab">${b.name.split(" ")[0]}</div>`;
+      bars.appendChild(el); });
+    document.getElementById("domTag").textContent="dominant: "+BANDS[domI].name.split(" ")[1];
+  }
+
+  // ---------- band sliders ----------
+  const bandsWrap=document.getElementById("bands");
+  BANDS.forEach(b=>{ const col=bandColor(b);
+    const row=document.createElement("div"); row.className="band-ctl";
+    row.innerHTML=`<div class="bl"><i style="background:${col}"></i><span>${b.name}</span> <span class="hz">${b.lo}–${b.hi}</span></div>
+      <input type="range" min="0" max="1.4" step="0.01" value="${amp[b.key]}" aria-label="${b.name}">
+      <span class="bv">${amp[b.key].toFixed(2)}</span>`;
+    const inp=row.querySelector("input"), val=row.querySelector(".bv");
+    inp.addEventListener("input",()=>{ amp[b.key]=parseFloat(inp.value); val.textContent=amp[b.key].toFixed(2); recompute(); });
+    bandsWrap.appendChild(row);
+  });
+  const nEl=document.getElementById("noise"), nV=document.getElementById("noiseV");
+  nEl.addEventListener("input",()=>{ noise=parseFloat(nEl.value); nV.textContent=noise.toFixed(2); recompute();
+    document.getElementById("eegNote").innerHTML = noise>0.7 ? `High noise — band peaks are sinking into the floor.` : `Turn up one band and watch a single peak rise in the spectrum.`; });
+  document.getElementById("regen").onclick=()=>{ reroll(); recompute(); };
+
+  window.__onTheme=t=>{ C=PAL[t==='light'?'light':'dark'];
+    // rebuild slider swatches for new theme accent
+    document.querySelectorAll("#bands .band-ctl").forEach((row,i)=>{ const sw=row.querySelector(".bl i"); if(sw) sw.style.background=bandColor(BANDS[i]); });
+    drawAll(); updatePow(); };
+  window.addEventListener("resize",()=>{ clearTimeout(window.__rt); window.__rt=setTimeout(()=>{drawAll();},90); });
+
+  recompute();
+})();
+</script>
+</body>
+</html>
