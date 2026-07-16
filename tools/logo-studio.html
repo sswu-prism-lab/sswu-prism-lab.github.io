@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -19,7 +19,7 @@
   #stage{
     flex:1; display:flex; align-items:center; justify-content:center;
     position:relative; overflow:hidden; transition:background .3s;
-    background:#efe7c4;
+    background:#efe7c4; padding:12px;
   }
   #stage.dark{ background:#12131a; }
   #stage.check{
@@ -29,8 +29,8 @@
       linear-gradient(45deg,#cfcfd3 25%,transparent 25%,transparent 75%,#cfcfd3 75%);
     background-size:44px 44px; background-position:0 0,22px 22px;
   }
-  #logo{ width:min(62vh,520px); height:auto; display:block; filter:drop-shadow(0 18px 40px rgba(0,0,0,.25)); }
-  .bgbtns{ position:absolute; top:16px; left:16px; display:flex; gap:6px; }
+  #logo{ height:min(94vh,780px); width:auto; max-width:94%; display:block; filter:drop-shadow(0 14px 34px rgba(0,0,0,.22)); }
+  .bgbtns{ position:absolute; top:14px; left:14px; display:flex; gap:6px; z-index:3; }
   .bgbtns button{
     background:rgba(20,22,30,.6); color:#fff; border:1px solid rgba(255,255,255,.18);
     padding:6px 11px; border-radius:8px; font-size:12px; cursor:pointer; backdrop-filter:blur(6px);
@@ -105,6 +105,16 @@
   #pngModal .modalActions{ display:flex; gap:8px; margin-top:16px; }
   #pngModal a.btn{ text-decoration:none; display:flex; align-items:center; justify-content:center; }
   #pngModal p{ font-size:11px; color:var(--muted); margin:11px 0 0; line-height:1.5; }
+
+  /* ---------- responsive: stack on narrow screens so the logo is large and the toolbar sits below ---------- */
+  @media (max-width: 820px){
+    body{ flex-direction:column; }
+    #stage{ min-height:54vh; padding:16px; }
+    #logo{ height:auto; width:min(78vw,430px); max-width:none; }
+    #panel{ width:100%; height:auto; border-left:none; border-top:1px solid var(--line); padding-bottom:64px; }
+    #panel header{ position:static; }
+    input[type=range]{ width:44vw; max-width:190px; }
+  }
 </style>
 </head>
 <body>
@@ -113,7 +123,7 @@
   <div class="bgbtns">
     <button data-bg="light" class="on">Light</button>
     <button data-bg="dark">Dark</button>
-    <button data-bg="check">투명</button>
+    <button data-bg="check">Transparent</button>
   </div>
 
   <!-- ============ LOGO SVG ============ -->
@@ -167,13 +177,13 @@
 <!-- ============ PNG PREVIEW MODAL ============ -->
 <div id="pngModal">
   <div class="card">
-    <h3>PNG 미리보기</h3>
+    <h3>PNG preview</h3>
     <img id="pngPreview" alt="PNG preview">
     <div class="modalActions">
-      <a id="pngDl" class="btn primary" download="penrose_rainbow.png" style="flex:1">⬇ 다운로드</a>
-      <button id="pngClose" class="btn ghost" style="flex:none;min-width:80px">닫기</button>
+      <a id="pngDl" class="btn primary" download="penrose_rainbow.png" style="flex:1">⬇ Download</a>
+      <button id="pngClose" class="btn ghost" style="flex:none;min-width:80px">Close</button>
     </div>
-    <p>‘다운로드’가 눌리지 않으면 위 이미지를 우클릭(모바일은 길게 누르기) → “이미지를 다른 이름으로 저장”으로도 저장할 수 있어요.</p>
+    <p>If “Download” doesn’t work, right-click the image above (long-press on mobile) and choose “Save image as…”.</p>
   </div>
 </div>
 
@@ -181,7 +191,7 @@
 <div id="panel">
   <header>
     <h1>Penrose · Rainbow Studio</h1>
-    <p>무지개 팔레트와 광원 효과를 조절하고 SVG로 내보내세요.</p>
+    <p>Tweak the rainbow palette and lighting, then export as SVG or PNG.</p>
   </header>
 
   <div class="sec">
@@ -206,7 +216,7 @@
     <h2>Presets</h2>
     <div class="presets" id="presets"></div>
     <div class="row" style="margin-top:14px">
-      <label>그라데이션 뒤집기 (안→밖)</label>
+      <label>Flip gradient (in&nbsp;→&nbsp;out)</label>
       <div class="toggle"><input type="checkbox" id="flip"><span></span></div>
     </div>
     <div class="actions" style="padding:12px 0 0">
@@ -217,28 +227,28 @@
   <div class="sec">
     <h2>Appearance</h2>
     <div class="row">
-      <label>채움 투명도 (opacity)</label>
+      <label>Fill opacity</label>
       <input type="range" id="opacity" min="0" max="1" step="0.01" value="1">
       <span class="val" id="opacity_v">1.00</span>
     </div>
     <div class="row">
-      <label>외곽선 두께</label>
+      <label>Outline width</label>
       <input type="range" id="stroke" min="0" max="80" step="1" value="30">
       <span class="val" id="stroke_v">30</span>
     </div>
     <div class="row">
-      <label>외곽선 색</label>
+      <label>Outline color</label>
       <input type="color" id="strokeColor" value="#111111" style="width:46px;height:30px;border:1px solid var(--line);border-radius:8px;padding:0;cursor:pointer">
     </div>
   </div>
 
   <div class="sec">
     <h2>Center Glow <div class="toggle"><input type="checkbox" id="glowOn"><span></span></div></h2>
-    <div class="row"><label>밝기</label><input type="range" id="glowInt" min="0" max="1" step="0.01" value="0.35" disabled><span class="val" id="glowInt_v">0.35</span></div>
-    <div class="row"><label>번짐 반경</label><input type="range" id="glowR" min="800" max="4500" step="50" value="3000" disabled><span class="val" id="glowR_v">3000</span></div>
-    <div class="row"><label>중심 X</label><input type="range" id="glowX" min="0" max="3696" step="10" value="1588" disabled><span class="val" id="glowX_v">1588</span></div>
-    <div class="row"><label>중심 Y</label><input type="range" id="glowY" min="0" max="4272" step="10" value="2360" disabled><span class="val" id="glowY_v">2360</span></div>
-    <div class="row"><label>합성 방식</label>
+    <div class="row"><label>Brightness</label><input type="range" id="glowInt" min="0" max="1" step="0.01" value="0.35" disabled><span class="val" id="glowInt_v">0.35</span></div>
+    <div class="row"><label>Spread radius</label><input type="range" id="glowR" min="800" max="4500" step="50" value="3000" disabled><span class="val" id="glowR_v">3000</span></div>
+    <div class="row"><label>Center X</label><input type="range" id="glowX" min="0" max="3696" step="10" value="1588" disabled><span class="val" id="glowX_v">1588</span></div>
+    <div class="row"><label>Center Y</label><input type="range" id="glowY" min="0" max="4272" step="10" value="2360" disabled><span class="val" id="glowY_v">2360</span></div>
+    <div class="row"><label>Blend mode</label>
       <select id="glowBlend" style="background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:5px 8px;font-size:12px" disabled>
         <option value="overlay">overlay</option>
         <option value="screen">screen</option>
@@ -250,44 +260,44 @@
 
   <div class="sec">
     <h2>Specular Shine <div class="toggle"><input type="checkbox" id="specOn"><span></span></div></h2>
-    <div class="row"><label>빛 세기 (surface)</label><input type="range" id="spSurf" min="0" max="60" step="1" value="22" disabled><span class="val" id="spSurf_v">22</span></div>
-    <div class="row"><label>하이라이트 집중</label><input type="range" id="spExp" min="1" max="120" step="1" value="60" disabled><span class="val" id="spExp_v">60</span></div>
-    <div class="row"><label>부드러움 (blur)</label><input type="range" id="spBlur" min="0" max="140" step="1" value="63" disabled><span class="val" id="spBlur_v">63</span></div>
-    <div class="row"><label>광원 X</label><input type="range" id="spX" min="0" max="3696" step="10" value="1588" disabled><span class="val" id="spX_v">1588</span></div>
-    <div class="row"><label>광원 Y</label><input type="range" id="spY" min="0" max="4272" step="10" value="2360" disabled><span class="val" id="spY_v">2360</span></div>
-    <div class="row"><label>광원 높이 Z</label><input type="range" id="spZ" min="200" max="4000" step="20" value="1660" disabled><span class="val" id="spZ_v">1660</span></div>
+    <div class="row"><label>Light strength (surface)</label><input type="range" id="spSurf" min="0" max="60" step="1" value="22" disabled><span class="val" id="spSurf_v">22</span></div>
+    <div class="row"><label>Highlight focus</label><input type="range" id="spExp" min="1" max="120" step="1" value="60" disabled><span class="val" id="spExp_v">60</span></div>
+    <div class="row"><label>Softness (blur)</label><input type="range" id="spBlur" min="0" max="140" step="1" value="63" disabled><span class="val" id="spBlur_v">63</span></div>
+    <div class="row"><label>Light X</label><input type="range" id="spX" min="0" max="3696" step="10" value="1588" disabled><span class="val" id="spX_v">1588</span></div>
+    <div class="row"><label>Light Y</label><input type="range" id="spY" min="0" max="4272" step="10" value="2360" disabled><span class="val" id="spY_v">2360</span></div>
+    <div class="row"><label>Light height (Z)</label><input type="range" id="spZ" min="200" max="4000" step="20" value="1660" disabled><span class="val" id="spZ_v">1660</span></div>
   </div>
 
   <div class="sec">
     <h2>Export</h2>
     <div class="row">
-      <label>PNG 크기 (긴 변)</label>
+      <label>PNG size (long side)</label>
       <select id="pngSize" style="background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:5px 8px;font-size:12px">
         <option value="256">256 px</option>
         <option value="512">512 px</option>
         <option value="1024" selected>1024 px</option>
         <option value="2048">2048 px</option>
-        <option value="4272">4272 px (원본)</option>
+        <option value="4272">4272 px (original)</option>
       </select>
     </div>
     <div class="row">
-      <label>투명 배경</label>
+      <label>Transparent background</label>
       <div class="toggle"><input type="checkbox" id="pngTransparent" checked><span></span></div>
     </div>
     <div class="row" id="pngBgRow" style="opacity:.35">
-      <label>배경색</label>
+      <label>Background color</label>
       <input type="color" id="pngBg" value="#efe7c4" style="width:46px;height:30px;border:1px solid var(--line);border-radius:8px;padding:0;cursor:pointer" disabled>
     </div>
     <div class="actions" style="padding:14px 0 0">
-      <button class="btn primary" id="dlPng">PNG 저장</button>
-      <button class="btn ghost" id="dl">SVG 저장</button>
+      <button class="btn primary" id="dlPng">Save PNG</button>
+      <button class="btn ghost" id="dl">Save SVG</button>
     </div>
   </div>
 
   <div class="actions">
-    <button class="btn ghost" id="reset" style="flex:1">전체 초기화</button>
+    <button class="btn ghost" id="reset" style="flex:1">Reset all</button>
   </div>
-  <p class="hint">내보낸 파일은 현재 화면 상태(색·투명도·외곽선·켜져 있는 효과)를 그대로 담습니다. favicon/로고로 쓰려면 효과는 끄고 팔레트만 조절한 버전을 추천해요.</p>
+  <p class="hint">Exports capture the current on-screen state — colors, opacity, outline, and any effects that are turned on.</p>
 </div>
 
 <script>
@@ -452,7 +462,7 @@ $('pngTransparent').addEventListener('change', e=>{
   $('pngBg').disabled = off;
   $('pngBgRow').style.opacity = off ? .35 : 1;
 });
-const PNG_LABEL='PNG 저장';
+const PNG_LABEL='Save PNG';
 function pngDone(msg){
   const btn=$('dlPng'); btn.disabled=false; btn.textContent=msg||PNG_LABEL;
   if(msg) setTimeout(()=>{ btn.textContent=PNG_LABEL; },2200);
@@ -473,7 +483,7 @@ function savePngFromCanvas(cv){
     url = cv.toDataURL('image/png');
   }catch(e){
     console.error('toDataURL failed (canvas tainted?)', e);
-    return pngDone('실패 · 콘솔 확인');
+    return pngDone('Failed · check console');
   }
   showPngModal(url);
 }
@@ -481,7 +491,7 @@ $('pngClose').onclick=()=>{ $('pngModal').style.display='none'; };
 $('pngModal').addEventListener('click', e=>{ if(e.target.id==='pngModal') $('pngModal').style.display='none'; });
 document.addEventListener('keydown', e=>{ if(e.key==='Escape') $('pngModal').style.display='none'; });
 $('dlPng').onclick=()=>{
-  const btn=$('dlPng'); btn.textContent='변환 중…'; btn.disabled=true;
+  const btn=$('dlPng'); btn.textContent='Rendering…'; btn.disabled=true;
   try{
     const longSide = +$('pngSize').value;
     const scale = longSide / Math.max(VB_W, VB_H);
@@ -491,7 +501,7 @@ $('dlPng').onclick=()=>{
     const dataUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgStr);
     const img = new Image();
     // safety net: if neither onload nor onerror fires (rare sandbox stall), release the button.
-    const guard = setTimeout(()=>{ if($('dlPng').disabled) pngDone('실패 · 다시 시도'); }, 8000);
+    const guard = setTimeout(()=>{ if($('dlPng').disabled) pngDone('Failed · try again'); }, 8000);
     img.onload = ()=>{
       clearTimeout(guard);
       try{
@@ -500,11 +510,11 @@ $('dlPng').onclick=()=>{
         if(!$('pngTransparent').checked){ ctx.fillStyle=$('pngBg').value; ctx.fillRect(0,0,w,h); }
         ctx.drawImage(img,0,0,w,h);
         savePngFromCanvas(cv);
-      }catch(e){ console.error('render failed', e); pngDone('실패 · 콘솔 확인'); }
+      }catch(e){ console.error('render failed', e); pngDone('Failed · check console'); }
     };
-    img.onerror = (e)=>{ clearTimeout(guard); console.error('SVG image load failed', e); pngDone('실패 · 다시 시도'); };
+    img.onerror = (e)=>{ clearTimeout(guard); console.error('SVG image load failed', e); pngDone('Failed · try again'); };
     img.src = dataUrl;
-  }catch(e){ console.error(e); pngDone('실패 · 콘솔 확인'); }
+  }catch(e){ console.error(e); pngDone('Failed · check console'); }
 };
 
 /* init */

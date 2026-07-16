@@ -37,5 +37,5 @@ your own version as **SVG** or **PNG**.
 </div>
 
 <p class="pg-fallback">
-  화면이 좁으면 <a href="{{ site.url }}{{ site.baseurl }}/tools/logo-studio.html" target="_blank" rel="noopener">새 탭에서 전체화면</a>으로 여는 것을 추천해요.
+  On a narrow screen, we recommend opening the <a href="{{ site.url }}{{ site.baseurl }}/tools/logo-studio.html" target="_blank" rel="noopener">full-screen version in a new tab</a>.
 </p>
