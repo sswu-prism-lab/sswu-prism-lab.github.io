@@ -6,26 +6,35 @@ sitemap: false
 permalink: /playground/
 ---
 
-<style>
-.pg-frame-wrap {
-  position: relative;
-  width: 100%;
-  height: calc(100vh - 150px);
-  min-height: 620px;
-  border: 1px solid #e2e2e2;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 10px 34px rgba(0,0,0,.12);
-}
-html[data-theme="dark"] .pg-frame-wrap { border-color: #26314f; box-shadow: 0 10px 34px rgba(0,0,0,.45); }
-.pg-frame-wrap iframe { width: 100%; height: 100%; border: 0; display: block; }
-.pg-fallback { font-size: 13px; margin-top: 12px; color: #888; }
-</style>
+<iframe id="pgframe" src="{{ site.url }}{{ site.baseurl }}/pg/index.html" title="PRISM Playground"
+        style="width:100%;border:0;display:block;height:900px"></iframe>
 
-<div class="pg-frame-wrap">
-  <iframe src="{{ site.url }}{{ site.baseurl }}/pg/index.html" title="PRISM Playground" loading="lazy"></iframe>
-</div>
+<script>
+(function () {
+  var f = document.getElementById('pgframe');
+  if (!f) return;
+  var ro = null;
 
-<p class="pg-fallback">
-  On a narrow screen, we recommend opening the <a href="{{ site.url }}{{ site.baseurl }}/pg/index.html" target="_blank" rel="noopener">full playground in a new tab</a>.
-</p>
+  function resize() {
+    try {
+      var d = f.contentWindow.document;
+      var h = Math.max(d.body.scrollHeight, d.documentElement.scrollHeight);
+      if (h > 60) f.style.height = h + 'px';
+    } catch (e) {}
+  }
+
+  function hook() {
+    resize();
+    [120, 350, 800, 1500].forEach(function (t) { setTimeout(resize, t); });
+    try {
+      if (ro) ro.disconnect();
+      ro = new ResizeObserver(resize);
+      ro.observe(f.contentWindow.document.body);
+    } catch (e) {}
+  }
+
+  f.addEventListener('load', hook);
+  window.addEventListener('resize', resize);
+  setInterval(resize, 1000);   // safety net (fonts, late layout, in-iframe navigation)
+})();
+</script>

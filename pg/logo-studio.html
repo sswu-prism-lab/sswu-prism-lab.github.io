@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script>try{if(window.self!==window.top)document.documentElement.classList.add('embedded');}catch(e){document.documentElement.classList.add('embedded');}</script>
 <title>PRISM Penrose · Rainbow Studio</title>
 <style>
   :root{
@@ -105,6 +106,14 @@
   #pngModal .modalActions{ display:flex; gap:8px; margin-top:16px; }
   #pngModal a.btn{ text-decoration:none; display:flex; align-items:center; justify-content:center; }
   #pngModal p{ font-size:11px; color:var(--muted); margin:11px 0 0; line-height:1.5; }
+
+  /* ---------- embedded in the playground page: flow naturally (no viewport-height pane) so the parent page scrolls as one ---------- */
+  html.embedded, html.embedded body{ height:auto; min-height:0; }
+  html.embedded body{ flex-direction:column; }
+  html.embedded #stage{ height:460px; min-height:0; }
+  html.embedded #logo{ height:405px; width:auto; max-width:88%; }
+  html.embedded #panel{ width:100%; height:auto; overflow:visible; border-left:none; border-top:1px solid var(--line); }
+  html.embedded #panel header{ position:static; }
 
   /* ---------- responsive: stack on narrow screens so the logo is large and the toolbar sits below ---------- */
   @media (max-width: 820px){
