@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PRISM Penrose · Rainbow Studio</title>
+<style>
+  :root{
+    --bg:#0f1117; --panel:#171a22; --panel2:#1e222c; --line:#2b3040;
+    --txt:#e7e9ee; --muted:#98a0b3; --accent:#7c8cff;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg); color:var(--txt); display:flex; min-height:100%;
+  }
+  /* ---------- stage ---------- */
+  #stage{
+    flex:1; display:flex; align-items:center; justify-content:center;
+    position:relative; overflow:hidden; transition:background .3s;
+    background:#efe7c4;
+  }
+  #stage.dark{ background:#12131a; }
+  #stage.check{
+    background-color:#e9e9ea;
+    background-image:
+      linear-gradient(45deg,#cfcfd3 25%,transparent 25%,transparent 75%,#cfcfd3 75%),
+      linear-gradient(45deg,#cfcfd3 25%,transparent 25%,transparent 75%,#cfcfd3 75%);
+    background-size:44px 44px; background-position:0 0,22px 22px;
+  }
+  #logo{ width:min(62vh,520px); height:auto; display:block; filter:drop-shadow(0 18px 40px rgba(0,0,0,.25)); }
+  .bgbtns{ position:absolute; top:16px; left:16px; display:flex; gap:6px; }
+  .bgbtns button{
+    background:rgba(20,22,30,.6); color:#fff; border:1px solid rgba(255,255,255,.18);
+    padding:6px 11px; border-radius:8px; font-size:12px; cursor:pointer; backdrop-filter:blur(6px);
+  }
+  .bgbtns button.on{ background:var(--accent); border-color:var(--accent); }
+
+  /* ---------- panel ---------- */
+  #panel{
+    width:340px; flex:none; background:var(--panel); border-left:1px solid var(--line);
+    height:100vh; overflow-y:auto; padding:0 0 40px;
+  }
+  #panel header{
+    padding:18px 20px 12px; position:sticky; top:0; background:var(--panel);
+    border-bottom:1px solid var(--line); z-index:2;
+  }
+  #panel header h1{ font-size:15px; margin:0; letter-spacing:.3px; }
+  #panel header p{ margin:4px 0 0; font-size:12px; color:var(--muted); }
+  .sec{ padding:16px 20px; border-bottom:1px solid var(--line); }
+  .sec h2{
+    font-size:11px; text-transform:uppercase; letter-spacing:.10em; color:var(--muted);
+    margin:0 0 12px; display:flex; align-items:center; justify-content:space-between;
+  }
+  .swatches{ display:grid; grid-template-columns:repeat(5,1fr); gap:8px; }
+  .sw{ display:flex; flex-direction:column; align-items:center; gap:5px; }
+  .sw label{ font-size:10px; color:var(--muted); }
+  .sw input[type=color]{
+    width:100%; height:38px; border:1px solid var(--line); border-radius:9px; background:none;
+    cursor:pointer; padding:0;
+  }
+  .presets{ display:flex; flex-wrap:wrap; gap:7px; }
+  .preset{
+    border:1px solid var(--line); background:var(--panel2); color:var(--txt);
+    border-radius:20px; padding:5px 11px; font-size:11.5px; cursor:pointer;
+    display:flex; align-items:center; gap:7px;
+  }
+  .preset:hover{ border-color:var(--accent); }
+  .preset .dots{ display:flex; }
+  .preset .dots i{ width:9px; height:9px; border-radius:50%; display:block; margin-left:-3px; border:1px solid rgba(0,0,0,.25); }
+  .preset .dots i:first-child{ margin-left:0; }
+
+  .row{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin:11px 0; }
+  .row label{ font-size:12.5px; color:var(--txt); flex:1; }
+  .row .val{ font-size:11px; color:var(--muted); min-width:42px; text-align:right; font-variant-numeric:tabular-nums; }
+  input[type=range]{ -webkit-appearance:none; appearance:none; width:150px; height:4px; border-radius:4px; background:var(--line); outline:none; }
+  input[type=range]::-webkit-slider-thumb{ -webkit-appearance:none; width:15px; height:15px; border-radius:50%; background:var(--accent); cursor:pointer; border:2px solid #fff2; }
+  input[type=range]:disabled{ opacity:.35; }
+  .toggle{ position:relative; width:38px; height:22px; flex:none; }
+  .toggle input{ position:absolute; inset:0; width:100%; height:100%; margin:0; opacity:0; cursor:pointer; z-index:2; }
+  .toggle span{ position:absolute; inset:0; background:var(--line); border-radius:22px; transition:.2s; z-index:1; pointer-events:none; }
+  .toggle span:before{ content:""; position:absolute; width:16px; height:16px; left:3px; top:3px; background:#fff; border-radius:50%; transition:.2s; }
+  .toggle input:checked + span{ background:var(--accent); }
+  .toggle input:checked + span:before{ transform:translateX(16px); }
+
+  .actions{ display:flex; gap:8px; padding:16px 20px; }
+  .btn{
+    flex:1; border:none; border-radius:10px; padding:11px; font-size:13px; font-weight:600; cursor:pointer;
+  }
+  .btn.primary{ background:var(--accent); color:#fff; }
+  .btn.ghost{ background:var(--panel2); color:var(--txt); border:1px solid var(--line); }
+  .btn:active{ transform:translateY(1px); }
+  .hint{ font-size:11px; color:var(--muted); padding:0 20px; line-height:1.5; }
+  /* PNG preview modal */
+  #pngModal{ position:fixed; inset:0; background:rgba(0,0,0,.62); display:none; align-items:center; justify-content:center; z-index:100; padding:24px; }
+  #pngModal .card{ background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:18px; width:min(92vw,540px); box-shadow:0 24px 60px rgba(0,0,0,.5); }
+  #pngModal .card h3{ margin:0 0 12px; font-size:14px; }
+  #pngModal img{
+    display:block; max-width:100%; max-height:56vh; margin:0 auto; border-radius:10px;
+    background-color:#e9e9ea;
+    background-image:linear-gradient(45deg,#cfcfd3 25%,transparent 25%,transparent 75%,#cfcfd3 75%),linear-gradient(45deg,#cfcfd3 25%,transparent 25%,transparent 75%,#cfcfd3 75%);
+    background-size:22px 22px; background-position:0 0,11px 11px;
+  }
+  #pngModal .modalActions{ display:flex; gap:8px; margin-top:16px; }
+  #pngModal a.btn{ text-decoration:none; display:flex; align-items:center; justify-content:center; }
+  #pngModal p{ font-size:11px; color:var(--muted); margin:11px 0 0; line-height:1.5; }
+</style>
+</head>
+<body>
+
+<div id="stage" class="light">
+  <div class="bgbtns">
+    <button data-bg="light" class="on">Light</button>
+    <button data-bg="dark">Dark</button>
+    <button data-bg="check">투명</button>
+  </div>
+
+  <!-- ============ LOGO SVG ============ -->
+  <svg id="logo" viewBox="0 0 3696 4272" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="paint0" x1="902" y1="311" x2="902" y2="4151.5" gradientUnits="userSpaceOnUse"><stop id="paint0_0"/><stop id="paint0_1" offset="1"/></linearGradient>
+      <linearGradient id="paint1" x1="979.375" y1="855.122" x2="979.375" y2="4151.5" gradientUnits="userSpaceOnUse"><stop id="paint1_0"/><stop id="paint1_1" offset="1"/></linearGradient>
+      <linearGradient id="paint2" x1="2629.62" y1="1034.25" x2="2629.63" y2="3410" gradientUnits="userSpaceOnUse"><stop id="paint2_0"/><stop id="paint2_1" offset="1"/></linearGradient>
+      <linearGradient id="paint3" x1="1064.38" y1="120" x2="1064.38" y2="1216" gradientUnits="userSpaceOnUse"><stop id="paint3_0"/><stop id="paint3_1" offset="1"/></linearGradient>
+      <linearGradient id="paint4" x1="2708.5" y1="1128" x2="2708.5" y2="2868.75" gradientUnits="userSpaceOnUse"><stop id="paint4_0"/><stop id="paint4_1" offset="1"/></linearGradient>
+      <linearGradient id="paint5" x1="1140.88" y1="2963" x2="1140.88" y2="3599" gradientUnits="userSpaceOnUse"><stop id="paint5_0"/><stop id="paint5_1" offset="1"/></linearGradient>
+      <linearGradient id="paint6" x1="2390.21" y1="1317" x2="2390.21" y2="2132.5" gradientUnits="userSpaceOnUse"><stop id="paint6_0"/><stop id="paint6_1" offset="1"/></linearGradient>
+
+      <radialGradient id="glowGrad" gradientUnits="userSpaceOnUse" cx="1588" cy="2360" r="3000">
+        <stop id="g0" offset="0" stop-color="#ffffff" stop-opacity="1"/>
+        <stop id="g1" offset="0.55" stop-color="#ffffff" stop-opacity="0.30"/>
+        <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+      </radialGradient>
+      <mask id="shapeMask" maskUnits="userSpaceOnUse" x="0" y="0" width="3696" height="4272">
+        <path d="M426 484.5L1684 1216V3410L1380 3230.5V1408.62L426 855.122V4151.5L120 3975V311L426 484.5Z" fill="#fff" stroke="#fff" stroke-width="30" stroke-linejoin="round" stroke-linecap="round"/>
+        <path d="M749 1044V3599L1532.75 3148L1532 3512L749 3968L426 4151.5V855.122L749 1044Z" fill="#fff" stroke="#fff" stroke-width="30" stroke-linejoin="round" stroke-linecap="round"/>
+        <path d="M2005.75 2868.75L3575.25 1953V2322L2007 3236.5L1684 3410V1216L2008.75 1034.25L2005.75 2868.75Z" fill="#fff" stroke="#fff" stroke-width="30" stroke-linejoin="round" stroke-linecap="round"/>
+        <path d="M443 120L2008.75 1034.25L1684 1216L120 311L443 120Z" fill="#fff" stroke="#fff" stroke-width="30" stroke-linejoin="round" stroke-linecap="round"/>
+        <path d="M3575.25 1953L3260.75 2136.85L2005.75 2868.75L2008.5 2479L2939.42 1951.75L1841.75 1317L2166 1128L3575.25 1953Z" fill="#fff" stroke="#fff" stroke-width="30" stroke-linejoin="round" stroke-linecap="round"/>
+        <path d="M1222.5 2963L1532.75 3148L749 3599V3233L1222.5 2963Z" fill="#fff" stroke="#fff" stroke-width="30" stroke-linejoin="round" stroke-linecap="round"/>
+        <path d="M1841.75 1317L2939.42 1951.75L2621 2132.5L1841 1678.58L1841.75 1317Z" fill="#fff" stroke="#fff" stroke-width="30" stroke-linejoin="round" stroke-linecap="round"/>
+      </mask>
+      <filter id="specFilter" x="-20%" y="-20%" width="140%" height="140%">
+        <feGaussianBlur in="SourceAlpha" stdDeviation="63" result="blur" id="fBlur"/>
+        <feSpecularLighting in="blur" surfaceScale="22" specularConstant="0.1" specularExponent="60" lighting-color="#ffffff" result="spec" id="fSpec">
+          <fePointLight id="fLight" x="1588" y="2360" z="1660"/>
+        </feSpecularLighting>
+        <feComposite in="spec" in2="SourceAlpha" operator="in" result="specClip"/>
+        <feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="specClip"/></feMerge>
+      </filter>
+    </defs>
+
+    <g id="shapeGroup">
+      <path class="face" d="M426 484.5L1684 1216V3410L1380 3230.5V1408.62L426 855.122V4151.5L120 3975V311L426 484.5Z" fill="url(#paint0)"/>
+      <path class="face" d="M749 1044V3599L1532.75 3148L1532 3512L749 3968L426 4151.5V855.122L749 1044Z" fill="url(#paint1)"/>
+      <path class="face" d="M2005.75 2868.75L3575.25 1953V2322L2007 3236.5L1684 3410V1216L2008.75 1034.25L2005.75 2868.75Z" fill="url(#paint2)"/>
+      <path class="face" d="M443 120L2008.75 1034.25L1684 1216L120 311L443 120Z" fill="url(#paint3)"/>
+      <path class="face" d="M3575.25 1953L3260.75 2136.85L2005.75 2868.75L2008.5 2479L2939.42 1951.75L1841.75 1317L2166 1128L3575.25 1953Z" fill="url(#paint4)"/>
+      <path class="face" d="M1222.5 2963L1532.75 3148L749 3599V3233L1222.5 2963Z" fill="url(#paint5)"/>
+      <path class="face" d="M1841.75 1317L2939.42 1951.75L2621 2132.5L1841 1678.58L1841.75 1317Z" fill="url(#paint6)"/>
+    </g>
+    <rect id="glowRect" x="0" y="0" width="3696" height="4272" fill="url(#glowGrad)" mask="url(#shapeMask)" style="mix-blend-mode:overlay; display:none;"/>
+  </svg>
+</div>
+
+<!-- ============ PNG PREVIEW MODAL ============ -->
+<div id="pngModal">
+  <div class="card">
+    <h3>PNG 미리보기</h3>
+    <img id="pngPreview" alt="PNG preview">
+    <div class="modalActions">
+      <a id="pngDl" class="btn primary" download="penrose_rainbow.png" style="flex:1">⬇ 다운로드</a>
+      <button id="pngClose" class="btn ghost" style="flex:none;min-width:80px">닫기</button>
+    </div>
+    <p>‘다운로드’가 눌리지 않으면 위 이미지를 우클릭(모바일은 길게 누르기) → “이미지를 다른 이름으로 저장”으로도 저장할 수 있어요.</p>
+  </div>
+</div>
+
+<!-- ============ PANEL ============ -->
+<div id="panel">
+  <header>
+    <h1>Penrose · Rainbow Studio</h1>
+    <p>무지개 팔레트와 광원 효과를 조절하고 SVG로 내보내세요.</p>
+  </header>
+
+  <div class="sec">
+    <h2>Rainbow Palette</h2>
+    <div class="swatches">
+      <div class="sw"><input type="color" id="c_red"></div>
+      <div class="sw"><input type="color" id="c_yellow"></div>
+      <div class="sw"><input type="color" id="c_green"></div>
+      <div class="sw"><input type="color" id="c_blue"></div>
+      <div class="sw"><input type="color" id="c_purple"></div>
+    </div>
+    <div class="swatches" style="margin-top:6px">
+      <div class="sw"><label>Red</label></div>
+      <div class="sw"><label>Yellow</label></div>
+      <div class="sw"><label>Green</label></div>
+      <div class="sw"><label>Blue</label></div>
+      <div class="sw"><label>Purple</label></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2>Presets</h2>
+    <div class="presets" id="presets"></div>
+    <div class="row" style="margin-top:14px">
+      <label>그라데이션 뒤집기 (안→밖)</label>
+      <div class="toggle"><input type="checkbox" id="flip"><span></span></div>
+    </div>
+    <div class="actions" style="padding:12px 0 0">
+      <button class="btn ghost" id="randomize">🎲 Randomize</button>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2>Appearance</h2>
+    <div class="row">
+      <label>채움 투명도 (opacity)</label>
+      <input type="range" id="opacity" min="0" max="1" step="0.01" value="1">
+      <span class="val" id="opacity_v">1.00</span>
+    </div>
+    <div class="row">
+      <label>외곽선 두께</label>
+      <input type="range" id="stroke" min="0" max="80" step="1" value="30">
+      <span class="val" id="stroke_v">30</span>
+    </div>
+    <div class="row">
+      <label>외곽선 색</label>
+      <input type="color" id="strokeColor" value="#111111" style="width:46px;height:30px;border:1px solid var(--line);border-radius:8px;padding:0;cursor:pointer">
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2>Center Glow <div class="toggle"><input type="checkbox" id="glowOn"><span></span></div></h2>
+    <div class="row"><label>밝기</label><input type="range" id="glowInt" min="0" max="1" step="0.01" value="0.35" disabled><span class="val" id="glowInt_v">0.35</span></div>
+    <div class="row"><label>번짐 반경</label><input type="range" id="glowR" min="800" max="4500" step="50" value="3000" disabled><span class="val" id="glowR_v">3000</span></div>
+    <div class="row"><label>중심 X</label><input type="range" id="glowX" min="0" max="3696" step="10" value="1588" disabled><span class="val" id="glowX_v">1588</span></div>
+    <div class="row"><label>중심 Y</label><input type="range" id="glowY" min="0" max="4272" step="10" value="2360" disabled><span class="val" id="glowY_v">2360</span></div>
+    <div class="row"><label>합성 방식</label>
+      <select id="glowBlend" style="background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:5px 8px;font-size:12px" disabled>
+        <option value="overlay">overlay</option>
+        <option value="screen">screen</option>
+        <option value="soft-light">soft-light</option>
+        <option value="normal">normal</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h2>Specular Shine <div class="toggle"><input type="checkbox" id="specOn"><span></span></div></h2>
+    <div class="row"><label>빛 세기 (surface)</label><input type="range" id="spSurf" min="0" max="60" step="1" value="22" disabled><span class="val" id="spSurf_v">22</span></div>
+    <div class="row"><label>하이라이트 집중</label><input type="range" id="spExp" min="1" max="120" step="1" value="60" disabled><span class="val" id="spExp_v">60</span></div>
+    <div class="row"><label>부드러움 (blur)</label><input type="range" id="spBlur" min="0" max="140" step="1" value="63" disabled><span class="val" id="spBlur_v">63</span></div>
+    <div class="row"><label>광원 X</label><input type="range" id="spX" min="0" max="3696" step="10" value="1588" disabled><span class="val" id="spX_v">1588</span></div>
+    <div class="row"><label>광원 Y</label><input type="range" id="spY" min="0" max="4272" step="10" value="2360" disabled><span class="val" id="spY_v">2360</span></div>
+    <div class="row"><label>광원 높이 Z</label><input type="range" id="spZ" min="200" max="4000" step="20" value="1660" disabled><span class="val" id="spZ_v">1660</span></div>
+  </div>
+
+  <div class="sec">
+    <h2>Export</h2>
+    <div class="row">
+      <label>PNG 크기 (긴 변)</label>
+      <select id="pngSize" style="background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:5px 8px;font-size:12px">
+        <option value="256">256 px</option>
+        <option value="512">512 px</option>
+        <option value="1024" selected>1024 px</option>
+        <option value="2048">2048 px</option>
+        <option value="4272">4272 px (원본)</option>
+      </select>
+    </div>
+    <div class="row">
+      <label>투명 배경</label>
+      <div class="toggle"><input type="checkbox" id="pngTransparent" checked><span></span></div>
+    </div>
+    <div class="row" id="pngBgRow" style="opacity:.35">
+      <label>배경색</label>
+      <input type="color" id="pngBg" value="#efe7c4" style="width:46px;height:30px;border:1px solid var(--line);border-radius:8px;padding:0;cursor:pointer" disabled>
+    </div>
+    <div class="actions" style="padding:14px 0 0">
+      <button class="btn primary" id="dlPng">PNG 저장</button>
+      <button class="btn ghost" id="dl">SVG 저장</button>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn ghost" id="reset" style="flex:1">전체 초기화</button>
+  </div>
+  <p class="hint">내보낸 파일은 현재 화면 상태(색·투명도·외곽선·켜져 있는 효과)를 그대로 담습니다. favicon/로고로 쓰려면 효과는 끄고 팔레트만 조절한 버전을 추천해요.</p>
+</div>
+
+<script>
+/* ---------- palette + mapping ---------- */
+const PAL_DEFAULT = { red:'#bc5a5d', yellow:'#f2dd86', green:'#6f8e72', blue:'#4b55d2', purple:'#775e91' };
+let pal = {...PAL_DEFAULT};
+
+// each face gradient: stop0 -> stop1, drawn from palette keys
+const MAP = [
+  {id:'paint0', a:'yellow', b:'red'},
+  {id:'paint1', a:'red',    b:'purple'},
+  {id:'paint2', a:'red',    b:'purple'},
+  {id:'paint3', a:'blue',   b:'green'},
+  {id:'paint4', a:'blue',   b:'green'},
+  {id:'paint5', a:'blue',   b:'green'},
+  {id:'paint6', a:'yellow', b:'red'},
+];
+
+const PRESETS = [
+  {name:'PRISM',   c:['#bc5a5d','#f2dd86','#6f8e72','#4b55d2','#775e91']},
+  {name:'Vivid',   c:['#e63946','#ffd166','#06d6a0','#4361ee','#9b5de5']},
+  {name:'Pastel',  c:['#f4a3a6','#f7e9a0','#a8d5b5','#a3b4f0','#c9addc']},
+  {name:'Sunset',  c:['#d1495b','#edae49','#e07a5f','#6a4c93','#8e5572']},
+  {name:'Ocean',   c:['#ef476f','#ffd166','#06d6a0','#118ab2','#073b8c']},
+  {name:'Neon',    c:['#ff2e63','#faff00','#0aff99','#00d4ff','#c724ff']},
+  {name:'Earth',   c:['#a5484b','#dcb35c','#7a8b5a','#4a6d8c','#6d5a7a']},
+];
+
+const $ = id => document.getElementById(id);
+let flip = false;
+
+function applyGradients(){
+  MAP.forEach(m=>{
+    const s0 = flip ? pal[m.b] : pal[m.a];
+    const s1 = flip ? pal[m.a] : pal[m.b];
+    $(m.id+'_0').setAttribute('stop-color', s0);
+    $(m.id+'_1').setAttribute('stop-color', s1);
+  });
+  // reflect into color inputs
+  $('c_red').value=pal.red; $('c_yellow').value=pal.yellow; $('c_green').value=pal.green;
+  $('c_blue').value=pal.blue; $('c_purple').value=pal.purple;
+}
+
+/* ---------- appearance ---------- */
+function applyAppearance(){
+  const op = $('opacity').value, sw = $('stroke').value, sc = $('strokeColor').value;
+  document.querySelectorAll('.face').forEach(p=>{
+    p.setAttribute('fill-opacity', op);
+    p.setAttribute('stroke', sc);
+    p.setAttribute('stroke-width', sw);
+    p.setAttribute('stroke-linecap','round');
+    p.setAttribute('stroke-linejoin','round');
+  });
+  $('opacity_v').textContent = (+op).toFixed(2);
+  $('stroke_v').textContent = sw;
+}
+
+/* ---------- glow ---------- */
+function applyGlow(){
+  const on = $('glowOn').checked;
+  const rect = $('glowRect');
+  ['glowInt','glowR','glowX','glowY','glowBlend'].forEach(k=>$(k).disabled=!on);
+  rect.style.display = on ? 'block' : 'none';
+  $('g1').setAttribute('stop-opacity', $('glowInt').value);
+  $('glowGrad').setAttribute('r', $('glowR').value);
+  $('glowGrad').setAttribute('cx', $('glowX').value);
+  $('glowGrad').setAttribute('cy', $('glowY').value);
+  rect.style.mixBlendMode = $('glowBlend').value;
+  $('glowInt_v').textContent=(+$('glowInt').value).toFixed(2);
+  $('glowR_v').textContent=$('glowR').value;
+  $('glowX_v').textContent=$('glowX').value;
+  $('glowY_v').textContent=$('glowY').value;
+}
+
+/* ---------- specular ---------- */
+function applySpec(){
+  const on = $('specOn').checked;
+  ['spSurf','spExp','spBlur','spX','spY','spZ'].forEach(k=>$(k).disabled=!on);
+  $('shapeGroup').setAttribute('filter', on ? 'url(#specFilter)' : '');
+  $('fSpec').setAttribute('surfaceScale', $('spSurf').value);
+  $('fSpec').setAttribute('specularExponent', $('spExp').value);
+  $('fBlur').setAttribute('stdDeviation', $('spBlur').value);
+  $('fLight').setAttribute('x', $('spX').value);
+  $('fLight').setAttribute('y', $('spY').value);
+  $('fLight').setAttribute('z', $('spZ').value);
+  $('spSurf_v').textContent=$('spSurf').value;
+  $('spExp_v').textContent=$('spExp').value;
+  $('spBlur_v').textContent=$('spBlur').value;
+  $('spX_v').textContent=$('spX').value;
+  $('spY_v').textContent=$('spY').value;
+  $('spZ_v').textContent=$('spZ').value;
+}
+
+/* ---------- wire up ---------- */
+['c_red','c_yellow','c_green','c_blue','c_purple'].forEach(id=>{
+  $(id).addEventListener('input', e=>{ pal[id.slice(2)] = e.target.value; applyGradients(); });
+});
+$('flip').addEventListener('change', e=>{ flip=e.target.checked; applyGradients(); });
+['opacity','stroke','strokeColor'].forEach(id=>$(id).addEventListener('input', applyAppearance));
+['glowOn','glowInt','glowR','glowX','glowY','glowBlend'].forEach(id=>$(id).addEventListener('input', applyGlow));
+['specOn','spSurf','spExp','spBlur','spX','spY','spZ'].forEach(id=>$(id).addEventListener('input', applySpec));
+
+// presets
+const pw = $('presets');
+PRESETS.forEach(p=>{
+  const b=document.createElement('button'); b.className='preset';
+  const dots=p.c.map(c=>`<i style="background:${c}"></i>`).join('');
+  b.innerHTML=`<span class="dots">${dots}</span>${p.name}`;
+  b.onclick=()=>{ pal={red:p.c[0],yellow:p.c[1],green:p.c[2],blue:p.c[3],purple:p.c[4]}; applyGradients(); };
+  pw.appendChild(b);
+});
+
+// randomize
+$('randomize').onclick=()=>{
+  const rnd=()=>'#'+[0,0,0].map(()=>('0'+Math.floor(40+Math.random()*180).toString(16)).slice(-2)).join('');
+  pal={red:rnd(),yellow:rnd(),green:rnd(),blue:rnd(),purple:rnd()}; applyGradients();
+};
+
+// background buttons
+document.querySelectorAll('.bgbtns button').forEach(b=>{
+  b.onclick=()=>{
+    document.querySelectorAll('.bgbtns button').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');
+    $('stage').className = b.dataset.bg;
+  };
+});
+
+// reset
+$('reset').onclick=()=>{
+  pal={...PAL_DEFAULT}; flip=false; $('flip').checked=false;
+  $('opacity').value=1; $('stroke').value=30; $('strokeColor').value='#111111';
+  $('glowOn').checked=false; $('glowInt').value=0.35; $('glowR').value=3000; $('glowX').value=1588; $('glowY').value=2360; $('glowBlend').value='overlay';
+  $('specOn').checked=false; $('spSurf').value=22; $('spExp').value=60; $('spBlur').value=63; $('spX').value=1588; $('spY').value=2360; $('spZ').value=1660;
+  applyGradients(); applyAppearance(); applyGlow(); applySpec();
+};
+
+/* ---------- export helpers ---------- */
+const VB_W=3696, VB_H=4272;
+function buildExportSVG(withSize){
+  const clone = $('logo').cloneNode(true);
+  if(!$('glowOn').checked){ const r=clone.querySelector('#glowRect'); if(r) r.remove(); }
+  if(!$('specOn').checked){ const f=clone.querySelector('#specFilter'); if(f) f.remove(); const g=clone.querySelector('#shapeGroup'); if(g) g.removeAttribute('filter'); }
+  clone.setAttribute('xmlns','http://www.w3.org/2000/svg');
+  if(withSize){ clone.setAttribute('width', VB_W); clone.setAttribute('height', VB_H); }
+  return new XMLSerializer().serializeToString(clone);
+}
+function triggerDownload(url, name){
+  const a=document.createElement('a'); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove();
+}
+
+/* ---------- SVG download ---------- */
+$('dl').onclick=()=>{
+  const xml='<?xml version="1.0" encoding="UTF-8"?>\n'+buildExportSVG(false);
+  const url=URL.createObjectURL(new Blob([xml],{type:'image/svg+xml'}));
+  triggerDownload(url,'penrose_rainbow.svg');
+  URL.revokeObjectURL(url);
+};
+
+/* ---------- PNG download ---------- */
+$('pngTransparent').addEventListener('change', e=>{
+  const off = e.target.checked;
+  $('pngBg').disabled = off;
+  $('pngBgRow').style.opacity = off ? .35 : 1;
+});
+const PNG_LABEL='PNG 저장';
+function pngDone(msg){
+  const btn=$('dlPng'); btn.disabled=false; btn.textContent=msg||PNG_LABEL;
+  if(msg) setTimeout(()=>{ btn.textContent=PNG_LABEL; },2200);
+}
+function showPngModal(url){
+  $('pngPreview').src=url;
+  $('pngDl').href=url;
+  $('pngModal').style.display='flex';
+  pngDone();
+}
+// Rasterized PNG is shown in a modal; the user clicks the download link there,
+// which keeps a real user-gesture so sandboxed iframes don't block the save.
+// Use a data: URL (not blob:) — sandboxed artifact iframes commonly block blob:
+// URLs in <img src> and download hrefs, which showed up as a broken preview image.
+function savePngFromCanvas(cv){
+  let url;
+  try{
+    url = cv.toDataURL('image/png');
+  }catch(e){
+    console.error('toDataURL failed (canvas tainted?)', e);
+    return pngDone('실패 · 콘솔 확인');
+  }
+  showPngModal(url);
+}
+$('pngClose').onclick=()=>{ $('pngModal').style.display='none'; };
+$('pngModal').addEventListener('click', e=>{ if(e.target.id==='pngModal') $('pngModal').style.display='none'; });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') $('pngModal').style.display='none'; });
+$('dlPng').onclick=()=>{
+  const btn=$('dlPng'); btn.textContent='변환 중…'; btn.disabled=true;
+  try{
+    const longSide = +$('pngSize').value;
+    const scale = longSide / Math.max(VB_W, VB_H);
+    const w = Math.round(VB_W*scale), h = Math.round(VB_H*scale);
+    const svgStr = buildExportSVG(true);
+    // data: URL (not blob:) — blob-loaded SVGs can taint the canvas and block toBlob in sandboxed iframes.
+    const dataUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgStr);
+    const img = new Image();
+    // safety net: if neither onload nor onerror fires (rare sandbox stall), release the button.
+    const guard = setTimeout(()=>{ if($('dlPng').disabled) pngDone('실패 · 다시 시도'); }, 8000);
+    img.onload = ()=>{
+      clearTimeout(guard);
+      try{
+        const cv=document.createElement('canvas'); cv.width=w; cv.height=h;
+        const ctx=cv.getContext('2d');
+        if(!$('pngTransparent').checked){ ctx.fillStyle=$('pngBg').value; ctx.fillRect(0,0,w,h); }
+        ctx.drawImage(img,0,0,w,h);
+        savePngFromCanvas(cv);
+      }catch(e){ console.error('render failed', e); pngDone('실패 · 콘솔 확인'); }
+    };
+    img.onerror = (e)=>{ clearTimeout(guard); console.error('SVG image load failed', e); pngDone('실패 · 다시 시도'); };
+    img.src = dataUrl;
+  }catch(e){ console.error(e); pngDone('실패 · 콘솔 확인'); }
+};
+
+/* init */
+applyGradients(); applyAppearance(); applyGlow(); applySpec();
+</script>
+</body>
+</html>
