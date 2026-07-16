@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<script>
+(function(){
+  function cur(){ try{ return localStorage.getItem('theme') || (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark':'light'); }catch(e){ return 'dark'; } }
+  var t=cur(); window.__theme=t; document.documentElement.setAttribute('data-theme', t);
+  window.addEventListener('storage', function(e){ if(e.key==='theme'){ var n=e.newValue||'dark'; window.__theme=n; document.documentElement.setAttribute('data-theme', n); if(window.__onTheme) window.__onTheme(n); } });
+})();
+</script>
+
+<title>Flat Minima & Generalization — PRISM Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --void:#0b1020;        /* phase-space night */
+    --panel:#111a30;       /* lifted panel */
+    --panel-2:#0d1526;     /* inset */
+    --line:#26314f;        /* hairlines */
+    --ink:#e7ecff;         /* primary text */
+    --muted:#8493b8;       /* secondary */
+    --cool:#5eead4;        /* teal = flat / robust / good */
+    --cool-dim:#2f8c80;
+    --sharp:#ff6b5a;       /* coral = sharp / high curvature */
+    --warm-a:#ffc24b;      /* thermal ramp start */
+    --warm-b:#ff5a3c;      /* thermal ramp end */
+    --test:#a78bff;        /* test-shift overlay */
+    --focus:#9cc7ff;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:
+      radial-gradient(1200px 700px at 78% -10%, #16223f 0%, rgba(22,34,63,0) 55%),
+      var(--void);
+    color:var(--ink);
+    font-family:"Inter", system-ui, -apple-system, sans-serif;
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+    padding:28px 20px 48px;
+  }
+  .wrap{max-width:1120px;margin:0 auto}
+
+  /* ---------- header ---------- */
+  .topbar{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+  .back{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--muted);text-decoration:none;
+    border:1px solid var(--line);padding:6px 12px;border-radius:20px;transition:.14s}
+  .back:hover{color:var(--cool);border-color:var(--cool)}
+  .eyebrow{
+    font-family:"JetBrains Mono", monospace;
+    font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--cool);margin:0 0 10px;display:flex;align-items:center;gap:10px;
+  }
+  .eyebrow::before{content:"";width:22px;height:1px;background:var(--cool);opacity:.7}
+  .title{
+    font-family:"Space Grotesk", system-ui, sans-serif;
+    font-weight:700;font-size:clamp(28px,4.6vw,46px);line-height:1.02;
+    margin:0 0 10px;letter-spacing:-.02em;
+  }
+  .title .thin{color:var(--muted);font-weight:500}
+  .subtitle{color:var(--muted);max-width:60ch;margin:0 0 26px;font-size:15px}
+  .subtitle b{color:var(--ink);font-weight:600}
+
+  /* ---------- layout ---------- */
+  .grid{display:grid;grid-template-columns:1.62fr 1fr;gap:18px;align-items:start}
+  @media (max-width:860px){ .grid{grid-template-columns:1fr} }
+
+  .card{
+    background:linear-gradient(180deg, var(--panel) 0%, var(--panel-2) 100%);
+    border:1px solid var(--line);border-radius:16px;padding:16px;
+  }
+  .card + .card{margin-top:14px}
+  .card-h{
+    font-family:"JetBrains Mono", monospace;font-size:11px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--muted);margin:0 0 12px;
+    display:flex;justify-content:space-between;align-items:baseline;gap:8px;
+  }
+  .card-h .hint{color:var(--cool-dim);letter-spacing:.02em;text-transform:none;font-size:11px}
+
+  /* ---------- canvases ---------- */
+  .stage{padding:14px 12px 10px}
+  .canvas-hold{position:relative;width:100%}
+  canvas{display:block;width:100%;height:auto;border-radius:8px}
+  #landscape{height:300px}
+  #boltzmann{height:150px}
+  .axis-cap{
+    font-family:"JetBrains Mono", monospace;font-size:10.5px;color:var(--muted);
+    display:flex;justify-content:space-between;margin:2px 6px 0;
+  }
+
+  /* mass bars + free energy */
+  .fe{display:grid;grid-template-columns:1fr auto;gap:10px 16px;align-items:center;margin-top:8px;padding:0 6px}
+  .bars{display:flex;flex-direction:column;gap:7px}
+  .bar-row{display:flex;align-items:center;gap:9px;font-size:12px}
+  .bar-lbl{font-family:"JetBrains Mono",monospace;color:var(--muted);width:78px;flex:none}
+  .bar-track{flex:1;height:9px;background:var(--panel-2);border:1px solid var(--line);border-radius:6px;overflow:hidden}
+  .bar-fill{height:100%;width:0%;transition:width .18s ease}
+  .bar-fill.sharp{background:linear-gradient(90deg,#7a2a24,var(--sharp))}
+  .bar-fill.flat{background:linear-gradient(90deg,var(--cool-dim),var(--cool))}
+  .bar-val{font-family:"JetBrains Mono",monospace;width:42px;text-align:right;flex:none}
+  .fe-box{
+    font-family:"JetBrains Mono",monospace;text-align:right;
+    border-left:1px solid var(--line);padding-left:16px;
+  }
+  .fe-box .fe-line{font-size:12px;color:var(--muted);white-space:nowrap}
+  .fe-box .fe-line span{color:var(--ink)}
+  .fe-box .fe-F{font-size:20px;color:var(--warm-a);margin-top:2px;font-weight:600}
+
+  /* ---------- controls ---------- */
+  .ctl{margin-bottom:16px}
+  .ctl:last-child{margin-bottom:0}
+  .ctl-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px}
+  .ctl-name{font-size:13px;font-weight:500}
+  .ctl-name .sub{color:var(--muted);font-weight:400;font-size:12px}
+  .ctl-val{font-family:"JetBrains Mono",monospace;font-size:13px;color:var(--cool)}
+  input[type=range]{
+    -webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:3px;
+    background:var(--line);outline:none;margin:6px 0 0;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;width:16px;height:16px;border-radius:50%;
+    background:var(--ink);border:2px solid var(--void);cursor:pointer;
+    box-shadow:0 0 0 1px var(--line);
+  }
+  input[type=range]::-moz-range-thumb{
+    width:16px;height:16px;border-radius:50%;background:var(--ink);
+    border:2px solid var(--void);cursor:pointer;
+  }
+  #temp{background:linear-gradient(90deg,#2b3a63 0%, var(--warm-a) 60%, var(--warm-b) 100%)}
+  .ctl.disabled{opacity:.4;pointer-events:none}
+
+  /* segmented toggle */
+  .seg{display:flex;background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:3px}
+  .seg button{
+    flex:1;border:none;background:transparent;color:var(--muted);
+    font-family:"Inter",sans-serif;font-size:13px;font-weight:600;padding:8px 4px;
+    border-radius:7px;cursor:pointer;transition:.14s;
+  }
+  .seg button.on{background:var(--cool);color:#04231f}
+  .seg button:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+
+  /* buttons */
+  .btnrow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px}
+  .btnrow .wide{grid-column:1 / -1}
+  .btn{
+    border:1px solid var(--line);background:var(--panel-2);color:var(--ink);
+    font-family:"Inter",sans-serif;font-size:13px;font-weight:500;
+    padding:10px 8px;border-radius:9px;cursor:pointer;transition:.14s;
+  }
+  .btn:hover{border-color:#3a486e;background:#152238}
+  .btn:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+  .btn-primary{background:var(--cool);border-color:var(--cool);color:#04231f;font-weight:600}
+  .btn-primary:hover{filter:brightness(1.06)}
+  .batchline{
+    font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--muted);
+    margin-top:9px;min-height:16px;
+  }
+  .batchline b{color:var(--cool)}
+
+  /* readouts */
+  .ro-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .ro{background:var(--panel);padding:10px 12px}
+  .ro .k{font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:.06em;color:var(--muted);text-transform:uppercase}
+  .ro .v{font-family:"JetBrains Mono",monospace;font-size:17px;margin-top:3px}
+  .ro .v.sharp{color:var(--sharp)} .ro .v.flat{color:var(--cool)}
+  .basin-tag{font-size:12px;padding:2px 8px;border-radius:20px;font-family:"Inter",sans-serif;font-weight:600}
+  .basin-tag.sharp{background:rgba(255,107,90,.14);color:var(--sharp)}
+  .basin-tag.flat{background:rgba(94,234,212,.14);color:var(--cool)}
+  .sampled-row{display:flex;align-items:center;gap:9px;margin-top:12px;font-size:12.5px;color:var(--muted)}
+  .sampled-row input{accent-color:var(--cool);width:15px;height:15px}
+  .sampled-row .clr{margin-left:auto;font-size:12px;color:var(--test);background:none;border:none;cursor:pointer;text-decoration:underline;padding:0}
+
+  /* try + explain */
+  .try{margin-top:18px}
+  .try ol{margin:0;padding-left:20px;color:var(--muted);font-size:13.5px}
+  .try li{margin-bottom:6px}
+  .try li b{color:var(--ink);font-weight:600}
+  .try li .kbd{font-family:"JetBrains Mono",monospace;color:var(--cool);font-size:12.5px}
+
+  .explain{margin-top:26px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media (max-width:860px){ .explain{grid-template-columns:1fr} }
+  .ex{border-top:2px solid var(--line);padding-top:12px}
+  .ex.a{border-color:var(--test)} .ex.b{border-color:var(--warm-a)} .ex.c{border-color:var(--cool)}
+  .ex h4{font-family:"Space Grotesk",sans-serif;font-size:15px;margin:0 0 7px;font-weight:500}
+  .ex p{margin:0;font-size:13px;color:var(--muted)}
+  .ex code{font-family:"JetBrains Mono",monospace;color:var(--ink);font-size:12.5px;background:var(--panel);padding:1px 5px;border-radius:4px}
+
+  footer{margin-top:30px;color:var(--muted);font-size:12px;font-family:"JetBrains Mono",monospace;letter-spacing:.04em}
+  footer a{color:var(--cool);text-decoration:none}
+
+  html[data-theme="light"]{
+    --void:#eef2f8; --panel:#ffffff; --panel-2:#f3f6fb; --line:#d9e0ec;
+    --ink:#141b33; --muted:#5a6488;
+    --cool:#12a08d; --cool-dim:#2f8c80; --sharp:#e04a37; --warm-a:#c98a12; --warm-b:#cf4a24; --test:#6d4fe0; --focus:#2f6fd6;
+  }
+  html[data-theme="light"] body{ background:radial-gradient(1200px 700px at 78% -10%, #dbe6f8 0%, rgba(219,230,248,0) 55%), var(--void); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar"><a class="back" href="index.html">← Playground</a></div>
+  <p class="eyebrow">PRISM · Statistical-Mechanics Playground</p>
+  <h1 class="title">Flat Minima &amp; Generalization<br><span class="thin">Flat minima, thermal noise, and free energy</span></h1>
+  <p class="subtitle">
+    For the same training loss, a <b>wide valley</b> generalizes better than a narrow one.
+    Adjust the temperature (mini-batch noise), the test-distribution shift, and the optimizer (SGD · SAM) to see
+    why the <b>free energy F = ⟨E⟩ − T·S</b> favors flat valleys.
+  </p>
+
+  <div class="grid">
+    <!-- ============ LEFT: stage ============ -->
+    <div>
+      <div class="card stage">
+        <div class="card-h">Energy landscape <span class="hint" id="stageHint">L_train (solid) · L_test (dashed, shift s)</span></div>
+        <div class="canvas-hold"><canvas id="landscape"></canvas></div>
+        <div class="axis-cap"><span>θ = −4</span><span>parameter θ</span><span>θ = +4</span></div>
+      </div>
+
+      <div class="card stage">
+        <div class="card-h">Boltzmann occupancy <span class="hint">p(θ) ∝ e<sup>−L/T</sup> · time-avg ≈ ensemble-avg</span></div>
+        <div class="canvas-hold"><canvas id="boltzmann"></canvas></div>
+        <div class="fe">
+          <div class="bars">
+            <div class="bar-row">
+              <span class="bar-lbl">sharp well</span>
+              <span class="bar-track"><span class="bar-fill sharp" id="massSharp"></span></span>
+              <span class="bar-val" id="massSharpV">0%</span>
+            </div>
+            <div class="bar-row">
+              <span class="bar-lbl">flat well</span>
+              <span class="bar-track"><span class="bar-fill flat" id="massFlat"></span></span>
+              <span class="bar-val" id="massFlatV">0%</span>
+            </div>
+          </div>
+          <div class="fe-box">
+            <div class="fe-line">⟨E⟩ <span id="avgE">–</span> · S <span id="entS">–</span></div>
+            <div class="fe-F">F = <span id="freeF">–</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ RIGHT: controls ============ -->
+    <div>
+      <div class="card">
+        <div class="card-h">Controls</div>
+
+        <div class="ctl">
+          <div class="ctl-top">
+            <span class="ctl-name">Temperature T <span class="sub">mini-batch noise</span></span>
+            <span class="ctl-val" id="tempV">0.15</span>
+          </div>
+          <input type="range" id="temp" min="0" max="2.5" step="0.01" value="0.15" aria-label="Temperature T" />
+        </div>
+
+        <div class="ctl">
+          <div class="ctl-top">
+            <span class="ctl-name">Test shift s <span class="sub">covariate shift</span></span>
+            <span class="ctl-val" id="shiftV">0.50</span>
+          </div>
+          <input type="range" id="shift" min="-1.2" max="1.2" step="0.01" value="0.5" aria-label="Test shift s" />
+        </div>
+
+        <div class="ctl">
+          <div class="ctl-top">
+            <span class="ctl-name">Narrow-well sharpness <span class="sub">width σₛ</span></span>
+            <span class="ctl-val" id="sigV">0.30</span>
+          </div>
+          <input type="range" id="sig" min="0.22" max="0.70" step="0.01" value="0.30" aria-label="Narrow-well sharpness" />
+        </div>
+
+        <div class="ctl">
+          <div class="ctl-top">
+            <span class="ctl-name">SAM radius ρ <span class="sub">sharpness-aware objective</span></span>
+            <span class="ctl-val" id="rhoV">0.35</span>
+          </div>
+          <input type="range" id="rho" min="0.05" max="0.80" step="0.01" value="0.35" aria-label="SAM radius rho" />
+          <div class="sampled-row" style="margin-top:10px">
+            <input type="checkbox" id="samOn" /><label for="samOn">Show SAM objective W(θ)=max<sub>|δ|≤ρ</sub> L(θ+δ)</label>
+          </div>
+          <div class="batchline" id="wcLine" style="margin-top:6px"></div>
+        </div>
+
+        <div class="btnrow">
+          <button class="btn btn-primary wide" id="run">▶ Run</button>
+          <button class="btn" id="reset">Reset position</button>
+          <button class="btn" id="rand">Random drop</button>
+          <button class="btn wide" id="batch">20 random drops · wide-well landing rate</button>
+        </div>
+        <div class="batchline" id="batchLine">The ball starts in the narrow well. Raise T to see thermal escape.</div>
+      </div>
+
+      <div class="card">
+        <div class="card-h">Measurements <span id="basinTag" class="basin-tag sharp">sharp well</span></div>
+        <div class="ro-grid">
+          <div class="ro"><div class="k">θ</div><div class="v" id="roTheta">–</div></div>
+          <div class="ro"><div class="k">curvature κ (sharpness)</div><div class="v" id="roKappa">–</div></div>
+          <div class="ro"><div class="k">L_train</div><div class="v" id="roTrain">–</div></div>
+          <div class="ro"><div class="k">L_test</div><div class="v" id="roTest">–</div></div>
+          <div class="ro"><div class="k">generalization gap</div><div class="v" id="roGap">–</div></div>
+          <div class="ro"><div class="k">steps</div><div class="v" id="roSteps">0</div></div>
+        </div>
+        <div class="sampled-row">
+          <input type="checkbox" id="sampled" /><label for="sampled">Show time-occupancy histogram</label>
+          <button class="clr" id="clrHist">Clear</button>
+        </div>
+      </div>
+
+      <div class="card try">
+        <div class="card-h">Things to try</div>
+        <ol>
+          <li><b>Trapped:</b> at the start (low <span class="kbd">T</span>) the ball is stuck in the narrow well.</li>
+          <li><b>Thermal escape:</b> raise <span class="kbd">T</span> to cross the barrier; over time the ball spends longer in the wide well (mass bars below).</li>
+          <li><b>Generalization:</b> move <span class="kbd">s</span> to see how the <span class="kbd">gap</span> differs between the narrow and wide wells.</li>
+          <li><b>SAM objective:</b> turn on <span class="kbd">SAM</span> to see how shallow the narrow well becomes under the sharpness-aware loss.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ explainer ============ -->
+  <div class="explain">
+    <div class="ex a">
+      <h4>Wide well = low curvature</h4>
+      <p>When the test distribution is offset by <code>s</code> (covariate shift), the narrow well climbs its steep walls and loss spikes, while the wide well barely changes. So low-curvature <code>κ</code> minima have a smaller generalization gap.</p>
+    </div>
+    <div class="ex b">
+      <h4>Temperature = Langevin noise</h4>
+      <p>SGD ≈ gradient descent + thermal noise, with stationary distribution <code>p ∝ e^(−L/T)</code>. This minimizes the free energy <code>F = ⟨E⟩ − T·S</code>, favoring flat minima whose entropy <code>S</code> (basin volume) is large.</p>
+    </div>
+    <div class="ex c">
+      <h4>SAM: worst-neighbor loss</h4>
+      <p>It minimizes the worst-case loss within a <code>ρ</code>-ball, <code>W(θ)=max L(θ+δ)</code>. The narrow well is steep right next door so <code>W</code> spikes and it is avoided; the wide well barely moves and is selected.</p>
+    </div>
+  </div>
+
+  <footer>PRISM Lab · prototype · <a href="https://sswu-prism-lab.github.io" target="_blank" rel="noopener">sswu-prism-lab.github.io</a></footer>
+</div>
+
+<script>
+(() => {
+  "use strict";
+
+  // ---------- colors (mirror CSS for canvas drawing) ----------
+  const PAL={
+    dark:{ ink:"#e7ecff", muted:"#8493b8", line:"#26314f", grid:a=>`rgba(38,49,79,${a})`, cool:"#5eead4", sharp:"#ff6b5a", warmA:"#ffc24b", warmB:"#ff5a3c", test:"#a78bff", panel:"#111a30" },
+    light:{ ink:"#141b33", muted:"#5a6488", line:"#d9e0ec", grid:a=>`rgba(150,162,190,${a})`, cool:"#12a08d", sharp:"#e04a37", warmA:"#c98a12", warmB:"#cf4a24", test:"#6d4fe0", panel:"#ffffff" }
+  };
+  let C = PAL[(window.__theme==='light')?'light':'dark'];
+
+  // ---------- landscape definition ----------
+  const XMIN = -4, XMAX = 4;
+  const P = { D:1.6, muS:-1.6, muF:1.6, sigF:0.95, k:0.04, base:1.7 };
+  const WATERSHED = -0.7;         // approx basin boundary (flat well has the wider basin)
+  const LVIEW_MIN = 0, LVIEW_MAX = 2.7;
+
+  // ---------- state ----------
+  const S = {
+    theta:-1.4, T:0.15, shift:0.5, sigS:0.30, rho:0.35, samOn:false,
+    lr:0.02, running:false, steps:0, trail:[], showSampled:false,
+    hist:new Float64Array(64), histMax:0,
+  };
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // ---------- math ----------
+  const clamp = (x,a,b)=> x<a?a : x>b?b : x;
+  function Ltrain(t){
+    const uS=t-P.muS, uF=t-P.muF;
+    return P.base
+      - P.D*Math.exp(-uS*uS/(2*S.sigS*S.sigS))
+      - P.D*Math.exp(-uF*uF/(2*P.sigF*P.sigF))
+      + P.k*t*t;
+  }
+  const Ltest = (t)=> Ltrain(t - S.shift);
+  function grad(t){
+    const uS=t-P.muS, uF=t-P.muF;
+    const gS = P.D*uS/(S.sigS*S.sigS)*Math.exp(-uS*uS/(2*S.sigS*S.sigS));
+    const gF = P.D*uF/(P.sigF*P.sigF)*Math.exp(-uF*uF/(2*P.sigF*P.sigF));
+    return gS + gF + 2*P.k*t;
+  }
+  function curv(t){
+    const uS=t-P.muS, uF=t-P.muF;
+    const cS = P.D/(S.sigS*S.sigS)*(1 - uS*uS/(S.sigS*S.sigS))*Math.exp(-uS*uS/(2*S.sigS*S.sigS));
+    const cF = P.D/(P.sigF*P.sigF)*(1 - uF*uF/(P.sigF*P.sigF))*Math.exp(-uF*uF/(2*P.sigF*P.sigF));
+    return cS + cF + 2*P.k;
+  }
+  // Box–Muller
+  let spare=null;
+  function gauss(){
+    if(spare!==null){const v=spare;spare=null;return v;}
+    let u=0,w=0; do{u=Math.random();}while(u<=1e-12);
+    w=Math.sqrt(-2*Math.log(u)); const a=2*Math.PI*Math.random();
+    spare=w*Math.sin(a); return w*Math.cos(a);
+  }
+  function stepOnce(){
+    let nt = S.theta - S.lr*grad(S.theta);
+    if(S.T>0) nt += Math.sqrt(2*S.lr*S.T)*gauss();   // Langevin thermal kick
+    S.theta = clamp(nt, XMIN+0.06, XMAX-0.06);
+  }
+  // deterministic descent — basin-of-attraction test
+  function settle(t0){
+    let t=t0;
+    for(let i=0;i<600;i++){ t = clamp(t - 0.05*grad(t), XMIN, XMAX); }
+    return t;
+  }
+  // SAM objective: worst-case loss within a rho-ball
+  function worstCase(t, rho){
+    let m=-Infinity, K=17;
+    for(let j=0;j<=K;j++){ const d=-rho + 2*rho*j/K; const L=Ltrain(t+d); if(L>m)m=L; }
+    return m;
+  }
+
+  // ---------- canvas setup ----------
+  const cvL = document.getElementById("landscape");
+  const cvB = document.getElementById("boltzmann");
+  const ctxL = cvL.getContext("2d");
+  const ctxB = cvB.getContext("2d");
+  const PAD = {l:38, r:14, t:14, b:20};      // shared insets so θ→x aligns across panels
+
+  function fit(cv, ctx){
+    const dpr = Math.min(window.devicePixelRatio||1, 2);
+    const w = cv.clientWidth, h = cv.clientHeight;
+    cv.width = Math.round(w*dpr); cv.height = Math.round(h*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    return {w,h};
+  }
+  const xToPx = (t,w)=> PAD.l + (t-XMIN)/(XMAX-XMIN)*(w-PAD.l-PAD.r);
+  const pxToX = (px,w)=> XMIN + (px-PAD.l)/(w-PAD.l-PAD.r)*(XMAX-XMIN);
+  const lToPy = (L,h)=> PAD.t + (1-(L-LVIEW_MIN)/(LVIEW_MAX-LVIEW_MIN))*(h-PAD.t-PAD.b);
+
+  // ---------- drawing: landscape ----------
+  function drawLandscape(){
+    const {w,h} = fit(cvL, ctxL);
+    ctxL.clearRect(0,0,w,h);
+
+    // ambient thermal glow (intensity ∝ T) — under the curve
+    const heat = clamp(S.T/2.5, 0, 1);
+    if(heat>0.001){
+      const g = ctxL.createLinearGradient(0,PAD.t,0,h-PAD.b);
+      g.addColorStop(0, `rgba(255,90,60,${0.02+0.16*heat})`);
+      g.addColorStop(1, `rgba(255,90,60,0)`);
+      ctxL.fillStyle=g; ctxL.fillRect(PAD.l,PAD.t,w-PAD.l-PAD.r,h-PAD.t-PAD.b);
+    }
+
+    // y gridlines
+    ctxL.font='10px "JetBrains Mono", monospace';
+    ctxL.textBaseline='middle';
+    for(let L=0.5; L<=2.5; L+=0.5){
+      const y=lToPy(L,h);
+      ctxL.strokeStyle=C.grid(.6); ctxL.lineWidth=1;
+      ctxL.beginPath(); ctxL.moveTo(PAD.l,y); ctxL.lineTo(w-PAD.r,y); ctxL.stroke();
+      ctxL.fillStyle=C.muted; ctxL.textAlign="right";
+      ctxL.fillText(L.toFixed(1), PAD.l-6, y);
+    }
+
+    const N=260;
+    const px=(i)=> PAD.l + i/(N)*(w-PAD.l-PAD.r);
+    const xi=(i)=> XMIN + i/(N)*(XMAX-XMIN);
+
+    // filled train curve
+    ctxL.beginPath();
+    ctxL.moveTo(PAD.l, h-PAD.b);
+    for(let i=0;i<=N;i++){ ctxL.lineTo(px(i), lToPy(Ltrain(xi(i)),h)); }
+    ctxL.lineTo(w-PAD.r, h-PAD.b); ctxL.closePath();
+    const fg=ctxL.createLinearGradient(0,PAD.t,0,h-PAD.b);
+    fg.addColorStop(0,"rgba(94,234,212,.10)"); fg.addColorStop(1,"rgba(94,234,212,.02)");
+    ctxL.fillStyle=fg; ctxL.fill();
+
+    // test curve (dashed, shifted)
+    ctxL.setLineDash([5,4]); ctxL.lineWidth=1.8; ctxL.strokeStyle=C.test;
+    ctxL.beginPath();
+    for(let i=0;i<=N;i++){ const y=lToPy(Ltest(xi(i)),h); i?ctxL.lineTo(px(i),y):ctxL.moveTo(px(i),y); }
+    ctxL.stroke(); ctxL.setLineDash([]);
+
+    // train curve stroke
+    ctxL.lineWidth=2.4; ctxL.strokeStyle=C.ink;
+    ctxL.beginPath();
+    for(let i=0;i<=N;i++){ const y=lToPy(Ltrain(xi(i)),h); i?ctxL.lineTo(px(i),y):ctxL.moveTo(px(i),y); }
+    ctxL.stroke();
+
+    // SAM objective overlay: W(θ)=max_{|δ|≤ρ} L(θ+δ) — sharp well fills in, flat stays deep
+    if(S.samOn){
+      ctxL.setLineDash([2,3]); ctxL.lineWidth=1.8; ctxL.strokeStyle=C.sharp;
+      ctxL.beginPath();
+      for(let i=0;i<=N;i++){ const y=lToPy(worstCase(xi(i),S.rho),h); i?ctxL.lineTo(px(i),y):ctxL.moveTo(px(i),y); }
+      ctxL.stroke(); ctxL.setLineDash([]);
+    }
+
+    // minima markers
+    const baseY=h-PAD.b;
+    ctxL.textBaseline="bottom"; ctxL.font='600 11px "Inter", sans-serif';
+    ctxL.fillStyle=C.sharp; ctxL.textAlign="center";
+    ctxL.fillText("sharp", xToPx(P.muS,w), baseY-3);
+    ctxL.fillStyle=C.cool;
+    ctxL.fillText("flat", xToPx(P.muF,w), baseY-3);
+
+    // gap visualization at ball θ
+    const t=S.theta, Ltr=Ltrain(t), Lte=Ltest(t);
+    const bx=xToPx(t,w), byTr=lToPy(Ltr,h), byTe=lToPy(Lte,h);
+    const gap=Math.abs(Lte-Ltr);
+    const gmix=clamp(gap/1.2,0,1);
+    const gapCol=`rgb(${Math.round(94+(255-94)*gmix)},${Math.round(234+(107-234)*gmix)},${Math.round(212+(90-212)*gmix)})`;
+    ctxL.strokeStyle=gapCol; ctxL.lineWidth=2; ctxL.setLineDash([2,3]);
+    ctxL.beginPath(); ctxL.moveTo(bx,byTr); ctxL.lineTo(bx,byTe); ctxL.stroke(); ctxL.setLineDash([]);
+    // marker on test curve
+    ctxL.fillStyle=C.test; ctxL.beginPath(); ctxL.arc(bx,byTe,3,0,7); ctxL.fill();
+
+    // trail
+    if(S.trail.length>1){
+      for(let i=1;i<S.trail.length;i++){
+        const a=i/S.trail.length;
+        ctxL.strokeStyle=`rgba(94,234,212,${0.05+0.25*a})`;
+        ctxL.lineWidth=1.5;
+        ctxL.beginPath();
+        ctxL.moveTo(xToPx(S.trail[i-1],w), lToPy(Ltrain(S.trail[i-1]),h));
+        ctxL.lineTo(xToPx(S.trail[i],w),   lToPy(Ltrain(S.trail[i]),h));
+        ctxL.stroke();
+      }
+    }
+
+    // thermal jitter halo (∝ T)
+    if(heat>0.02){
+      ctxL.fillStyle=`rgba(255,140,80,${0.10*heat})`;
+      ctxL.beginPath(); ctxL.arc(bx,byTr, 7+18*heat, 0, 7); ctxL.fill();
+    }
+    // ball
+    ctxL.fillStyle=C.cool;
+    ctxL.shadowColor=C.cool; ctxL.shadowBlur=12;
+    ctxL.beginPath(); ctxL.arc(bx,byTr,6,0,7); ctxL.fill();
+    ctxL.shadowBlur=0;
+    ctxL.fillStyle="#04231f"; ctxL.beginPath(); ctxL.arc(bx,byTr,2.2,0,7); ctxL.fill();
+  }
+
+  // ---------- drawing: Boltzmann + free energy ----------
+  function drawBoltzmann(){
+    const {w,h} = fit(cvB, ctxB);
+    ctxB.clearRect(0,0,w,h);
+    const baseY=h-PAD.b;
+
+    const N=360;
+    const xi=(i)=> XMIN + i/(N)*(XMAX-XMIN);
+    const px=(i)=> PAD.l + i/(N)*(w-PAD.l-PAD.r);
+
+    // Boltzmann weights with numerical stabilization
+    const Tsafe=Math.max(S.T,0.03);
+    let Lmin=Infinity; const Ls=new Float64Array(N+1);
+    for(let i=0;i<=N;i++){ const L=Ltrain(xi(i)); Ls[i]=L; if(L<Lmin)Lmin=L; }
+    const q=new Float64Array(N+1); let sum=0;
+    for(let i=0;i<=N;i++){ const wgt=Math.exp(-(Ls[i]-Lmin)/Tsafe); q[i]=wgt; sum+=wgt; }
+    let pmax=0, avgE=0, ent=0, massSharp=0;
+    for(let i=0;i<=N;i++){
+      q[i]/=sum;
+      if(q[i]>pmax)pmax=q[i];
+      avgE += q[i]*Ls[i];
+      if(q[i]>1e-12) ent += -q[i]*Math.log(q[i]);
+      if(xi(i)<WATERSHED) massSharp+=q[i];
+    }
+    const massFlat=1-massSharp;
+    const freeF = avgE - S.T*ent;
+
+    // watershed guide
+    ctxB.strokeStyle="rgba(167,139,255,.35)"; ctxB.lineWidth=1; ctxB.setLineDash([3,3]);
+    ctxB.beginPath(); ctxB.moveTo(xToPx(WATERSHED,w),PAD.t); ctxB.lineTo(xToPx(WATERSHED,w),baseY); ctxB.stroke(); ctxB.setLineDash([]);
+
+    // filled p(θ)
+    const pToY=(p)=> baseY - (p/pmax)*(h-PAD.t-PAD.b);
+    ctxB.beginPath(); ctxB.moveTo(PAD.l,baseY);
+    for(let i=0;i<=N;i++) ctxB.lineTo(px(i), pToY(q[i]));
+    ctxB.lineTo(w-PAD.r,baseY); ctxB.closePath();
+    const fg=ctxB.createLinearGradient(0,PAD.t,0,baseY);
+    fg.addColorStop(0,"rgba(255,194,75,.30)"); fg.addColorStop(1,"rgba(255,90,60,.05)");
+    ctxB.fillStyle=fg; ctxB.fill();
+    ctxB.strokeStyle=C.warmA; ctxB.lineWidth=2;
+    ctxB.beginPath();
+    for(let i=0;i<=N;i++){ const y=pToY(q[i]); i?ctxB.lineTo(px(i),y):ctxB.moveTo(px(i),y); }
+    ctxB.stroke();
+
+    // sampled histogram overlay (time occupation)
+    if(S.showSampled && S.histMax>0){
+      const nb=S.hist.length;
+      ctxB.strokeStyle=C.cool; ctxB.lineWidth=1.6;
+      ctxB.beginPath();
+      for(let b=0;b<nb;b++){
+        const xc=PAD.l + (b+0.5)/nb*(w-PAD.l-PAD.r);
+        const y=baseY - (S.hist[b]/S.histMax)*(h-PAD.t-PAD.b)*0.96;
+        b?ctxB.lineTo(xc,y):ctxB.moveTo(xc,y);
+      }
+      ctxB.stroke();
+    }
+
+    // current θ marker
+    ctxB.fillStyle=C.cool;
+    ctxB.beginPath(); ctxB.arc(xToPx(S.theta,w), baseY, 3.2, 0, 7); ctxB.fill();
+
+    // DOM readouts
+    setW("massSharp", massSharp); setW("massFlat", massFlat);
+    document.getElementById("massSharpV").textContent=Math.round(massSharp*100)+"%";
+    document.getElementById("massFlatV").textContent=Math.round(massFlat*100)+"%";
+    document.getElementById("avgE").textContent=avgE.toFixed(2);
+    document.getElementById("entS").textContent=ent.toFixed(2);
+    document.getElementById("freeF").textContent=freeF.toFixed(2);
+  }
+  function setW(id,frac){ document.getElementById(id).style.width=(frac*100).toFixed(1)+"%"; }
+
+  // ---------- readouts ----------
+  function updateReadouts(){
+    const t=S.theta, Ltr=Ltrain(t), Lte=Ltest(t), gap=Lte-Ltr, k=curv(t);
+    const flat = t>=WATERSHED;
+    document.getElementById("roTheta").textContent=t.toFixed(2);
+    const rk=document.getElementById("roKappa"); rk.textContent=k.toFixed(1);
+    rk.className="v "+(k>5?"sharp":"flat");
+    document.getElementById("roTrain").textContent=Ltr.toFixed(2);
+    document.getElementById("roTest").textContent=Lte.toFixed(2);
+    const rg=document.getElementById("roGap"); rg.textContent=(gap>=0?"+":"")+gap.toFixed(2);
+    rg.className="v "+(Math.abs(gap)>0.5?"sharp":"flat");
+    document.getElementById("roSteps").textContent=S.steps;
+    const tag=document.getElementById("basinTag");
+    tag.textContent = flat?"flat well":"sharp well";
+    tag.className="basin-tag "+(flat?"flat":"sharp");
+
+    const wl=document.getElementById("wcLine");
+    if(S.samOn){
+      const ws=worstCase(P.muS,S.rho), wf=worstCase(P.muF,S.rho);
+      wl.innerHTML=`worst-case W — sharp <b style="color:${C.sharp}">${ws.toFixed(2)}</b> · flat <b>${wf.toFixed(2)}</b> → prefers flat`;
+    } else { wl.textContent=""; }
+  }
+
+  function drawAll(){ drawLandscape(); drawBoltzmann(); updateReadouts(); }
+  window.__onTheme=t=>{ C=PAL[t==='light'?'light':'dark']; drawAll(); };
+
+  // ---------- animation loop ----------
+  let raf=null;
+  function loop(){
+    if(!S.running){ raf=null; return; }
+    for(let s=0;s<2;s++){ stepOnce(); S.steps++; }
+    S.trail.push(S.theta); if(S.trail.length>120) S.trail.shift();
+    if(S.showSampled){
+      const nb=S.hist.length;
+      let b=Math.floor((S.theta-XMIN)/(XMAX-XMIN)*nb);
+      b=clamp(b,0,nb-1); S.hist[b]+=1; if(S.hist[b]>S.histMax)S.histMax=S.hist[b];
+    }
+    drawAll();
+    raf=requestAnimationFrame(loop);
+  }
+  function setRunning(on){
+    S.running=on;
+    document.getElementById("run").textContent = on ? "❚❚ Pause" : "▶ Run";
+    if(on && !raf) raf=requestAnimationFrame(loop);
+  }
+
+  // ---------- controls wiring ----------
+  const bind=(id,valId,fmt,fn)=>{
+    const el=document.getElementById(id);
+    el.addEventListener("input",()=>{
+      const v=parseFloat(el.value); fn(v);
+      if(valId) document.getElementById(valId).textContent=fmt(v);
+      drawAll();
+    });
+  };
+  bind("temp","tempV",v=>v.toFixed(2),v=>S.T=v);
+  bind("shift","shiftV",v=>v.toFixed(2),v=>S.shift=v);
+  bind("sig","sigV",v=>v.toFixed(2),v=>{S.sigS=v; clearHist();});
+  bind("rho","rhoV",v=>v.toFixed(2),v=>S.rho=v);
+
+  document.getElementById("samOn").onchange=(e)=>{ S.samOn=e.target.checked; drawAll(); };
+
+  document.getElementById("run").onclick=()=>setRunning(!S.running);
+  document.getElementById("reset").onclick=()=>{
+    S.theta=-1.4; S.steps=0; S.trail=[]; setRunning(false); drawAll();
+    document.getElementById("batchLine").textContent="The ball is placed in the narrow well. Raise T to see thermal escape.";
+  };
+  document.getElementById("rand").onclick=()=>{
+    S.theta = XMIN+0.5 + Math.random()*(XMAX-XMIN-1); S.trail=[]; setRunning(true);
+  };
+  document.getElementById("batch").onclick=()=>{
+    let flat=0; const n=20; let last=0;
+    for(let i=0;i<n;i++){
+      const t0 = -3 + Math.random()*6;
+      const tf = settle(t0);
+      if(Math.abs(tf-P.muF) < Math.abs(tf-P.muS)) flat++;
+      last=t0;
+    }
+    document.getElementById("batchLine").innerHTML =
+      `wide-well landings <b>${flat} / ${n}</b> (${Math.round(flat/n*100)}%) — the wide well has a larger basin, so it is found more easily`;
+    S.theta=last; S.trail=[]; setRunning(true);
+  };
+
+  document.getElementById("sampled").onchange=(e)=>{ S.showSampled=e.target.checked; if(!S.showSampled)clearHist(); drawAll(); };
+  document.getElementById("clrHist").onclick=()=>{ clearHist(); drawAll(); };
+  function clearHist(){ S.hist.fill(0); S.histMax=0; }
+
+  // click-to-place ball on the landscape
+  cvL.addEventListener("pointerdown",(e)=>{
+    const r=cvL.getBoundingClientRect();
+    S.theta=clamp(pxToX(e.clientX-r.left, cvL.clientWidth), XMIN+0.06, XMAX-0.06);
+    S.trail=[]; drawAll();
+  });
+
+  // ---------- resize ----------
+  let rt=null;
+  window.addEventListener("resize",()=>{ clearTimeout(rt); rt=setTimeout(drawAll,80); });
+
+  // ---------- init ----------
+  drawAll();
+  if(!reduceMotion) setRunning(true);   // gently auto-run unless user prefers reduced motion
+})();
+</script>
+</body>
+</html>

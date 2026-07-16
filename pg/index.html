@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<script>
+(function(){
+  function cur(){ try{ return localStorage.getItem('theme') || (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark':'light'); }catch(e){ return 'dark'; } }
+  var t=cur(); window.__theme=t; document.documentElement.setAttribute('data-theme', t);
+  window.addEventListener('storage', function(e){ if(e.key==='theme'){ var n=e.newValue||'dark'; window.__theme=n; document.documentElement.setAttribute('data-theme', n); if(window.__onTheme) window.__onTheme(n); } });
+})();
+</script>
+
+<title>Playground — PRISM Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --void:#0b1020; --panel:#111a30; --panel-2:#0d1526; --line:#26314f;
+    --ink:#e7ecff; --muted:#8493b8;
+    --cool:#5eead4; --sharp:#ff6b5a; --warm-a:#ffc24b; --warm-b:#ff5a3c; --test:#a78bff; --blue:#6ea8ff;
+    --focus:#9cc7ff;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:
+      radial-gradient(1100px 640px at 82% -12%, #16223f 0%, rgba(22,34,63,0) 55%),
+      radial-gradient(900px 520px at 8% 108%, #1a1533 0%, rgba(26,21,51,0) 55%),
+      var(--void);
+    color:var(--ink); font-family:"Inter",system-ui,-apple-system,sans-serif; line-height:1.5;
+    -webkit-font-smoothing:antialiased; padding:40px 20px 56px;
+  }
+  .wrap{max-width:1080px;margin:0 auto}
+
+  .eyebrow{font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--cool);margin:0 0 12px;display:flex;align-items:center;gap:10px}
+  .eyebrow::before{content:"";width:24px;height:1px;background:var(--cool);opacity:.7}
+  .title{font-family:"Space Grotesk",system-ui,sans-serif;font-weight:700;font-size:clamp(34px,6vw,60px);
+    line-height:1;margin:0 0 14px;letter-spacing:-.025em}
+  .title .thin{display:block;font-size:clamp(15px,2.2vw,20px);color:var(--muted);font-weight:500;
+    letter-spacing:0;margin-top:10px}
+  .lede{color:var(--muted);max-width:60ch;margin:0 0 8px;font-size:15.5px}
+  .lede b{color:var(--ink);font-weight:600}
+  .count{font-family:"JetBrains Mono",monospace;font-size:12px;color:#3f7f76;margin:0 0 30px}
+
+  .deck{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+
+  .card-demo{
+    display:flex;flex-direction:column;
+    background:linear-gradient(180deg,var(--panel) 0%,var(--panel-2) 100%);
+    border:1px solid var(--line);border-top-width:2px;border-radius:16px;overflow:hidden;
+    text-decoration:none;color:inherit;transition:transform .16s ease, border-color .16s ease, box-shadow .16s ease;
+  }
+  a.card-demo:hover{transform:translateY(-3px);box-shadow:0 14px 30px rgba(0,0,0,.35)}
+  a.card-demo:focus-visible{outline:2px solid var(--focus);outline-offset:3px}
+  .c-flat{border-top-color:var(--warm-a)} .c-kura{border-top-color:var(--cool)}
+  .c-ising{border-top-color:var(--sharp)} .c-hop{border-top-color:var(--test)}
+  .c-mp{border-top-color:var(--blue)} .c-eeg{border-top-color:var(--cool)}
+  .c-logo{border-top-color:#8b7cff}
+  a.c-flat:hover{border-color:var(--warm-a)} a.c-kura:hover{border-color:var(--cool)}
+  a.c-logo:hover{border-color:#8b7cff}
+
+  .glyph{height:98px;display:flex;align-items:center;justify-content:center;
+    background:var(--panel-2);border-bottom:1px solid var(--line)}
+  .glyph svg{width:200px;height:80px;display:block}
+
+  .body{padding:15px 16px 16px;display:flex;flex-direction:column;flex:1}
+  .tags{display:flex;gap:6px;margin-bottom:9px;flex-wrap:wrap}
+  .tags span{font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.05em;color:var(--muted);
+    border:1px solid var(--line);padding:2px 7px;border-radius:20px}
+  .body h3{font-family:"Space Grotesk",sans-serif;font-weight:500;font-size:16.5px;margin:0 0 6px;letter-spacing:-.01em}
+  .body p{margin:0;font-size:13px;color:var(--muted);flex:1}
+  .go{font-family:"JetBrains Mono",monospace;font-size:12px;margin-top:14px;color:var(--cool)}
+
+  .soon{opacity:.62}
+  .soon .glyph svg{filter:saturate(.45) opacity(.9)}
+  .soon .go{color:var(--muted);display:inline-flex;align-items:center;gap:6px}
+  .soon .go::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--muted)}
+
+  footer{margin-top:34px;color:var(--muted);font-size:12px;font-family:"JetBrains Mono",monospace;letter-spacing:.04em}
+  footer a{color:var(--cool);text-decoration:none}
+
+  /* ---------- light theme (synced with site) ---------- */
+  html[data-theme="light"]{
+    --void:#eef2f8; --panel:#ffffff; --panel-2:#f3f6fb; --line:#d9e0ec;
+    --ink:#141b33; --muted:#5a6488;
+    --cool:#12a08d; --sharp:#e04a37; --warm-a:#c98a12; --warm-b:#cf4a24;
+    --test:#6d4fe0; --blue:#2f6fd6; --focus:#2f6fd6;
+  }
+  html[data-theme="light"] body{
+    background:
+      radial-gradient(1100px 640px at 82% -12%, #dbe6f8 0%, rgba(219,230,248,0) 55%),
+      radial-gradient(900px 520px at 8% 108%, #ece4f7 0%, rgba(236,228,247,0) 55%),
+      var(--void);
+  }
+  .glyph{color:var(--ink)}
+  .count{color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <p class="eyebrow">PRISM · Statistical-Mechanics Playground</p>
+  <h1 class="title">Playground<span class="thin">Interactive statistical-mechanics &amp; learning demos</span></h1>
+  <p class="lede">
+    A collection of <b>interactive demos</b> bridging physical intuition and learning algorithms.
+    Move a slider to feel phase transitions, free energy, and synchronization first-hand. Click a card to enter.
+  </p>
+  <p class="count">3 live · more coming</p>
+
+  <div class="deck">
+
+    <!-- ===== ACTIVE: logo studio ===== -->
+    <a class="card-demo c-logo" href="logo-studio.html">
+      <div class="glyph">
+        <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <svg x="66" y="1" width="68" height="78" viewBox="0 0 3696 4272" preserveAspectRatio="xMidYMid meet">
+            <defs>
+              <linearGradient id="lg0" x1="902" y1="311" x2="902" y2="4151.5" gradientUnits="userSpaceOnUse"><stop stop-color="#F4CA3A"/><stop offset="1" stop-color="#BA6300"/></linearGradient>
+              <linearGradient id="lg1" x1="979.375" y1="855.122" x2="979.375" y2="4151.5" gradientUnits="userSpaceOnUse"><stop stop-color="#D41217"/><stop offset="1" stop-color="#662669"/></linearGradient>
+              <linearGradient id="lg2" x1="2629.62" y1="1034.25" x2="2629.63" y2="3410" gradientUnits="userSpaceOnUse"><stop stop-color="#D41217"/><stop offset="1" stop-color="#662669"/></linearGradient>
+              <linearGradient id="lg3" x1="1064.38" y1="120" x2="1064.38" y2="1216" gradientUnits="userSpaceOnUse"><stop stop-color="#0055F3"/><stop offset="1" stop-color="#00D841"/></linearGradient>
+              <linearGradient id="lg4" x1="2708.5" y1="1128" x2="2708.5" y2="2868.75" gradientUnits="userSpaceOnUse"><stop stop-color="#0055F3"/><stop offset="1" stop-color="#00D841"/></linearGradient>
+              <linearGradient id="lg5" x1="1140.88" y1="2963" x2="1140.88" y2="3599" gradientUnits="userSpaceOnUse"><stop stop-color="#0055F3"/><stop offset="1" stop-color="#00D841"/></linearGradient>
+              <linearGradient id="lg6" x1="2390.21" y1="1317" x2="2390.21" y2="2132.5" gradientUnits="userSpaceOnUse"><stop stop-color="#F4CA3A"/><stop offset="1" stop-color="#BA6300"/></linearGradient>
+            </defs>
+            <g stroke="#0b1020" stroke-width="34" stroke-linejoin="round" stroke-linecap="round">
+              <path d="M426 484.5L1684 1216V3410L1380 3230.5V1408.62L426 855.122V4151.5L120 3975V311L426 484.5Z" fill="url(#lg0)"/>
+              <path d="M749 1044V3599L1532.75 3148L1532 3512L749 3968L426 4151.5V855.122L749 1044Z" fill="url(#lg1)"/>
+              <path d="M2005.75 2868.75L3575.25 1953V2322L2007 3236.5L1684 3410V1216L2008.75 1034.25L2005.75 2868.75Z" fill="url(#lg2)"/>
+              <path d="M443 120L2008.75 1034.25L1684 1216L120 311L443 120Z" fill="url(#lg3)"/>
+              <path d="M3575.25 1953L3260.75 2136.85L2005.75 2868.75L2008.5 2479L2939.42 1951.75L1841.75 1317L2166 1128L3575.25 1953Z" fill="url(#lg4)"/>
+              <path d="M1222.5 2963L1532.75 3148L749 3599V3233L1222.5 2963Z" fill="url(#lg5)"/>
+              <path d="M1841.75 1317L2939.42 1951.75L2621 2132.5L1841 1678.58L1841.75 1317Z" fill="url(#lg6)"/>
+            </g>
+          </svg>
+        </svg>
+      </div>
+      <div class="body">
+        <div class="tags"><span>Design</span><span>SVG</span><span>Interactive</span></div>
+        <h3>Logo Studio</h3>
+        <p>Recolor the lab's Penrose logo — rainbow palette, center glow, and specular shine — in real time, then export as SVG or PNG.</p>
+        <div class="go">Open →</div>
+      </div>
+    </a>
+
+    <!-- ===== ACTIVE: flat minima ===== -->
+    <a class="card-demo c-flat" href="flat-minima-playground.html">
+      <div class="glyph">
+        <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <polyline points="8.0,14.7 14.6,16.8 21.1,18.8 27.7,20.6 34.3,22.3 40.9,24.0 47.4,28.0 54.0,42.4 60.6,63.7 67.1,61.6 73.7,41.8 80.3,32.7 86.9,32.9 93.4,35.6 100.0,39.7 106.6,45.1 113.1,51.6 119.7,58.2 126.3,63.7 132.9,66.6 139.4,66.1 146.0,62.0 152.6,55.2 159.1,46.9 165.7,38.5 172.3,31.1 178.9,24.9 185.4,20.1 192.0,16.3"
+            stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="63.2" cy="66.9" r="3" fill="#ff6b5a" opacity="0.7"/>
+          <circle cx="136.8" cy="66.7" r="5" fill="#5eead4"/>
+        </svg>
+      </div>
+      <div class="body">
+        <div class="tags"><span>Optimization</span><span>Generalization</span><span>Free energy</span></div>
+        <h3>Flat Minima &amp; Generalization</h3>
+        <p>Narrow vs wide valleys, Langevin-SGD, Boltzmann occupancy, and <code>F=⟨E⟩−TS</code>. Raise the temperature to watch thermal escape.</p>
+        <div class="go">Open →</div>
+      </div>
+    </a>
+
+    <!-- ===== ACTIVE: Kuramoto ===== -->
+    <a class="card-demo c-kura" href="kuramoto-playground.html">
+      <div class="glyph">
+        <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <circle cx="100" cy="40" r="30" stroke="#26314f" stroke-width="1.2"/>
+          <circle cx="129.9" cy="37.0" r="2.6" fill="#ff6b5a"/>
+          <circle cx="129.7" cy="44.2" r="2.6" fill="#ff6b5a"/>
+          <circle cx="128.3" cy="30.0" r="2.6" fill="currentColor"/>
+          <circle cx="127.4" cy="52.2" r="2.6" fill="#6ea8ff"/>
+          <circle cx="124.4" cy="22.6" r="2.6" fill="currentColor"/>
+          <circle cx="123.7" cy="58.4" r="2.6" fill="#6ea8ff"/>
+          <circle cx="130.0" cy="39.4" r="2.6" fill="#ff6b5a"/>
+          <circle cx="130.0" cy="41.5" r="2.6" fill="#6ea8ff"/>
+          <circle cx="76.0" cy="22.0" r="2.6" fill="currentColor"/>
+          <circle cx="71.9" cy="50.5" r="2.6" fill="#6ea8ff"/>
+          <circle cx="90.8" cy="68.5" r="2.6" fill="#ff6b5a"/>
+          <circle cx="115.4" cy="65.8" r="2.6" fill="currentColor"/>
+          <line x1="100" y1="40" x2="114.8" y2="44.3" stroke="#5eead4" stroke-width="2.2" stroke-linecap="round"/>
+          <circle cx="114.8" cy="44.3" r="2.8" fill="#5eead4"/>
+          <circle cx="100" cy="40" r="2.4" fill="currentColor"/>
+        </svg>
+      </div>
+      <div class="body">
+        <div class="tags"><span>Dynamics</span><span>Phase transition</span><span>Synchronization</span></div>
+        <h3>Kuramoto Synchronization</h3>
+        <p>When coupling <code>K</code> crosses the threshold <code>Kc=2γ</code>, phases lock spontaneously — a cooperative transition where the order parameter <code>r</code> jumps up.</p>
+        <div class="go">Open →</div>
+      </div>
+    </a>
+
+    <!-- ===== SOON: Ising ===== -->
+    <div class="card-demo c-ising soon">
+      <div class="glyph">
+        <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <g>
+            <rect x="59" y="10" width="16" height="16" rx="2" fill="#ff6b5a"/><rect x="81" y="10" width="16" height="16" rx="2" fill="#5eead4"/><rect x="103" y="10" width="16" height="16" rx="2" fill="#ff6b5a"/><rect x="125" y="10" width="16" height="16" rx="2" fill="#5eead4"/>
+            <rect x="59" y="32" width="16" height="16" rx="2" fill="#5eead4"/><rect x="81" y="32" width="16" height="16" rx="2" fill="#ff6b5a"/><rect x="103" y="32" width="16" height="16" rx="2" fill="#5eead4"/><rect x="125" y="32" width="16" height="16" rx="2" fill="#ff6b5a"/>
+            <rect x="59" y="54" width="16" height="16" rx="2" fill="#ff6b5a"/><rect x="81" y="54" width="16" height="16" rx="2" fill="#5eead4"/><rect x="103" y="54" width="16" height="16" rx="2" fill="#5eead4"/><rect x="125" y="54" width="16" height="16" rx="2" fill="#ff6b5a"/>
+          </g>
+        </svg>
+      </div>
+      <div class="body">
+        <div class="tags"><span>Spin systems</span><span>Max-entropy</span></div>
+        <h3>Ising · Inverse-Ising</h3>
+        <p>Magnetization transition and critical fluctuations; infer couplings from correlations (inverse Ising).</p>
+        <div class="go">Coming soon</div>
+      </div>
+    </div>
+
+    <!-- ===== SOON: Hopfield → Attention ===== -->
+    <div class="card-demo c-hop soon">
+      <div class="glyph">
+        <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <g stroke="#33415e" stroke-width="1.2">
+            <line x1="100" y1="16" x2="62" y2="30"/><line x1="100" y1="16" x2="138" y2="30"/>
+            <line x1="62" y1="30" x2="72" y2="62"/><line x1="138" y1="30" x2="128" y2="62"/>
+            <line x1="72" y1="62" x2="128" y2="62"/><line x1="62" y1="30" x2="138" y2="30"/>
+          </g>
+          <circle cx="100" cy="16" r="5.5" fill="#5eead4"/>
+          <circle cx="62" cy="30" r="5" fill="#a78bff"/><circle cx="138" cy="30" r="5" fill="#a78bff"/>
+          <circle cx="72" cy="62" r="5" fill="#a78bff"/><circle cx="128" cy="62" r="5" fill="#a78bff"/>
+        </svg>
+      </div>
+      <div class="body">
+        <div class="tags"><span>Associative memory</span><span>Transformers</span></div>
+        <h3>Hopfield → Attention</h3>
+        <p>The math linking energy-based memory recall to attention. Store patterns and recover them from noise.</p>
+        <div class="go">Coming soon</div>
+      </div>
+    </div>
+
+    <!-- ===== SOON: Marchenko–Pastur ===== -->
+    <div class="card-demo c-mp soon">
+      <div class="glyph">
+        <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <g fill="#5eead4" fill-opacity="0.28">
+            <rect x="46" y="62" width="12" height="4"/><rect x="60" y="48" width="12" height="18"/><rect x="74" y="36" width="12" height="30"/>
+            <rect x="88" y="34" width="12" height="32"/><rect x="102" y="39" width="12" height="27"/><rect x="116" y="46" width="12" height="20"/>
+            <rect x="130" y="52" width="12" height="14"/><rect x="144" y="58" width="12" height="8"/><rect x="158" y="63" width="12" height="3"/>
+          </g>
+          <polyline points="46,64 66,50 80,37 94,35 108,40 122,47 136,53 150,59 170,64"
+            stroke="#ffc24b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <line x1="40" y1="66" x2="176" y2="66" stroke="#33415e" stroke-width="1"/>
+        </svg>
+      </div>
+      <div class="body">
+        <div class="tags"><span>RMT</span><span>Covariance</span></div>
+        <h3>Marchenko–Pastur</h3>
+        <p>The eigenvalue spectrum of sample covariance — the line separating random noise from real signal.</p>
+        <div class="go">Coming soon</div>
+      </div>
+    </div>
+
+    <!-- ===== SOON: EEG rhythms ===== -->
+    <div class="card-demo c-eeg soon">
+      <div class="glyph">
+        <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M10,24 Q22,14 34,24 T58,24 T82,24 T106,24 T130,24 T154,24 T178,24 T202,24" stroke="#5eead4" stroke-width="1.8" stroke-opacity=".75"/>
+          <path d="M10,44 Q30,58 50,44 T90,44 T130,44 T170,44 T210,44" stroke="#a78bff" stroke-width="1.8" stroke-opacity=".75"/>
+          <path d="M10,62 Q26,54 42,62 T74,62 T106,62 T138,62 T170,62 T202,62" stroke="#ffc24b" stroke-width="1.8" stroke-opacity=".75"/>
+        </svg>
+      </div>
+      <div class="body">
+        <div class="tags"><span>Neural signals</span><span>Spectrum</span></div>
+        <h3>EEG Rhythm Explorer</h3>
+        <p>Frequency bands and phase from delta to gamma — brain rhythms in time and frequency at once.</p>
+        <div class="go">Coming soon</div>
+      </div>
+    </div>
+
+  </div>
+
+  <footer>PRISM Lab · <a href="https://sswu-prism-lab.github.io" target="_blank" rel="noopener">sswu-prism-lab.github.io</a></footer>
+</div>
+</body>
+</html>
