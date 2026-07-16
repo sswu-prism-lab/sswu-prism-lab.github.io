@@ -11,9 +11,9 @@ permalink: /teaching/
 - <a href="https://sswu-prism-lab.github.io/slides/notes/advanced-machine-learning-2027/" target="_blank">Notes & Exams</a>
 
 ### Introduction to AI Convergence (LH000100 @ Spring 2025, Fall 2024)
+- This course was formerly titled *Introduction to Brain and Cognitive Science*.
 - Slides: TBA
 - Exams: TBA
-- This course was formerly titled *Introduction to Brain and Cognitive Science* (Fall 2024).
 
 ### Mathematics for Artificial Intelligence (LH002500 @ Fall 2024)
 - <a href="https://sswu-prism-lab.github.io/slides/mathematics-for-artificial-intelligence-2027/" target="_blank">Slides</a>
