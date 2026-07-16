@@ -23,7 +23,7 @@ html[data-theme="dark"] .studio-frame-wrap { border-color: #333; box-shadow: 0 1
 .pg-fallback { font-size: 13px; margin-top: 12px; color: #888; }
 </style>
 
-### 🔺 Logo Playground
+### Logo Playground
 
 <div class="pg-intro" markdown="1">
 Our lab logo is an **impossible Penrose triangle** rendered as a rainbow prism.
