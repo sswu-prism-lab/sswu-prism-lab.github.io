@@ -55,7 +55,14 @@ firstp {
 .container-fluid {
   margin-right: auto;
   margin-left: auto;
-  max-width: 1000px; /* or 950px */
+  max-width: 1000px; /* phones & portrait tablets */
+}
+/* Use more of the screen on landscape tablets and desktops */
+@media (min-width: 992px) {
+  .container-fluid { max-width: 1140px; }
+}
+@media (min-width: 1200px) {
+  .container-fluid { max-width: 1280px; }
 }
 
 /* Home, News */
