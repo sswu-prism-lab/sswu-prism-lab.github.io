@@ -16,6 +16,14 @@ permalink: /playground/
   var f = document.getElementById('pgframe');
   if (!f) return;
   var ro = null;
+  var firstLoad = true;
+
+  function scrollToTop() {
+    try {
+      var y = f.getBoundingClientRect().top + window.pageYOffset - 64;
+      window.scrollTo(0, y < 0 ? 0 : y);
+    } catch (e) {}
+  }
 
   function resize() {
     try {
@@ -28,6 +36,8 @@ permalink: /playground/
   function hook() {
     resize();
     [120, 350, 800, 1500].forEach(function (t) { setTimeout(resize, t); });
+    if (!firstLoad) { scrollToTop(); setTimeout(scrollToTop, 120); }
+    firstLoad = false;
     try {
       if (ro) ro.disconnect();
       ro = new ResizeObserver(resize);
