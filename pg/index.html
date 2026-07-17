@@ -17,18 +17,15 @@
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
 <style>
   :root{
-    --void:#0b1020; --panel:#111a30; --panel-2:#0d1526; --line:#26314f;
-    --ink:#e7ecff; --muted:#8493b8;
+    --void:#15181e; --panel:#1d212a; --panel-2:#171b22; --line:#2e343f;
+    --ink:#e6edf3; --muted:#8b949e;
     --cool:#5eead4; --sharp:#ff6b5a; --warm-a:#ffc24b; --warm-b:#ff5a3c; --test:#a78bff; --blue:#6ea8ff;
     --focus:#9cc7ff;
   }
   *{box-sizing:border-box}
   html,body{margin:0;padding:0}
   body{
-    background:
-      radial-gradient(1100px 640px at 82% -12%, #16223f 0%, rgba(22,34,63,0) 55%),
-      radial-gradient(900px 520px at 8% 108%, #1a1533 0%, rgba(26,21,51,0) 55%),
-      var(--void);
+    background: var(--void);
     color:var(--ink); font-family:"Inter",system-ui,-apple-system,sans-serif; line-height:1.5;
     -webkit-font-smoothing:antialiased; padding:40px 20px 56px;
   }
@@ -60,12 +57,15 @@
   .c-mp{border-top-color:var(--blue)} .c-eeg{border-top-color:var(--cool)}
   .c-logo{border-top-color:#8b7cff}
   .c-bold{border-top-color:#ff8a5c} .c-conn{border-top-color:#4fd1a0}
+  .c-diff{border-top-color:#6ea8ff} .c-elbo{border-top-color:#ffc24b} .c-perc{border-top-color:#d16ba5}
   a.c-flat:hover{border-color:var(--warm-a)} a.c-kura:hover{border-color:var(--cool)}
   a.c-logo:hover{border-color:#8b7cff}
   a.c-ising:hover{border-color:var(--sharp)}
   a.c-hop:hover{border-color:var(--test)}
   a.c-mp:hover{border-color:var(--blue)}
   a.c-eeg:hover{border-color:var(--cool)}
+  a.c-bold:hover{border-color:#ff8a5c}
+  a.c-conn:hover{border-color:#4fd1a0}
 
   .glyph{height:98px;display:flex;align-items:center;justify-content:center;
     background:var(--panel-2);border-bottom:1px solid var(--line)}
@@ -89,16 +89,13 @@
 
   /* ---------- light theme (synced with site) ---------- */
   html[data-theme="light"]{
-    --void:#eef2f8; --panel:#ffffff; --panel-2:#f3f6fb; --line:#d9e0ec;
+    --void:#ffffff; --panel:#f7f9fc; --panel-2:#eef2f8; --line:#e2e7ee;
     --ink:#141b33; --muted:#5a6488;
     --cool:#12a08d; --sharp:#e04a37; --warm-a:#c98a12; --warm-b:#cf4a24;
     --test:#6d4fe0; --blue:#2f6fd6; --focus:#2f6fd6;
   }
   html[data-theme="light"] body{
-    background:
-      radial-gradient(1100px 640px at 82% -12%, #dbe6f8 0%, rgba(219,230,248,0) 55%),
-      radial-gradient(900px 520px at 8% 108%, #ece4f7 0%, rgba(236,228,247,0) 55%),
-      var(--void);
+    background: var(--void);
   }
   .glyph{color:var(--ink)}
   .count{color:var(--muted)}
@@ -113,7 +110,7 @@
     A collection of <b>interactive demos</b> bridging physical intuition and learning algorithms.
     Move a slider to feel phase transitions, free energy, and synchronization first-hand. Click a card to enter.
   </p>
-  <p class="count">7 live · more coming</p>
+  <p class="count">9 live · more coming</p>
 
   <div class="deck">
 
@@ -279,8 +276,8 @@
       </div>
     </a>
 
-    <!-- ===== SOON: BOLD / HRF ===== -->
-    <div class="card-demo c-bold soon">
+    <!-- ===== ACTIVE: BOLD / HRF ===== -->
+    <a class="card-demo c-bold" href="bold-hrf.html">
       <div class="glyph">
         <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <line x1="24" y1="56" x2="180" y2="56" stroke="#33415e" stroke-width="1"/>
@@ -295,12 +292,12 @@
         <div class="tags"><span>fMRI</span><span>Deconvolution</span></div>
         <h3>BOLD / HRF</h3>
         <p>Convolve a stimulus train with the hemodynamic response to build the BOLD signal — then add noise and feel why deconvolution is hard.</p>
-        <div class="go">Coming soon</div>
+        <div class="go">Open →</div>
       </div>
-    </div>
+    </a>
 
-    <!-- ===== SOON: Connectivity → graph ===== -->
-    <div class="card-demo c-conn soon">
+    <!-- ===== ACTIVE: Connectivity → graph ===== -->
+    <a class="card-demo c-conn" href="connectivity-graph.html">
       <div class="glyph">
         <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <g>
@@ -322,6 +319,69 @@
         <div class="tags"><span>Connectivity</span><span>Graph</span></div>
         <h3>Connectivity → Graph</h3>
         <p>Turn multichannel signals into a correlation / coherence matrix, threshold it, and watch brain-graph metrics shift — the bridge from signals to graph learning.</p>
+        <div class="go">Open →</div>
+      </div>
+    </a>
+
+    <!-- ===== SOON: Diffusion & Score ===== -->
+    <div class="card-demo c-diff soon">
+      <div class="glyph">
+        <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <g fill="#6ea8ff" fill-opacity="0.75">
+            <circle cx="26" cy="18" r="2.4"/><circle cx="40" cy="52" r="2.4"/><circle cx="20" cy="40" r="2.4"/>
+            <circle cx="52" cy="26" r="2.4"/><circle cx="34" cy="66" r="2.4"/><circle cx="58" cy="60" r="2.4"/><circle cx="30" cy="34" r="2.4"/>
+          </g>
+          <path d="M82,40 L104,40" stroke="#8493b8" stroke-width="1.5"/><path d="M104,40 l-5,-3 v6 z" fill="#8493b8"/>
+          <g fill="#6ea8ff">
+            <circle cx="150" cy="36" r="2.6"/><circle cx="158" cy="42" r="2.6"/><circle cx="146" cy="46" r="2.6"/>
+            <circle cx="156" cy="32" r="2.6"/><circle cx="150" cy="44" r="2.6"/><circle cx="162" cy="38" r="2.6"/>
+          </g>
+        </svg>
+      </div>
+      <div class="body">
+        <div class="tags"><span>Generative</span><span>Langevin</span></div>
+        <h3>Diffusion &amp; Score</h3>
+        <p>Denoising diffusion as annealed Langevin sampling: learn the score, then walk noise back into data. Where physics sampling meets generative models.</p>
+        <div class="go">Coming soon</div>
+      </div>
+    </div>
+
+    <!-- ===== SOON: Variational Free Energy ===== -->
+    <div class="card-demo c-elbo soon">
+      <div class="glyph">
+        <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M34,16 L70,32 L70,48 L34,64 Z" fill="#ffc24b" fill-opacity="0.22" stroke="#ffc24b" stroke-width="1.4"/>
+          <circle cx="100" cy="32" r="3.2" fill="#ffc24b"/><circle cx="100" cy="48" r="3.2" fill="#ffc24b"/>
+          <path d="M166,16 L130,32 L130,48 L166,64 Z" fill="#ffc24b" fill-opacity="0.22" stroke="#ffc24b" stroke-width="1.4"/>
+          <line x1="70" y1="34" x2="97" y2="33" stroke="#8493b8" stroke-width="1"/><line x1="70" y1="46" x2="97" y2="47" stroke="#8493b8" stroke-width="1"/>
+          <line x1="103" y1="33" x2="130" y2="34" stroke="#8493b8" stroke-width="1"/><line x1="103" y1="47" x2="130" y2="46" stroke="#8493b8" stroke-width="1"/>
+        </svg>
+      </div>
+      <div class="body">
+        <div class="tags"><span>VAE</span><span>Free energy</span></div>
+        <h3>Variational Free Energy</h3>
+        <p>The ELBO as a free energy: reconstruction pulls one way, the KL prior the other. Tune the balance and watch the latent space organize or collapse.</p>
+        <div class="go">Coming soon</div>
+      </div>
+    </div>
+
+    <!-- ===== SOON: Perceptron Capacity ===== -->
+    <div class="card-demo c-perc soon">
+      <div class="glyph">
+        <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <line x1="74" y1="12" x2="126" y2="68" stroke="#d16ba5" stroke-width="2.2" stroke-linecap="round"/>
+          <g fill="#ff6b5a">
+            <circle cx="128" cy="26" r="3.2"/><circle cx="146" cy="34" r="3.2"/><circle cx="140" cy="20" r="3.2"/><circle cx="158" cy="44" r="3.2"/>
+          </g>
+          <g fill="#5eead4">
+            <circle cx="72" cy="56" r="3.2"/><circle cx="54" cy="46" r="3.2"/><circle cx="60" cy="62" r="3.2"/><circle cx="44" cy="36" r="3.2"/>
+          </g>
+        </svg>
+      </div>
+      <div class="body">
+        <div class="tags"><span>Replica</span><span>Capacity</span></div>
+        <h3>Perceptron Capacity</h3>
+        <p>How many random patterns can a single neuron separate? Watch the Gardner storage limit <code>αc ≈ 2</code> emerge as you load in more.</p>
         <div class="go">Coming soon</div>
       </div>
     </div>

@@ -3,7 +3,19 @@
     
 @import "bootstrap";
 
-img { margin-bottom: 24px; 
+/* ===== Unified typography (matches the Playground) ===== */
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+h1, h2, h3, h4, h5, h6,
+.navbar-brand {
+  font-family: 'Space Grotesk', 'Inter', system-ui, sans-serif;
+}
+code, pre, kbd, samp {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+img { margin-bottom: 24px;
      margin-top: 17px; 
     border-radius:2%;
 }
