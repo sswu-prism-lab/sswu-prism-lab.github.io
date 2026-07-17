@@ -10,7 +10,7 @@
 - title: "A Novel Self-Supervised Deep Learning Framework for Pattern Recognition of Neurodegenerative Disease via Graph-based Phenotype–Genotype Relation Modeling"
   image: sac26.png
   description: "We designe a novel graph neural network architecture and data-oriented self-supervised learning strategy for imaging genetics."
-  description_ko: "이미징 유전체학(imaging genetics)을 위한 새로운 그래프 신경망(GNN) 구조와 데이터 지향 자기지도학습 전략을 설계했습니다."
+  description_ko: "영상유전학(imaging genetics)을 위한 새로운 그래프 신경망(GNN) 구조와 데이터 지향 자기지도학습 전략을 설계했습니다."
   authors: C. Park* & M. Cho*, Y. Kim, W. Jung, W. Ko
   link:
     url: https://dl.acm.org/doi/10.1145/3748522.3779733
