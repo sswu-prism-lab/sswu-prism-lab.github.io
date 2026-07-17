@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<script>
+(function(){
+  function cur(){ try{ return localStorage.getItem('theme') || (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark':'light'); }catch(e){ return 'dark'; } }
+  var t=cur(); window.__theme=t; document.documentElement.setAttribute('data-theme', t);
+  window.addEventListener('storage', function(e){ if(e.key==='theme'){ var n=e.newValue||'dark'; window.__theme=n; document.documentElement.setAttribute('data-theme', n); if(window.__onTheme) window.__onTheme(n); } });
+})();
+</script>
+
+<title>Bias–Variance Tradeoff — PRISM Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<style>
+* { box-sizing: border-box; }
+:root {
+  color-scheme: light;
+  --bg:#ffffff; --panel:#f7f9fc; --panel-2:#eef2f8; --ink:#141b33; --muted:#5a6488;
+  --border:#e2e7ee; --grid:#eef2f8; --axis:#c9d0c8;
+  --c-mle:#0f9d6b; --c-map:#e08a00; --c-bayes:#2563eb;
+  --c-prior:#8b5cf6; --c-true:#9aa5b1;
+  --c-fit:#e0820e; --c-mean:#2f6fe0; --c-total:#141b33;
+  --shadow: 0 1px 2px rgba(28,36,49,.05);
+}
+[data-theme="dark"] {
+  color-scheme: dark;
+  --bg:#15181e; --panel:#1d212a; --panel-2:#171b22; --ink:#e6edf3; --muted:#8b949e;
+  --border:#2e343f; --grid:#252b36; --axis:#3a4250;
+  --c-mle:#34d399; --c-map:#fbbf24; --c-bayes:#60a5fa;
+  --c-prior:#a78bfa; --c-true:#64748b;
+  --c-fit:#f0883e; --c-mean:#6ea8ff; --c-total:#e6edf3;
+  --shadow: none;
+}
+html, body { margin:0; padding:0; }
+body {
+  background:var(--bg); color:var(--ink);
+  padding:26px 20px 44px;
+  font:14px/1.5 "Inter", system-ui, -apple-system, 'Noto Sans KR', sans-serif;
+  accent-color: var(--ink);
+}
+:focus-visible { outline:2px solid var(--c-bayes); outline-offset:2px; }
+
+/* ---------- site chrome ---------- */
+.wrap{max-width:1120px;margin:0 auto}
+.topbar{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.back{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--muted);text-decoration:none;
+  border:1px solid var(--border);padding:6px 12px;border-radius:20px;transition:.14s}
+.back:hover{color:var(--c-accent,#5eead4);border-color:currentColor}
+.eyebrow{font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--muted);margin:0 0 10px;display:flex;align-items:center;gap:10px}
+.eyebrow::before{content:"";width:22px;height:1px;background:currentColor;opacity:.7}
+.title{font-family:"Space Grotesk",system-ui,sans-serif;font-weight:700;font-size:clamp(28px,4.6vw,44px);
+  line-height:1.04;margin:0 0 10px;letter-spacing:-.02em;color:var(--ink)}
+.title .thin{color:var(--muted);font-weight:500;font-size:.5em}
+.site-sub{color:var(--muted);max-width:70ch;margin:0 0 24px;font-size:15px}
+.site-sub b{color:var(--ink);font-weight:600}
+footer{margin-top:30px;color:var(--muted);font-size:12px;font-family:"JetBrains Mono",monospace;letter-spacing:.04em}
+footer a{color:var(--muted);text-decoration:underline}
+
+/* ---------- layout ---------- */
+main { padding:0; }
+.tab { display:none; }
+.tab.active { display:grid; grid-template-columns:264px minmax(0,1fr); gap:14px; align-items:start; }
+.panel { background:var(--panel); border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow); }
+.stage { display:flex; flex-direction:column; gap:12px; min-width:0; }
+
+/* ---------- side controls ---------- */
+.side { padding:14px; display:flex; flex-direction:column; gap:14px; }
+.grp { display:flex; flex-direction:column; gap:8px; }
+.grp + .grp { border-top:1px dashed var(--border); padding-top:13px; }
+.grp-t { font-size:10.5px; font-weight:700; letter-spacing:.09em; text-transform:uppercase; color:var(--muted); }
+.sl { display:flex; flex-direction:column; gap:3px; font-size:12.5px; }
+.sl > span { display:flex; justify-content:space-between; align-items:baseline; gap:8px; }
+.val { font:600 12px "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+input[type=range] { width:100%; margin:0; height:22px; }
+.hint { margin:0; font-size:11.5px; color:var(--muted); }
+.btnrow { display:flex; gap:6px; flex-wrap:wrap; }
+.btn { border:1px solid var(--border); background:var(--panel); color:var(--ink); font:inherit; font-size:12.5px; padding:5px 10px; border-radius:8px; cursor:pointer; transition:background .12s; }
+.btn:hover { background:var(--bg); }
+.btn.ghost { color:var(--muted); }
+.btn.warn { border-color:var(--c-map); color:var(--c-map); font-weight:600; }
+.btn.small { align-self:flex-start; font-size:11.5px; padding:4px 9px; }
+.chips { display:flex; gap:5px; flex-wrap:wrap; }
+.preset { border:1px solid var(--border); background:var(--bg); color:var(--ink); font:inherit; font-size:11.5px; padding:3px 9px; border-radius:999px; cursor:pointer; transition:border-color .12s, color .12s; }
+.preset:hover { border-color:var(--c-prior); color:var(--c-prior); }
+.preset.active { border-color:var(--c-prior); color:var(--c-prior); font-weight:600; }
+.counts { margin:2px 0 0; font-size:12.5px; }
+.counts b { font-family:"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.ck { display:flex; align-items:center; gap:7px; font-size:12.5px; cursor:pointer; }
+.ck input { margin:0; }
+
+/* ---------- plot ---------- */
+.plot { padding:10px 12px 8px; }
+.plot-head { display:flex; justify-content:flex-end; font-size:11.5px; color:var(--muted); padding:0 2px 4px; }
+.plot-head b { font-family:"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color:var(--c-bayes); }
+canvas { display:block; width:100%; }
+#stageCv { height:304px; }
+#curveCv { height:158px; }
+.legend { display:flex; flex-wrap:wrap; gap:4px 14px; padding:8px 2px 2px; font-size:11.5px; color:var(--muted); }
+.legend span { display:inline-flex; align-items:center; gap:5px; }
+.c-mle { color:var(--c-mle); } .c-map { color:var(--c-map); } .c-bayes { color:var(--c-bayes); }
+.c-prior { color:var(--c-prior); } .c-true { color:var(--c-true); }
+.c-fit { color:var(--c-fit); } .c-var { color:var(--c-fit); } .c-mean { color:var(--c-mean); } .c-total { color:var(--ink); }
+.sw { display:inline-block; width:16px; height:0; border-top:3px solid currentColor; border-radius:2px; }
+.sw.dashed { border-top-style:dashed; }
+.sw.dotted { border-top-style:dotted; }
+.sw.faint { opacity:.38; }
+.swv { display:inline-block; width:4px; height:12px; border-radius:2px; background:currentColor; }
+.swv.dashedv { background:repeating-linear-gradient(180deg, currentColor 0 3px, transparent 3px 5px); }
+.swv.faint { opacity:.4; }
+.swp { display:inline-block; width:9px; height:9px; border-radius:50%; border:1.6px solid var(--ink); background:var(--panel); }
+
+/* ---------- stat cards ---------- */
+.cards { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:10px; }
+.cards.four { grid-template-columns:repeat(4, minmax(0,1fr)); }
+.card { background:var(--panel); border:1px solid var(--border); border-top:3px solid var(--border); border-radius:12px; padding:10px 12px 9px; box-shadow:var(--shadow); }
+.card.bias { border-top-color:var(--c-mean); }
+.card.var { border-top-color:var(--c-fit); }
+.card.test { border-top-color:var(--ink); }
+.card.train { border-top-color:var(--c-true); }
+.card .k { font:700 11px "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing:.08em; }
+.card.bias .k { color:var(--c-mean); }
+.card.var .k { color:var(--c-fit); }
+.card.test .k { color:var(--ink); }
+.card.train .k { color:var(--muted); }
+.card .nm { font-size:12px; color:var(--muted); margin-bottom:6px; }
+.stat { display:flex; justify-content:space-between; align-items:baseline; gap:8px; font-size:12px; padding:2px 0; }
+.stat span { color:var(--muted); }
+.stat b { font:600 14px "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; white-space:nowrap; }
+.card .note { margin:6px 0 0; font-size:11px; color:var(--muted); border-top:1px dashed var(--border); padding-top:5px; }
+
+/* ---------- fold panels ---------- */
+.fold summary { cursor:pointer; padding:9px 13px; font-size:12.5px; font-weight:600; color:var(--muted); list-style:none; display:flex; align-items:center; gap:7px; }
+.fold summary::-webkit-details-marker { display:none; }
+.fold summary::before { content:'\25B8'; font-size:10px; transition:transform .12s; }
+.fold[open] summary::before { transform:rotate(90deg); }
+.fold-body { padding:2px 16px 12px; font-size:13px; }
+.fold ol { margin:0; padding-left:20px; display:flex; flex-direction:column; gap:6px; }
+.katex-display { margin:.5em 0; padding:2px 0; overflow-x:auto; overflow-y:hidden; }
+.katex { font-size:1.02em; }
+
+@media (max-width:980px) {
+  .cards.four { grid-template-columns:repeat(2, minmax(0,1fr)); }
+}
+@media (max-width:760px) {
+  .tab.active { grid-template-columns:1fr; }
+  .cards, .cards.four { grid-template-columns:1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition:none !important; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar"><a class="back" href="index.html">← Playground</a></div>
+  <p class="eyebrow">PRISM · Machine Learning Playground</p>
+  <h1 class="title">Bias&ndash;Variance Tradeoff<br><span class="thin">Underfit vs. overfit — bias², variance, and the U-shaped test error</span></h1>
+
+<main>
+<section class="tab active">
+  <aside class="panel side">
+    <div class="grp">
+      <div class="grp-t">Model &middot; polynomial degree</div>
+      <label class="sl"><span>Degree M <b id="mV" class="val">3</b></span>
+        <input type="range" id="mSl" min="0" max="12" step="1" value="3"></label>
+      <p class="hint">Higher M = more flexible &rarr; lower bias, higher variance</p>
+    </div>
+    <div class="grp">
+      <div class="grp-t">Data &middot; true function + noise</div>
+      <div class="chips">
+        <button class="preset active" data-f="sine">Sine</button>
+        <button class="preset" data-f="cubic">Cubic</button>
+        <button class="preset" data-f="steps">Steps</button>
+      </div>
+      <label class="sl"><span>Noise &sigma; <b id="sigV" class="val">0.20</b></span>
+        <input type="range" id="sigSl" min="0.05" max="0.6" step="0.01" value="0.2"></label>
+      <label class="sl"><span>Training size N <b id="nV" class="val">15</b></span>
+        <input type="range" id="nSl" min="5" max="40" step="1" value="15"></label>
+      <button id="resample" class="btn small">Resample</button>
+      <p class="hint">New noise draw for the whole ensemble</p>
+    </div>
+    <div class="grp">
+      <div class="grp-t">Display</div>
+      <label class="ck"><input type="checkbox" id="showGhosts" checked><i class="swv faint c-var"></i>show resampled fits (ghosts)</label>
+      <p class="hint">R = 40 resampled datasets drive the ghosts (variance) and the error curve.</p>
+    </div>
+  </aside>
+
+  <div class="stage">
+    <div class="panel plot">
+      <div class="plot-head"><span>degree M = <b id="hdM">3</b> &middot; fits over R = 40 datasets</span></div>
+      <canvas id="stageCv"></canvas>
+      <div class="legend">
+        <span><i class="sw dashed c-true"></i>true g(x)</span>
+        <span><i class="swp"></i>training data</span>
+        <span><i class="sw faint c-fit"></i>resampled fits (variance)</span>
+        <span><i class="sw c-fit"></i>current fit</span>
+        <span><i class="sw c-mean"></i>mean fit (its gap to g = bias)</span>
+      </div>
+    </div>
+
+    <div class="panel plot">
+      <div class="plot-head"><span>error decomposition vs. complexity &middot; noise floor &sigma;&sup2; = <b id="hdS2">0.040</b></span></div>
+      <canvas id="curveCv"></canvas>
+      <div class="legend">
+        <span><i class="sw c-mean"></i>bias&sup2;</span>
+        <span><i class="sw c-var"></i>variance</span>
+        <span><i class="sw c-total"></i>total test error</span>
+        <span><i class="sw dashed c-true"></i>noise floor &sigma;&sup2;</span>
+        <span><i class="swv c-map"></i>current M</span>
+      </div>
+    </div>
+
+    <div class="cards four">
+      <div class="card bias">
+        <div class="k">BIAS&sup2;</div>
+        <div class="nm">average fit vs. truth</div>
+        <div class="stat"><span>at M = <b id="cbM">3</b></span><b id="cBias">&mdash;</b></div>
+        <p class="note">distance of the average fit from the truth</p>
+      </div>
+      <div class="card var">
+        <div class="k">VARIANCE</div>
+        <div class="nm">fit-to-fit spread</div>
+        <div class="stat"><span>at M</span><b id="cVar">&mdash;</b></div>
+        <p class="note">spread of fits across datasets</p>
+      </div>
+      <div class="card test">
+        <div class="k">TEST ERROR</div>
+        <div class="nm">bias&sup2; + variance + &sigma;&sup2;</div>
+        <div class="stat"><span>at M</span><b id="cTest">&mdash;</b></div>
+        <p class="note">U-shaped in M &mdash; the minimum is the sweet spot</p>
+      </div>
+      <div class="card train">
+        <div class="k">TRAIN ERROR</div>
+        <div class="nm">MSE of current fit</div>
+        <div class="stat"><span>on its data</span><b id="cTrain">&mdash;</b></div>
+        <p class="note">keeps falling as M grows &mdash; a poor model selector</p>
+      </div>
+    </div>
+
+    <details class="panel fold">
+      <summary>Formulas</summary>
+      <div class="fold-body">
+        $$\mathbb E\big[(y-\hat f(x))^2\big]=\underbrace{\big(\mathbb E[\hat f(x)]-g(x)\big)^2}_{\text{Bias}^2}+\underbrace{\mathbb E\big[(\hat f(x)-\mathbb E[\hat f(x)])^2\big]}_{\text{Variance}}+\underbrace{\sigma^2}_{\text{noise}}$$
+        $$\mathrm{Bias}(x)=\mathbb E[\hat f(x)]-g(x),\qquad \mathrm{Var}(x)=\mathbb E\big[(\hat f(x)-\mathbb E[\hat f(x)])^2\big]$$
+        $$\hat{\mathbf w}=(\Phi^\top\Phi)^{-1}\Phi^\top\mathbf y,\qquad \hat f(x)=\hat{\mathbf w}^\top\boldsymbol\phi(x),\qquad \boldsymbol\phi(x)=\big(1,\,x,\,x^2,\dots,x^M\big)$$
+        <p class="hint" style="margin-top:8px">Expectations are Monte-Carlo estimates over R resampled training sets, averaged across a dense test grid on [0,1].</p>
+      </div>
+    </details>
+
+    <details class="panel fold">
+      <summary>What to watch</summary>
+      <div class="fold-body">
+        <ol>
+          <li><b>Small M &rarr; high bias, low variance.</b> The fit sits far from g, but the ghosts are tight and almost identical &mdash; that is <b>underfitting</b>.</li>
+          <li><b>Large M &rarr; low bias, high variance.</b> The ghosts fan out wildly, each one chasing the noise in its own dataset &mdash; that is <b>overfitting</b>.</li>
+          <li>The <b>total test error is U-shaped</b> in M: it falls as bias drops, then rises as variance explodes. Its minimum is the <b>sweet spot</b>.</li>
+          <li>Raising <b>N</b> shrinks variance (ghosts tighten) and pushes the sweet spot to higher M; raising <b>&sigma;</b> lifts the whole noise floor &sigma;&sup2; and every error with it.</li>
+        </ol>
+      </div>
+    </details>
+  </div>
+</section>
+</main>
+  <footer>PRISM Lab · prototype · <a href="https://sswu-prism-lab.github.io" target="_blank" rel="noopener">sswu-prism-lab.github.io</a></footer>
+</div>
+
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script>
+'use strict';
+/* Bias–Variance Tradeoff interactive playground
+   - Fit a degree-M polynomial by least squares to random training sets.
+   - Visualize variance (spread of ghost fits), bias (mean fit vs truth),
+     and the U-shaped test error vs complexity via Monte-Carlo over R datasets.
+*/
+
+/* ===MATH-BEGIN=== (reused verbatim from the MLE·MAP·Bayes template) */
+function randn() {
+  var u = 0, v = 0;
+  while (u === 0) u = Math.random();
+  while (v === 0) v = Math.random();
+  return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+}
+
+function solveLin(Ain, bin) {
+  var n = bin.length;
+  var A = Ain.map(function (r) { return r.slice(); });
+  var b = bin.slice();
+  for (var c = 0; c < n; c++) {
+    var p = c;
+    for (var r = c + 1; r < n; r++) if (Math.abs(A[r][c]) > Math.abs(A[p][c])) p = r;
+    if (Math.abs(A[p][c]) < 1e-300) A[p][c] = 1e-300;
+    var tmp = A[c]; A[c] = A[p]; A[p] = tmp;
+    var tb = b[c]; b[c] = b[p]; b[p] = tb;
+    for (r = c + 1; r < n; r++) {
+      var f = A[r][c] / A[c][c];
+      if (f === 0) continue;
+      for (var k = c; k < n; k++) A[r][k] -= f * A[c][k];
+      b[r] -= f * b[c];
+    }
+  }
+  var x = new Array(n).fill(0);
+  for (r = n - 1; r >= 0; r--) {
+    var s = b[r];
+    for (k = r + 1; k < n; k++) s -= A[r][k] * x[k];
+    x[r] = s / A[r][r];
+  }
+  return x;
+}
+
+function polyPhi(x, M) {
+  var u = 2 * x - 1; // rescale [0,1] -> [-1,1] for conditioning
+  var v = new Array(M + 1);
+  v[0] = 1;
+  for (var j = 1; j <= M; j++) v[j] = v[j - 1] * u;
+  return v;
+}
+
+function normalEq(X, y, d) {
+  var A = [], b = new Array(d).fill(0);
+  for (var i = 0; i < d; i++) A.push(new Array(d).fill(0));
+  for (var n = 0; n < X.length; n++) {
+    var xi = X[n];
+    for (var j = 0; j < d; j++) {
+      b[j] += xi[j] * y[n];
+      for (var k = j; k < d; k++) A[j][k] += xi[j] * xi[k];
+    }
+  }
+  for (j = 0; j < d; j++) for (k = 0; k < j; k++) A[j][k] = A[k][j];
+  return { A: A, b: b };
+}
+
+function fitMLE(X, y, d) {
+  var ne = normalEq(X, y, d);
+  var tr = 1;
+  for (var j = 0; j < d; j++) tr = Math.max(tr, ne.A[j][j]);
+  for (j = 0; j < d; j++) ne.A[j][j] += tr * 1e-10; // tiny jitter for stability
+  return solveLin(ne.A, ne.b);
+}
+
+function dotW(w, phi) {
+  var s = 0;
+  for (var j = 0; j < w.length; j++) s += w[j] * phi[j];
+  return s;
+}
+/* ===MATH-END=== */
+
+/* ---------- DOM helpers (reused) ---------- */
+function $(id) { return document.getElementById(id); }
+function cssv(name) {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+function hexA(hex, al) {
+  hex = hex.replace('#', '');
+  if (hex.length === 3) hex = hex.split('').map(function (c) { return c + c; }).join('');
+  var r = parseInt(hex.slice(0, 2), 16), g = parseInt(hex.slice(2, 4), 16), b = parseInt(hex.slice(4, 6), 16);
+  return 'rgba(' + r + ',' + g + ',' + b + ',' + al + ')';
+}
+function fmt(v, dg) {
+  if (dg === undefined) dg = 3;
+  if (v === null || v === undefined || !isFinite(v)) return '—';
+  var a = Math.abs(v);
+  if (a !== 0 && (a >= 1e4 || a < 1e-3)) return v.toExponential(1);
+  return v.toFixed(dg);
+}
+function setupCanvas(cv) {
+  var dpr = window.devicePixelRatio || 1;
+  var w = cv.clientWidth, h = cv.clientHeight;
+  if (w === 0 || h === 0) return null;
+  var W = Math.round(w * dpr), H = Math.round(h * dpr);
+  if (cv.width !== W || cv.height !== H) { cv.width = W; cv.height = H; }
+  var ctx = cv.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  return { ctx: ctx, w: w, h: h };
+}
+
+/* ============================================================
+   state / model
+   ============================================================ */
+var MMAX = 12;      // max polynomial degree
+var R = 40;         // resampled datasets
+var TG = 60;        // test-grid points on [0,1]
+var CAP = 3;        // cap on displayed error so a blow-up cannot wreck the scale
+
+var state = { M: 3, func: 'sine', sigma: 0.2, N: 15 };
+var ensemble = [];  // R datasets; ensemble[0] is the "current" training set
+var curve = [];     // curve[M] = { bias2, varc, total } cached across M-only redraws
+
+function gFun(x) {
+  switch (state.func) {
+    case 'cubic': { var u = 2 * x - 1; return 3 * u - 4 * u * u * u; } // Chebyshev-like cubic, range [-1,1]
+    case 'steps': return x < 1 / 3 ? -0.6 : (x < 2 / 3 ? 0.0 : 0.6);
+    default: return Math.sin(2 * Math.PI * x);
+  }
+}
+
+function makeDataset() {
+  var N = state.N, xs = [], ys = [];
+  for (var i = 0; i < N; i++) {
+    var base = (i + 0.5) / N;
+    var x = base + (Math.random() - 0.5) * (0.9 / N); // jittered regular grid
+    x = Math.min(1, Math.max(0, x));
+    xs.push(x);
+    ys.push(gFun(x) + state.sigma * randn());
+  }
+  return { xs: xs, ys: ys };
+}
+
+function fitDataset(ds, M) {
+  var d = M + 1;
+  var X = ds.xs.map(function (x) { return polyPhi(x, M); });
+  var w = fitMLE(X, ds.ys, d);
+  for (var j = 0; j < w.length; j++) if (!isFinite(w[j])) return null;
+  return w;
+}
+
+function trainMSE(w, ds, M) {
+  if (!w) return null;
+  var s = 0;
+  for (var i = 0; i < ds.xs.length; i++) {
+    var mu = dotW(w, polyPhi(ds.xs[i], M));
+    s += (ds.ys[i] - mu) * (ds.ys[i] - mu);
+  }
+  return s / ds.xs.length;
+}
+
+/* Rebuild the ensemble of R datasets and the whole error-vs-M curve.
+   Called when M-independent inputs change (function, sigma, N, resample). */
+function recomputeCurve() {
+  ensemble = [];
+  for (var r = 0; r < R; r++) ensemble.push(makeDataset());
+
+  var xt = [], gt = [];
+  for (var t = 0; t < TG; t++) { var x = t / (TG - 1); xt.push(x); gt.push(gFun(x)); }
+
+  var sigma2 = state.sigma * state.sigma;
+  curve = [];
+  for (var M = 0; M <= MMAX; M++) {
+    var preds = []; // valid fits' predictions on the test grid
+    for (var i = 0; i < ensemble.length; i++) {
+      var w = fitDataset(ensemble[i], M);
+      if (!w) continue;
+      var pr = new Array(TG), ok = true;
+      for (t = 0; t < TG; t++) { var v = dotW(w, polyPhi(xt[t], M)); if (!isFinite(v)) { ok = false; break; } pr[t] = v; }
+      if (ok) preds.push(pr);
+    }
+    var K = preds.length;
+    var bias2 = 0, varc = 0;
+    if (K >= 1) {
+      for (t = 0; t < TG; t++) {
+        var mean = 0;
+        for (i = 0; i < K; i++) mean += preds[i][t];
+        mean /= K;
+        var vv = 0;
+        for (i = 0; i < K; i++) { var e = preds[i][t] - mean; vv += e * e; }
+        vv /= K; // population variance across datasets
+        var db = mean - gt[t];
+        bias2 += db * db;
+        varc += vv;
+      }
+      bias2 /= TG; varc /= TG;
+    }
+    curve.push({ bias2: bias2, varc: varc, total: bias2 + varc + sigma2 });
+  }
+}
+
+/* ============================================================
+   render (redraws both canvases + cards for the current M)
+   ============================================================ */
+function render() {
+  $('mV').textContent = state.M;
+  $('hdM').textContent = state.M;
+  $('cbM').textContent = state.M;
+  $('sigV').textContent = state.sigma.toFixed(2);
+  $('nV').textContent = state.N;
+  var sigma2 = state.sigma * state.sigma;
+  $('hdS2').textContent = fmt(sigma2);
+
+  drawStage();
+  drawCurve();
+
+  var c = curve[state.M] || { bias2: null, varc: null, total: null };
+  $('cBias').textContent = fmt(c.bias2);
+  $('cVar').textContent = fmt(c.varc);
+  $('cTest').textContent = fmt(c.total);
+  var wCur = ensemble.length ? fitDataset(ensemble[0], state.M) : null;
+  $('cTrain').textContent = fmt(trainMSE(wCur, ensemble[0], state.M));
+}
+
+function drawStage() {
+  var cv = $('stageCv'), st = setupCanvas(cv);
+  if (!st) return;
+  var ctx = st.ctx, w = st.w, h = st.h, M = state.M;
+  var Mg = { l: 40, r: 14, t: 12, b: 26 };
+  var pw = w - Mg.l - Mg.r, ph = h - Mg.t - Mg.b;
+  ctx.clearRect(0, 0, w, h);
+
+  var xlo = -0.02, xhi = 1.02;
+  var ylo = -1.8, yhi = 1.8;
+  var cur = ensemble.length ? ensemble[0] : { xs: [], ys: [] };
+  for (var i = 0; i < cur.xs.length; i++) {
+    ylo = Math.min(ylo, cur.ys[i] - 0.3);
+    yhi = Math.max(yhi, cur.ys[i] + 0.3);
+  }
+  ylo = Math.max(ylo, -4); yhi = Math.min(yhi, 4);
+
+  function X(v) { return Mg.l + (v - xlo) / (xhi - xlo) * pw; }
+  function Y(v) { return Mg.t + (yhi - v) / (yhi - ylo) * ph; }
+
+  // grid + axes
+  ctx.strokeStyle = cssv('--grid'); ctx.lineWidth = 1; ctx.beginPath();
+  for (var gxv = 0; gxv <= 1.001; gxv += 0.25) { ctx.moveTo(X(gxv), Mg.t); ctx.lineTo(X(gxv), Mg.t + ph); }
+  for (var gyv = Math.ceil(ylo); gyv <= Math.floor(yhi); gyv++) { ctx.moveTo(Mg.l, Y(gyv)); ctx.lineTo(Mg.l + pw, Y(gyv)); }
+  ctx.stroke();
+  ctx.strokeStyle = cssv('--axis'); ctx.strokeRect(Mg.l, Mg.t, pw, ph);
+
+  ctx.fillStyle = cssv('--muted');
+  ctx.font = '11px "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace';
+  ctx.textAlign = 'center';
+  for (gxv = 0; gxv <= 1.001; gxv += 0.25) ctx.fillText(gxv.toFixed(2), X(gxv), h - 9);
+  ctx.textAlign = 'right';
+  for (gyv = Math.ceil(ylo); gyv <= Math.floor(yhi); gyv++) ctx.fillText(gyv.toFixed(0), Mg.l - 5, Y(gyv) + 4);
+  ctx.fillText('x', w - 4, h - 9);
+
+  // drawing grid
+  var G = 220, gx = new Array(G + 1);
+  for (i = 0; i <= G; i++) gx[i] = xlo + (xhi - xlo) * i / G;
+
+  ctx.save();
+  ctx.beginPath(); ctx.rect(Mg.l, Mg.t, pw, ph); ctx.clip();
+
+  function drawW(wv, color, dash, width, alphaStroke) {
+    if (!wv) return;
+    ctx.strokeStyle = alphaStroke ? hexA(color, alphaStroke) : color;
+    ctx.lineWidth = width;
+    ctx.setLineDash(dash);
+    ctx.beginPath();
+    var started = false;
+    for (var q = 0; q <= G; q++) {
+      var mv = dotW(wv, polyPhi(gx[q], M));
+      if (!isFinite(mv)) { started = false; continue; }
+      var xq = X(gx[q]), yq = Y(mv);
+      if (!started) { ctx.moveTo(xq, yq); started = true; } else ctx.lineTo(xq, yq);
+    }
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  // fit all ensemble datasets at current M (for ghosts + mean)
+  var fits = [];
+  for (i = 0; i < ensemble.length; i++) { var f = fitDataset(ensemble[i], M); if (f) fits.push(f); }
+
+  // ghosts (variance)
+  var showGhosts = $('showGhosts').checked;
+  var cFit = cssv('--c-fit'), cMean = cssv('--c-mean');
+  if (showGhosts) {
+    for (i = 0; i < fits.length; i++) drawW(fits[i], cFit, [], 1, 0.13);
+  }
+
+  // true function g (dashed)
+  ctx.strokeStyle = cssv('--c-true'); ctx.lineWidth = 1.8; ctx.setLineDash([7, 5]);
+  ctx.beginPath();
+  for (i = 0; i <= G; i++) { var ty = gFun(gx[i]); if (i === 0) ctx.moveTo(X(gx[i]), Y(ty)); else ctx.lineTo(X(gx[i]), Y(ty)); }
+  ctx.stroke(); ctx.setLineDash([]);
+
+  // mean fit (blue) — its gap to g is the bias
+  if (fits.length) {
+    ctx.strokeStyle = cMean; ctx.lineWidth = 2.4; ctx.beginPath();
+    var started = false;
+    for (i = 0; i <= G; i++) {
+      var mm = 0;
+      for (var k = 0; k < fits.length; k++) mm += dotW(fits[k], polyPhi(gx[i], M));
+      mm /= fits.length;
+      if (!isFinite(mm)) { started = false; continue; }
+      var xq = X(gx[i]), yq = Y(mm);
+      if (!started) { ctx.moveTo(xq, yq); started = true; } else ctx.lineTo(xq, yq);
+    }
+    ctx.stroke();
+  }
+
+  // current fit (bold amber)
+  drawW(fits.length ? fits[0] : null, cFit, [], 2.6);
+
+  // current training points
+  for (i = 0; i < cur.xs.length; i++) {
+    ctx.beginPath();
+    ctx.arc(X(cur.xs[i]), Y(cur.ys[i]), 3.6, 0, Math.PI * 2);
+    ctx.fillStyle = cssv('--panel'); ctx.fill();
+    ctx.lineWidth = 1.6; ctx.strokeStyle = cssv('--ink'); ctx.stroke();
+  }
+  ctx.restore();
+}
+
+function drawCurve() {
+  var cv = $('curveCv'), st = setupCanvas(cv);
+  if (!st) return;
+  var ctx = st.ctx, w = st.w, h = st.h;
+  var Mg = { l: 40, r: 14, t: 12, b: 26 };
+  var pw = w - Mg.l - Mg.r, ph = h - Mg.t - Mg.b;
+  ctx.clearRect(0, 0, w, h);
+
+  var sigma2 = state.sigma * state.sigma;
+  function cl(v) { return Math.min(v, CAP); }
+
+  var ymax = sigma2;
+  for (var m = 0; m <= MMAX; m++) {
+    var c = curve[m]; if (!c) continue;
+    ymax = Math.max(ymax, cl(c.total));
+  }
+  ymax = Math.max(ymax * 1.14, 0.12);
+
+  var xlo = 0, xhi = MMAX;
+  function X(v) { return Mg.l + (v - xlo) / (xhi - xlo) * pw; }
+  function Y(v) { return Mg.t + (ymax - Math.min(v, CAP)) / ymax * ph; }
+
+  // grid + axes
+  ctx.strokeStyle = cssv('--grid'); ctx.lineWidth = 1; ctx.beginPath();
+  for (var gm = 0; gm <= MMAX; gm += 2) { ctx.moveTo(X(gm), Mg.t); ctx.lineTo(X(gm), Mg.t + ph); }
+  for (var gy = 0; gy <= 3; gy++) { var yy = Mg.t + ph * gy / 3; ctx.moveTo(Mg.l, yy); ctx.lineTo(Mg.l + pw, yy); }
+  ctx.stroke();
+  ctx.strokeStyle = cssv('--axis'); ctx.strokeRect(Mg.l, Mg.t, pw, ph);
+
+  ctx.fillStyle = cssv('--muted');
+  ctx.font = '11px "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace';
+  ctx.textAlign = 'center';
+  for (gm = 0; gm <= MMAX; gm += 2) ctx.fillText(gm, X(gm), h - 9);
+  ctx.textAlign = 'right';
+  for (gy = 0; gy <= 3; gy++) { var vlab = ymax * (3 - gy) / 3; ctx.fillText(vlab.toFixed(2), Mg.l - 5, Mg.t + ph * gy / 3 + 4); }
+
+  ctx.save();
+  ctx.beginPath(); ctx.rect(Mg.l, Mg.t, pw, ph); ctx.clip();
+
+  // noise floor sigma^2 (faint dashed horizontal)
+  ctx.strokeStyle = cssv('--c-true'); ctx.lineWidth = 1.3; ctx.setLineDash([5, 4]);
+  ctx.beginPath(); ctx.moveTo(Mg.l, Y(sigma2)); ctx.lineTo(Mg.l + pw, Y(sigma2)); ctx.stroke();
+  ctx.setLineDash([]);
+
+  function series(key, color, width) {
+    ctx.strokeStyle = color; ctx.lineWidth = width; ctx.beginPath();
+    for (var mm = 0; mm <= MMAX; mm++) {
+      var cc = curve[mm]; if (!cc) continue;
+      var xq = X(mm), yq = Y(cc[key]);
+      if (mm === 0) ctx.moveTo(xq, yq); else ctx.lineTo(xq, yq);
+    }
+    ctx.stroke();
+  }
+  series('bias2', cssv('--c-mean'), 2.0);
+  series('varc', cssv('--c-fit'), 2.0);
+  series('total', cssv('--ink'), 2.8);
+
+  // current-M marker
+  var cx = X(state.M);
+  ctx.strokeStyle = cssv('--c-map'); ctx.lineWidth = 1.6; ctx.setLineDash([4, 4]);
+  ctx.beginPath(); ctx.moveTo(cx, Mg.t); ctx.lineTo(cx, Mg.t + ph); ctx.stroke();
+  ctx.setLineDash([]);
+  var cc = curve[state.M];
+  if (cc) {
+    ctx.beginPath(); ctx.arc(cx, Y(cc.total), 3.6, 0, Math.PI * 2);
+    ctx.fillStyle = cssv('--ink'); ctx.fill();
+  }
+  ctx.restore();
+}
+
+/* ============================================================
+   wiring
+   ============================================================ */
+function wire() {
+  $('mSl').addEventListener('input', function () { state.M = +this.value; render(); });
+
+  $('sigSl').addEventListener('input', function () { state.sigma = +this.value; recomputeCurve(); render(); });
+  $('nSl').addEventListener('input', function () { state.N = +this.value; recomputeCurve(); render(); });
+  $('resample').addEventListener('click', function () { recomputeCurve(); render(); });
+
+  document.querySelectorAll('.preset').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('.preset').forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      state.func = btn.dataset.f;
+      recomputeCurve(); render();
+    });
+  });
+
+  $('showGhosts').addEventListener('change', render);
+
+  window.addEventListener('resize', render);
+}
+
+/* KaTeX (deferred from CDN; degrade gracefully if offline) */
+var mathDone = false;
+function tryMath() {
+  if (mathDone || !window.renderMathInElement) return;
+  mathDone = true;
+  window.renderMathInElement(document.body, {
+    delimiters: [
+      { left: '$$', right: '$$', display: true },
+      { left: '\\(', right: '\\)', display: false }
+    ],
+    throwOnError: false
+  });
+}
+document.addEventListener('DOMContentLoaded', tryMath);
+window.addEventListener('load', tryMath);
+
+/* init */
+wire();
+recomputeCurve();
+window.__onTheme = function () { render(); };
+render();
+</script>
+</body>
+</html>
