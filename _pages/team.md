@@ -31,7 +31,7 @@ permalink: /team/
 </div>
 {% endfor %}
 
-## <span class="i18n-en">Students</span><span class="i18n-ko">학생</span>
+## <span class="i18n-en">Students</span><span class="i18n-ko">참여연구원</span>
 
 {% assign number_printed = 0 %}
 {% for member in site.data.students %}
