@@ -29,11 +29,11 @@ permalink: /teaching/
 
 ### <span class="i18n-en">Data Structures and Applications</span><span class="i18n-ko">자료구조실습</span> (LH000500 @ <span class="i18n-en">Fall 2023</span><span class="i18n-ko">2023년 가을</span>)
 - <a href="https://sswu-prism-lab.github.io/slides/data-structures-and-applications-2027/" target="_blank"><span class="i18n-en">Slides</span><span class="i18n-ko">강의 슬라이드</span></a>
-- <a href="https://sswu-prism-lab.github.io/slides/notes/data-structures-and-applications-2027/" target="_blank"><span class="i18n-en">Notes & Exams</span><span class="i18n-ko">강의노트 및 시험</span></a>
+- <a href="https://sswu-prism-lab.github.io/slides/notes/data-structures-and-applications-2027/" target="_blank"><span class="i18n-en">Exam</span><span class="i18n-ko">시험</span></a>
 
 ### <span class="i18n-en">C++ Programming</span><span class="i18n-ko">C++ 프로그래밍</span> (LZ000500 @ <span class="i18n-en">Fall 2023</span><span class="i18n-ko">2023년 가을</span>)
-- <span class="i18n-en">Slides: TBA</span><span class="i18n-ko">강의 슬라이드: 미정</span>
-- <span class="i18n-en">Notes & Exams: TBA</span><span class="i18n-ko">강의노트 및 시험: 미정</span>
+- <a href="https://sswu-prism-lab.github.io/slides/cpp-programming-2027/" target="_blank"><span class="i18n-en">Slides</span><span class="i18n-ko">강의 슬라이드</span></a>
+- <a href="https://sswu-prism-lab.github.io/slides/notes/cpp-programming-2027/" target="_blank"><span class="i18n-en">Exams</span><span class="i18n-ko">시험</span></a>
 
 <!---
 # 2025 Summer
