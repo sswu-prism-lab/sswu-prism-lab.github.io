@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<script>
+(function(){
+  function cur(){ try{ return localStorage.getItem('theme') || (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark':'light'); }catch(e){ return 'dark'; } }
+  var t=cur(); window.__theme=t; document.documentElement.setAttribute('data-theme', t);
+  window.addEventListener('storage', function(e){ if(e.key==='theme'){ var n=e.newValue||'dark'; window.__theme=n; document.documentElement.setAttribute('data-theme', n); if(window.__onTheme) window.__onTheme(n); } });
+})();
+</script>
+
+<title>Representation — PRISM Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<style>
+* { box-sizing: border-box; }
+:root {
+  color-scheme: light;
+  --bg:#ffffff; --panel:#f7f9fc; --panel-2:#eef2f8; --ink:#141b33; --muted:#5a6488;
+  --border:#e2e7ee; --grid:#eef2f8; --axis:#c9d0c8;
+  --c-pos:#2563eb; --c-neg:#e08a00; --c-nn:#0f9d6b; --c-rep:#8b5cf6;
+  --shadow: 0 1px 2px rgba(28,36,49,.05);
+}
+[data-theme="dark"] {
+  color-scheme: dark;
+  --bg:#15181e; --panel:#1d212a; --panel-2:#171b22; --ink:#e6edf3; --muted:#8b949e;
+  --border:#2e343f; --grid:#252b36; --axis:#3a4250;
+  --c-pos:#60a5fa; --c-neg:#fbbf24; --c-nn:#34d399; --c-rep:#a78bfa;
+  --shadow: none;
+}
+html, body { margin:0; padding:0; }
+body {
+  background:var(--bg); color:var(--ink);
+  padding:26px 20px 44px;
+  font:14px/1.5 "Inter", system-ui, -apple-system, 'Noto Sans KR', sans-serif;
+  accent-color: var(--ink);
+}
+:focus-visible { outline:2px solid var(--c-pos); outline-offset:2px; }
+
+.wrap{max-width:1120px;margin:0 auto}
+.topbar{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.back{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--muted);text-decoration:none;
+  border:1px solid var(--border);padding:6px 12px;border-radius:20px;transition:.14s}
+.back:hover{color:var(--c-accent,#5eead4);border-color:currentColor}
+.eyebrow{font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--muted);margin:0 0 10px;display:flex;align-items:center;gap:10px}
+.eyebrow::before{content:"";width:22px;height:1px;background:currentColor;opacity:.7}
+.title{font-family:"Space Grotesk",system-ui,sans-serif;font-weight:700;font-size:clamp(28px,4.6vw,44px);
+  line-height:1.04;margin:0 0 10px;letter-spacing:-.02em;color:var(--ink)}
+.title .thin{color:var(--muted);font-weight:500;font-size:.5em}
+.site-sub{color:var(--muted);max-width:70ch;margin:0 0 24px;font-size:15px}
+.site-sub b{color:var(--ink);font-weight:600}
+footer{margin-top:30px;color:var(--muted);font-size:12px;font-family:"JetBrains Mono",monospace;letter-spacing:.04em}
+footer a{color:var(--muted);text-decoration:underline}
+
+main { padding:0; }
+.layout { display:grid; grid-template-columns:264px minmax(0,1fr); gap:14px; align-items:start; }
+.panel { background:var(--panel); border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow); }
+.stage { display:flex; flex-direction:column; gap:12px; min-width:0; }
+
+.side { padding:14px; display:flex; flex-direction:column; gap:14px; }
+.grp { display:flex; flex-direction:column; gap:8px; }
+.grp + .grp { border-top:1px dashed var(--border); padding-top:13px; }
+.grp.off { opacity:.45; }
+.grp-t { font-size:10.5px; font-weight:700; letter-spacing:.09em; text-transform:uppercase; color:var(--muted); }
+.sl { display:flex; flex-direction:column; gap:3px; font-size:12.5px; }
+.sl > span { display:flex; justify-content:space-between; align-items:baseline; gap:8px; }
+.val { font:600 12px "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+input[type=range] { width:100%; margin:0; height:22px; }
+.hint { margin:0; font-size:11.5px; color:var(--muted); }
+.btnrow { display:flex; gap:6px; flex-wrap:wrap; }
+.btn { border:1px solid var(--border); background:var(--panel); color:var(--ink); font:inherit; font-size:12.5px; padding:5px 10px; border-radius:8px; cursor:pointer; transition:background .12s; }
+.btn:hover { background:var(--bg); }
+.btn:disabled { cursor:default; opacity:.6; }
+.btn.ghost { color:var(--muted); }
+.btn.accent { border-color:var(--c-nn); color:var(--c-nn); font-weight:600; }
+.chips { display:flex; gap:5px; flex-wrap:wrap; }
+.dchip { border:1px solid var(--border); background:var(--bg); color:var(--ink); font:inherit; font-size:11.5px; padding:3px 9px; border-radius:999px; cursor:pointer; transition:border-color .12s, color .12s; }
+.dchip:hover { border-color:var(--c-pos); color:var(--c-pos); }
+.dchip.active { border-color:var(--ink); font-weight:600; }
+.rlist { display:flex; flex-direction:column; gap:5px; }
+.rchip { border:1px solid var(--border); background:var(--panel); color:var(--ink); font:inherit; font-size:12.5px; text-align:left; padding:6px 10px; border-radius:8px; cursor:pointer; transition:border-color .12s, color .12s, background .12s; }
+.rchip small { color:var(--muted); font-size:11px; margin-left:4px; }
+.rchip:hover { border-color:var(--c-rep); }
+.rchip.active { border-color:var(--c-rep); color:var(--c-rep); background:var(--bg); font-weight:600; }
+.rchip.active small { color:var(--c-rep); }
+.segs { display:flex; gap:4px; padding:3px; border:1px solid var(--border); border-radius:9px; background:var(--bg); }
+.seg { flex:1; border:0; background:transparent; color:var(--muted); font:inherit; font-size:12px; padding:4px 8px; border-radius:6px; cursor:pointer; }
+.seg:disabled { cursor:default; }
+.seg.active { background:var(--ink); color:var(--bg); font-weight:600; }
+.cseg[data-c="1"].active { background:var(--c-pos); color:var(--bg); }
+.cseg[data-c="-1"].active { background:var(--c-neg); color:var(--bg); }
+
+.duo { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.plot { padding:10px 12px 8px; }
+.plot-cap { font-size:11.5px; color:var(--muted); padding:0 2px 5px; }
+.caphead { display:flex; justify-content:space-between; align-items:baseline; gap:8px; }
+.caphead b { font-family:"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color:var(--ink); font-size:12px; }
+canvas { display:block; width:100%; }
+#cvX { height:280px; cursor:crosshair; }
+#cvZ { height:280px; }
+.legend { display:flex; flex-wrap:wrap; gap:4px 12px; padding:7px 2px 2px; font-size:11.5px; color:var(--muted); }
+.legend span { display:inline-flex; align-items:center; gap:5px; }
+.c-pos { color:var(--c-pos); } .c-neg { color:var(--c-neg); } .c-ink { color:var(--ink); }
+.sw { display:inline-block; width:16px; height:0; border-top:3px solid currentColor; border-radius:2px; }
+.dot { display:inline-block; width:9px; height:9px; border-radius:50%; background:currentColor; }
+
+.cards { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:10px; }
+.card { background:var(--panel); border:1px solid var(--border); border-top:3px solid var(--border); border-radius:12px; padding:10px 12px 9px; box-shadow:var(--shadow); }
+.card.lin { border-top-color:var(--c-pos); }
+.card.nn { border-top-color:var(--c-nn); }
+.card.sb { border-top-color:var(--c-rep); }
+.card .k { font:700 11px "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing:.08em; }
+.card.lin .k { color:var(--c-pos); }
+.card.nn .k { color:var(--c-nn); }
+.card.sb .k { color:var(--c-rep); }
+.card .nm { font-size:12px; color:var(--muted); margin-bottom:6px; }
+.stat { display:flex; justify-content:space-between; align-items:baseline; gap:8px; font-size:12px; padding:2px 0; }
+.stat span { color:var(--muted); }
+.stat b { font:600 13px "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; white-space:nowrap; }
+.card .note { margin:6px 0 0; font-size:11px; color:var(--muted); border-top:1px dashed var(--border); padding-top:5px; }
+
+.fold summary { cursor:pointer; padding:9px 13px; font-size:12.5px; font-weight:600; color:var(--muted); list-style:none; display:flex; align-items:center; gap:7px; }
+.fold summary::-webkit-details-marker { display:none; }
+.fold summary::before { content:'\25B8'; font-size:10px; transition:transform .12s; }
+.fold[open] summary::before { transform:rotate(90deg); }
+.fold-body { padding:2px 16px 12px; font-size:13px; }
+.fold ol { margin:0; padding-left:20px; display:flex; flex-direction:column; gap:6px; }
+.katex-display { margin:.5em 0; padding:2px 0; overflow-x:auto; overflow-y:hidden; }
+.katex { font-size:1.02em; }
+
+@media (max-width:860px) {
+  .duo { grid-template-columns:1fr; }
+}
+@media (max-width:760px) {
+  .layout { grid-template-columns:1fr; }
+  .cards { grid-template-columns:1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition:none !important; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar"><a class="back" href="index.html">← Playground</a></div>
+  <p class="eyebrow">PRISM · Machine Learning Playground</p>
+  <h1 class="title">Representation<br><span class="thin">Change the representation, change the difficulty — deep learning learns representations</span></h1>
+
+<main>
+<div class="layout">
+  <aside class="panel side">
+    <div class="grp">
+      <div class="grp-t">Data</div>
+      <div class="chips">
+        <button class="dchip active" data-d="circles">Circles</button>
+        <button class="dchip" data-d="xor">XOR</button>
+        <button class="dchip" data-d="moons">Moons</button>
+        <button class="dchip" data-d="spiral">Spiral</button>
+      </div>
+      <label class="sl"><span>Samples per class <b id="dNV" class="val">40</b></span>
+        <input type="range" id="dN" min="15" max="80" step="5" value="40"></label>
+      <div class="btnrow">
+        <button id="dGen" class="btn">Regenerate</button>
+        <button id="dUndo" class="btn">&#8617; Undo point</button>
+        <button id="dClear" class="btn ghost">Clear</button>
+      </div>
+      <div class="segs">
+        <button class="seg cseg active" data-c="1">&#9679; Add +1</button>
+        <button class="seg cseg" data-c="-1">&#9679; Add &minus;1</button>
+      </div>
+      <p class="hint">Click the left plot to add a point</p>
+    </div>
+    <div class="grp">
+      <div class="grp-t">Representation z = &phi;(x)</div>
+      <div class="rlist">
+        <button class="rchip active" data-r="raw">Raw <small>z = (x&#8321;, x&#8322;)</small></button>
+        <button class="rchip" data-r="polar">Polar <small>z = (r, &theta;)</small></button>
+        <button class="rchip" data-r="prod">Product&middot;Sum <small>z = (x&#8321;x&#8322;, x&#8321;+x&#8322;)</small></button>
+        <button class="rchip" data-r="nn">Neural net <small>z = h(x) &mdash; learned</small></button>
+      </div>
+      <p class="hint">The classifier is always a single <b>straight line</b> in representation space</p>
+    </div>
+    <div class="grp" id="nnGrp">
+      <div class="grp-t">Neural net h(x)</div>
+      <div class="segs">
+        <button class="seg hseg" data-h="8">H=8</button>
+        <button class="seg hseg active" data-h="16">H=16</button>
+        <button class="seg hseg" data-h="32">H=32</button>
+      </div>
+      <div class="btnrow">
+        <button id="nTrain" class="btn accent">&#9654; Train</button>
+        <button id="nReset" class="btn">Reset</button>
+      </div>
+      <p class="hint">2 &rarr; H &rarr; <b>2 (representation layer)</b> &rarr; 1, tanh &middot; Adam &mdash; the right-hand space moves in real time</p>
+    </div>
+  </aside>
+
+  <div class="stage">
+    <div class="duo">
+      <div class="panel plot">
+        <div class="plot-cap">Input space (x&#8321;, x&#8322;) &mdash; the boundary can be <b>curved</b></div>
+        <canvas id="cvX"></canvas>
+        <div class="legend">
+          <span><i class="dot c-pos"></i>+1</span>
+          <span><i class="dot c-neg"></i>&minus;1</span>
+          <span><i class="sw c-ink"></i>decision boundary</span>
+        </div>
+      </div>
+      <div class="panel plot">
+        <div class="plot-cap caphead">
+          <span>Representation space z = &phi;(x) &mdash; the boundary is always a <b>line</b></span>
+          <b id="rAcc">&mdash;</b>
+        </div>
+        <canvas id="cvZ"></canvas>
+        <div class="legend">
+          <span><i class="sw c-ink"></i>w&#7488;z + b = 0</span>
+          <span>the same classifier seen in both spaces</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="cards">
+      <div class="card lin">
+        <div class="k">LINEAR READOUT</div>
+        <div class="nm">Linear classifier on the representation</div>
+        <div class="stat"><span>Train accuracy</span><b id="cAcc">&mdash;</b></div>
+        <div class="stat"><span>Logistic loss</span><b id="cLoss">&mdash;</b></div>
+        <p class="note">The model is one straight line &mdash; the representation decides performance</p>
+      </div>
+      <div class="card nn">
+        <div class="k">TRAINING</div>
+        <div class="nm">Neural net training status</div>
+        <div class="stat"><span>step</span><b id="nStep">&mdash;</b></div>
+        <div class="stat"><span>loss</span><b id="nLoss">&mdash;</b></div>
+        <p class="note">The hidden layer h(x) is the learned representation</p>
+      </div>
+      <div class="card sb">
+        <div class="k">LINEAR PROBE</div>
+        <div class="nm">Scoreboard by representation (current data)</div>
+        <div class="stat"><span>Raw</span><b id="sbRaw">&mdash;</b></div>
+        <div class="stat"><span>Polar</span><b id="sbPolar">&mdash;</b></div>
+        <div class="stat"><span>Product&middot;Sum</span><b id="sbProd">&mdash;</b></div>
+        <div class="stat"><span>Neural net</span><b id="sbNn">&mdash;</b></div>
+      </div>
+    </div>
+
+    <details class="panel fold">
+      <summary>Formulas</summary>
+      <div class="fold-body">
+        $$z=\phi(x):\ \mathcal X\to\mathcal Z,\qquad \hat y=\sigma(\mathbf w^\top z+b)\quad(\text{linear readout})$$
+        $$\phi_{\text{polar}}(x)=\big(\sqrt{x_1^2+x_2^2},\ \operatorname{atan2}(x_2,x_1)\big),\qquad \phi_{\text{prod}}(x)=(x_1x_2,\ x_1+x_2)$$
+        $$h(x)=\tanh\!\big(W_2\,\tanh(W_1x+b_1)+b_2\big)\in\mathbb R^2,\qquad \hat y=\sigma\big(\mathbf w^\top h(x)+b\big)$$
+        $$\mathcal L=-\tfrac1n\textstyle\sum_i\big[t_i\log\hat y_i+(1-t_i)\log(1-\hat y_i)\big]$$
+        $$\text{decision boundary in }\mathcal X:\ \{x:\mathbf w^\top\phi(x)+b=0\}\ \text{(curved)}\quad\Longleftrightarrow\quad\text{in }\mathcal Z:\ \text{a line}$$
+      </div>
+    </details>
+
+    <details class="panel fold">
+      <summary>What to watch</summary>
+      <div class="fold-body">
+        <ol>
+          <li><b>Circles + Raw</b>: impossible with a straight line (&asymp;50%). Switch to polar and the <i>same</i> linear classifier hits 100% &mdash; the problem didn't get easier, <b>the representation got better</b>.</li>
+          <li>That same polar map fails on XOR, while product&middot;sum solves only XOR &mdash; hand-crafted features are keys that fit just one geometry (the limits of feature engineering).</li>
+          <li><b>Spiral</b>: every hand-crafted representation fails. Pick the neural net and hit &#9654; Train &mdash; watch the points in the right-hand representation space <b>unfold</b> until a straight line can separate them. The hidden layer learns the representation itself = representation learning.</li>
+          <li>Reset and retrain, and it converges to a <b>different</b> representation each time yet reaches similar accuracy &mdash; a good representation is not unique. If H=8 struggles on the spiral, raise it to H=32 to see the effect of capacity.</li>
+          <li>The scoreboard card is exactly a <b>linear probe</b>: &ldquo;representation quality = the score of a linear classifier placed on top.&rdquo; It is the standard protocol for evaluating modern representation learning, such as self-supervised learning.</li>
+        </ol>
+      </div>
+    </details>
+  </div>
+</div>
+</main>
+  <footer>PRISM Lab · prototype · <a href="https://sswu-prism-lab.github.io" target="_blank" rel="noopener">sswu-prism-lab.github.io</a></footer>
+</div>
+
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script>
+'use strict';
+/* Representation playground — same data, different representation
+   left: input space (x1,x2) with pulled-back boundary
+   right: representation space z = phi(x) where the classifier is ALWAYS a line */
+
+/* ===MATH-BEGIN=== */
+var RNG = Math.random;
+function randn() {
+  var u = 0, v = 0;
+  while (u === 0) u = RNG();
+  while (v === 0) v = RNG();
+  return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+}
+function sigmoid(o) { return 1 / (1 + Math.exp(-o)); }
+
+function makeData(name, m) {
+  var pts = [], i, t, r;
+  if (name === 'circles') {
+    for (i = 0; i < m; i++) {
+      t = RNG() * 2 * Math.PI;
+      r = Math.abs(0.8 + 0.25 * randn());
+      pts.push({ x: r * Math.cos(t), y: r * Math.sin(t), label: 1 });
+    }
+    for (i = 0; i < m; i++) {
+      t = RNG() * 2 * Math.PI;
+      r = 2.4 + 0.25 * randn();
+      pts.push({ x: r * Math.cos(t), y: r * Math.sin(t), label: -1 });
+    }
+  } else if (name === 'xor') {
+    for (i = 0; i < m; i++) {
+      var s1 = i % 2 === 0 ? 1 : -1;
+      pts.push({ x: s1 * 1.5 + 0.5 * randn(), y: s1 * 1.5 + 0.5 * randn(), label: 1 });
+    }
+    for (i = 0; i < m; i++) {
+      var s2 = i % 2 === 0 ? 1 : -1;
+      pts.push({ x: s2 * 1.5 + 0.5 * randn(), y: -s2 * 1.5 + 0.5 * randn(), label: -1 });
+    }
+  } else if (name === 'moons') {
+    var S = 1.9, nz = 0.17;
+    for (i = 0; i < m; i++) {
+      t = RNG() * Math.PI;
+      pts.push({
+        x: S * Math.cos(t) - S / 2 + nz * randn(),
+        y: S * Math.sin(t) - S / 4 + nz * randn(),
+        label: 1
+      });
+    }
+    for (i = 0; i < m; i++) {
+      t = RNG() * Math.PI;
+      pts.push({
+        x: S / 2 - S * Math.cos(t) + nz * randn(),
+        y: S / 4 - S * Math.sin(t) + nz * randn(),
+        label: -1
+      });
+    }
+  } else { // spiral
+    for (i = 0; i < m; i++) {
+      t = 0.4 + (i + 0.5) / m * 6.8;
+      r = 0.18 + 0.34 * t;
+      pts.push({ x: r * Math.cos(t) + 0.12 * randn(), y: r * Math.sin(t) + 0.12 * randn(), label: 1 });
+      pts.push({ x: -r * Math.cos(t) + 0.12 * randn(), y: -r * Math.sin(t) + 0.12 * randn(), label: -1 });
+    }
+  }
+  return pts;
+}
+
+function phiMap(rep, p) {
+  if (rep === 'raw') return [p.x, p.y];
+  if (rep === 'polar') return [Math.sqrt(p.x * p.x + p.y * p.y), Math.atan2(p.y, p.x)];
+  return [p.x * p.y, p.x + p.y]; // prod
+}
+
+function standFit(Z) {
+  var n = Z.length, m1 = 0, m2 = 0, i;
+  for (i = 0; i < n; i++) { m1 += Z[i][0]; m2 += Z[i][1]; }
+  m1 /= n; m2 /= n;
+  var s1 = 0, s2 = 0;
+  for (i = 0; i < n; i++) {
+    s1 += (Z[i][0] - m1) * (Z[i][0] - m1);
+    s2 += (Z[i][1] - m2) * (Z[i][1] - m2);
+  }
+  s1 = Math.sqrt(s1 / n); s2 = Math.sqrt(s2 / n);
+  return { m1: m1, m2: m2, s1: Math.max(s1, 1e-9), s2: Math.max(s2, 1e-9) };
+}
+function standApply(st, z) {
+  return [(z[0] - st.m1) / st.s1, (z[1] - st.m2) / st.s2];
+}
+
+function trainLogistic(Z, t, iters, lr, l2) {
+  var n = Z.length, w1 = 0, w2 = 0, b = 0, i, o, p;
+  for (var it = 0; it < iters; it++) {
+    var g1 = 0, g2 = 0, gb = 0;
+    for (i = 0; i < n; i++) {
+      o = w1 * Z[i][0] + w2 * Z[i][1] + b;
+      p = sigmoid(o);
+      var d = (p - t[i]) / n;
+      g1 += d * Z[i][0]; g2 += d * Z[i][1]; gb += d;
+    }
+    w1 -= lr * (g1 + l2 * w1);
+    w2 -= lr * (g2 + l2 * w2);
+    b -= lr * gb;
+  }
+  var loss = 0, correct = 0;
+  for (i = 0; i < n; i++) {
+    o = w1 * Z[i][0] + w2 * Z[i][1] + b;
+    p = sigmoid(o);
+    loss += -(t[i] * Math.log(p + 1e-12) + (1 - t[i]) * Math.log(1 - p + 1e-12)) / n;
+    if ((o > 0) === (t[i] === 1)) correct++;
+  }
+  return { w1: w1, w2: w2, b: b, loss: loss, acc: correct / n };
+}
+
+/* --- tiny MLP: 2 -> H(tanh) -> 2(tanh, representation) -> 1 --- */
+function mlpInit(H, rnd) {
+  rnd = rnd || Math.random;
+  function rn() {
+    var u = 0, v = 0;
+    while (u === 0) u = rnd();
+    while (v === 0) v = rnd();
+    return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+  }
+  function arr(n, s) {
+    var a = new Float64Array(n);
+    for (var i = 0; i < n; i++) a[i] = rn() * s;
+    return a;
+  }
+  var net = {
+    H: H, step: 0,
+    W1: arr(H * 2, Math.sqrt(0.5)), b1: new Float64Array(H),
+    W2: arr(2 * H, Math.sqrt(1 / H)), b2: new Float64Array(2),
+    W3: arr(2, Math.sqrt(0.5)), b3: new Float64Array(1),
+    m: {}, v: {}
+  };
+  ['W1', 'b1', 'W2', 'b2', 'W3', 'b3'].forEach(function (k) {
+    net.m[k] = new Float64Array(net[k].length);
+    net.v[k] = new Float64Array(net[k].length);
+  });
+  return net;
+}
+
+function mlpForward(net, x1, x2) {
+  var H = net.H, h1 = new Float64Array(H), i, j, k, s;
+  for (i = 0; i < H; i++) h1[i] = Math.tanh(net.W1[i * 2] * x1 + net.W1[i * 2 + 1] * x2 + net.b1[i]);
+  var h2 = new Float64Array(2);
+  for (j = 0; j < 2; j++) {
+    s = net.b2[j];
+    for (k = 0; k < H; k++) s += net.W2[j * H + k] * h1[k];
+    h2[j] = Math.tanh(s);
+  }
+  var o = net.b3[0] + net.W3[0] * h2[0] + net.W3[1] * h2[1];
+  return { h1: h1, h2: h2, o: o };
+}
+
+function mlpEval(net, pts) {
+  var n = pts.length, loss = 0, correct = 0;
+  for (var i = 0; i < n; i++) {
+    var t = pts[i].label > 0 ? 1 : 0;
+    var f = mlpForward(net, pts[i].x, pts[i].y);
+    var p = sigmoid(f.o);
+    loss += -(t * Math.log(p + 1e-12) + (1 - t) * Math.log(1 - p + 1e-12)) / n;
+    if ((f.o > 0) === (t === 1)) correct++;
+  }
+  return { loss: loss, acc: correct / n };
+}
+
+function mlpAdamStep(net, pts, lr) {
+  var n = pts.length, H = net.H, i, j, k;
+  var g = {
+    W1: new Float64Array(H * 2), b1: new Float64Array(H),
+    W2: new Float64Array(2 * H), b2: new Float64Array(2),
+    W3: new Float64Array(2), b3: new Float64Array(1)
+  };
+  var loss = 0, correct = 0;
+  for (var s = 0; s < n; s++) {
+    var pt = pts[s], t = pt.label > 0 ? 1 : 0;
+    var f = mlpForward(net, pt.x, pt.y);
+    var p = sigmoid(f.o);
+    loss += -(t * Math.log(p + 1e-12) + (1 - t) * Math.log(1 - p + 1e-12)) / n;
+    if ((f.o > 0) === (t === 1)) correct++;
+    var dO = (p - t) / n;
+    g.b3[0] += dO;
+    g.W3[0] += dO * f.h2[0];
+    g.W3[1] += dO * f.h2[1];
+    var da2 = [0, 0];
+    for (j = 0; j < 2; j++) {
+      da2[j] = dO * net.W3[j] * (1 - f.h2[j] * f.h2[j]);
+      g.b2[j] += da2[j];
+      for (k = 0; k < H; k++) g.W2[j * H + k] += da2[j] * f.h1[k];
+    }
+    for (k = 0; k < H; k++) {
+      var dh1 = da2[0] * net.W2[0 * H + k] + da2[1] * net.W2[1 * H + k];
+      var da1 = dh1 * (1 - f.h1[k] * f.h1[k]);
+      g.b1[k] += da1;
+      g.W1[k * 2] += da1 * pt.x;
+      g.W1[k * 2 + 1] += da1 * pt.y;
+    }
+  }
+  net.step++;
+  var be1 = 0.9, be2 = 0.999, eps = 1e-8;
+  var c1 = 1 - Math.pow(be1, net.step), c2 = 1 - Math.pow(be2, net.step);
+  ['W1', 'b1', 'W2', 'b2', 'W3', 'b3'].forEach(function (kk) {
+    var P = net[kk], G = g[kk], M = net.m[kk], V = net.v[kk];
+    for (var q = 0; q < P.length; q++) {
+      M[q] = be1 * M[q] + (1 - be1) * G[q];
+      V[q] = be2 * V[q] + (1 - be2) * G[q] * G[q];
+      P[q] -= lr * (M[q] / c1) / (Math.sqrt(V[q] / c2) + eps);
+    }
+  });
+  return { loss: loss, acc: correct / n };
+}
+
+/* marching squares: flat [x1,y1,x2,y2,...] segments at given level */
+function msSegments(F, nx, ny, level, xs, ys) {
+  var segs = [];
+  function ept(edge, i, j, tl, tr, br, bl) {
+    var x1, y1, v1, x2, y2, v2;
+    if (edge === 0) { x1 = xs[i]; y1 = ys[j]; v1 = tl; x2 = xs[i + 1]; y2 = ys[j]; v2 = tr; }
+    else if (edge === 1) { x1 = xs[i + 1]; y1 = ys[j]; v1 = tr; x2 = xs[i + 1]; y2 = ys[j + 1]; v2 = br; }
+    else if (edge === 2) { x1 = xs[i]; y1 = ys[j + 1]; v1 = bl; x2 = xs[i + 1]; y2 = ys[j + 1]; v2 = br; }
+    else { x1 = xs[i]; y1 = ys[j]; v1 = tl; x2 = xs[i]; y2 = ys[j + 1]; v2 = bl; }
+    var d = v2 - v1;
+    var t = Math.abs(d) < 1e-12 ? 0.5 : (level - v1) / d;
+    if (t < 0) t = 0; else if (t > 1) t = 1;
+    return [x1 + t * (x2 - x1), y1 + t * (y2 - y1)];
+  }
+  var TABLE = {
+    1: [[3, 2]], 2: [[2, 1]], 3: [[3, 1]], 4: [[0, 1]],
+    6: [[0, 2]], 7: [[0, 3]], 8: [[0, 3]], 9: [[0, 2]],
+    11: [[0, 1]], 12: [[3, 1]], 13: [[2, 1]], 14: [[3, 2]]
+  };
+  for (var j = 0; j < ny - 1; j++) {
+    for (var i = 0; i < nx - 1; i++) {
+      var tl = F[j * nx + i], tr = F[j * nx + i + 1];
+      var br = F[(j + 1) * nx + i + 1], bl = F[(j + 1) * nx + i];
+      var idx = (tl > level ? 8 : 0) | (tr > level ? 4 : 0) | (br > level ? 2 : 0) | (bl > level ? 1 : 0);
+      if (idx === 0 || idx === 15) continue;
+      var pairs;
+      if (idx === 5 || idx === 10) {
+        var cen = (tl + tr + br + bl) / 4 > level;
+        if (idx === 5) pairs = cen ? [[0, 1], [3, 2]] : [[0, 3], [2, 1]];
+        else pairs = cen ? [[0, 3], [2, 1]] : [[0, 1], [3, 2]];
+      } else pairs = TABLE[idx];
+      for (var p = 0; p < pairs.length; p++) {
+        var A = ept(pairs[p][0], i, j, tl, tr, br, bl);
+        var B = ept(pairs[p][1], i, j, tl, tr, br, bl);
+        segs.push(A[0], A[1], B[0], B[1]);
+      }
+    }
+  }
+  return segs;
+}
+/* ===MATH-END=== */
+
+/* ---------- DOM helpers ---------- */
+function $(id) { return document.getElementById(id); }
+function cssv(name) {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+function hexA(hex, al) {
+  hex = hex.replace('#', '');
+  if (hex.length === 3) hex = hex.split('').map(function (c) { return c + c; }).join('');
+  var r = parseInt(hex.slice(0, 2), 16), g = parseInt(hex.slice(2, 4), 16), b = parseInt(hex.slice(4, 6), 16);
+  return 'rgba(' + r + ',' + g + ',' + b + ',' + al + ')';
+}
+function fmt(v, dg) {
+  if (dg === undefined) dg = 3;
+  if (v === null || v === undefined || !isFinite(v)) return '—';
+  var a = Math.abs(v);
+  if (a !== 0 && (a >= 1e4 || a < 1e-3)) return v.toExponential(1);
+  return v.toFixed(dg);
+}
+function pct(v) { return v === null || v === undefined ? '—' : (100 * v).toFixed(1) + '%'; }
+function setupCanvas(cv) {
+  var dpr = window.devicePixelRatio || 1;
+  var w = cv.clientWidth, h = cv.clientHeight;
+  if (w === 0 || h === 0) return null;
+  var W = Math.round(w * dpr), H = Math.round(h * dpr);
+  if (cv.width !== W || cv.height !== H) { cv.width = W; cv.height = H; }
+  var ctx = cv.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  return { ctx: ctx, w: w, h: h };
+}
+
+/* ---------- state ---------- */
+var R = {
+  data: 'circles', rep: 'raw', addClass: 1, H: 16,
+  pts: [], cls: null, net: null,
+  sb: { raw: null, polar: null, prod: null, nn: null }
+};
+var handDirty = true, nnRun = false, mapX = null;
+
+function bothClasses() {
+  var hp = false, hn = false;
+  for (var i = 0; i < R.pts.length; i++) {
+    if (R.pts[i].label > 0) hp = true; else hn = true;
+  }
+  return hp && hn && R.pts.length >= 2;
+}
+
+function trainHand() {
+  R.cls = null;
+  if (!bothClasses()) return;
+  var Zr = R.pts.map(function (p) { return phiMap(R.rep, p); });
+  var stt = standFit(Zr);
+  var Z = Zr.map(function (z) { return standApply(stt, z); });
+  var t = R.pts.map(function (p) { return p.label > 0 ? 1 : 0; });
+  var res = trainLogistic(Z, t, 1500, 2.0, 1e-3);
+  R.cls = { w1: res.w1, w2: res.w2, b: res.b, stats: stt, loss: res.loss, acc: res.acc };
+  if (R.sb[R.rep] === null || res.acc > R.sb[R.rep]) R.sb[R.rep] = res.acc;
+}
+
+function resetNet() {
+  nnRun = false;
+  R.net = mlpInit(R.H);
+  setTrainBtn();
+}
+
+function newData() {
+  R.pts = makeData(R.data, +$('dN').value);
+  R.sb = { raw: null, polar: null, prod: null, nn: null };
+  resetNet();
+  handDirty = true;
+}
+
+/* ---------- generic plane drawing ---------- */
+function drawPlane(cvId, evalF, pts, vmax, msg) {
+  var cv = $(cvId), s0 = setupCanvas(cv);
+  if (!s0) return null;
+  var ctx = s0.ctx, w = s0.w, h = s0.h;
+  var Mg = { l: 30, r: 10, t: 8, b: 20 };
+  var pw = w - Mg.l - Mg.r, ph = h - Mg.t - Mg.b;
+  ctx.clearRect(0, 0, w, h);
+
+  var scale = ph / (2 * vmax);
+  var cx = Mg.l + pw / 2, cy = Mg.t + ph / 2;
+  function X(u) { return cx + u * scale; }
+  function Y(v) { return cy - v * scale; }
+  var umax = pw / 2 / scale;
+  var gstep = vmax > 1.6 ? 1 : 0.5;
+
+  ctx.strokeStyle = cssv('--grid');
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  var g;
+  for (g = Math.ceil(-umax / gstep) * gstep; g <= umax + 1e-9; g += gstep) {
+    ctx.moveTo(X(g), Mg.t); ctx.lineTo(X(g), Mg.t + ph);
+  }
+  for (g = Math.ceil(-vmax / gstep) * gstep; g <= vmax + 1e-9; g += gstep) {
+    ctx.moveTo(Mg.l, Y(g)); ctx.lineTo(Mg.l + pw, Y(g));
+  }
+  ctx.stroke();
+  ctx.strokeStyle = cssv('--axis');
+  ctx.strokeRect(Mg.l, Mg.t, pw, ph);
+
+  ctx.fillStyle = cssv('--muted');
+  ctx.font = '10.5px "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace';
+  ctx.textAlign = 'center';
+  for (g = Math.ceil(-umax); g <= Math.floor(umax); g++) ctx.fillText(g, X(g), h - 7);
+  ctx.textAlign = 'right';
+  for (g = Math.ceil(-vmax); g <= Math.floor(vmax); g++) ctx.fillText(g, Mg.l - 4, Y(g) + 3.5);
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(Mg.l, Mg.t, pw, ph);
+  ctx.clip();
+
+  if (evalF) {
+    var cell = 6;
+    var nx = Math.ceil(pw / cell) + 1, ny = Math.ceil(ph / cell) + 1;
+    var xs = new Array(nx), ys = new Array(ny), i, j;
+    for (i = 0; i < nx; i++) xs[i] = Mg.l + Math.min(i * cell, pw);
+    for (j = 0; j < ny; j++) ys[j] = Mg.t + Math.min(j * cell, ph);
+    var F = new Float64Array(nx * ny);
+    for (j = 0; j < ny; j++) {
+      var vv = -(ys[j] - cy) / scale;
+      for (i = 0; i < nx; i++) {
+        F[j * nx + i] = evalF((xs[i] - cx) / scale, vv);
+      }
+    }
+    var posT = hexA(cssv('--c-pos'), 0.055), negT = hexA(cssv('--c-neg'), 0.055);
+    for (j = 0; j < ny - 1; j++) {
+      for (i = 0; i < nx - 1; i++) {
+        ctx.fillStyle = F[j * nx + i] > 0 ? posT : negT;
+        ctx.fillRect(xs[i], ys[j], xs[i + 1] - xs[i], ys[j + 1] - ys[j]);
+      }
+    }
+    var segs = msSegments(F, nx, ny, 0, xs, ys);
+    ctx.strokeStyle = cssv('--ink');
+    ctx.lineWidth = 2.2;
+    ctx.beginPath();
+    for (var q = 0; q < segs.length; q += 4) {
+      ctx.moveTo(segs[q], segs[q + 1]);
+      ctx.lineTo(segs[q + 2], segs[q + 3]);
+    }
+    ctx.stroke();
+  }
+
+  for (var k = 0; k < pts.length; k++) {
+    var p = pts[k];
+    ctx.beginPath();
+    ctx.arc(X(p.u), Y(p.v), 4, 0, Math.PI * 2);
+    ctx.fillStyle = cssv(p.label > 0 ? '--c-pos' : '--c-neg');
+    ctx.fill();
+    ctx.lineWidth = 1.1;
+    ctx.strokeStyle = cssv('--panel');
+    ctx.stroke();
+  }
+
+  if (msg) {
+    ctx.fillStyle = cssv('--muted');
+    ctx.font = '12.5px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(msg, cx, cy);
+  }
+  ctx.restore();
+  return { l: Mg.l, t: Mg.t, pw: pw, ph: ph, cx: cx, cy: cy, scale: scale, umax: umax, vmax: vmax };
+}
+
+/* ---------- render ---------- */
+function render() {
+  $('dNV').textContent = $('dN').value;
+  $('nnGrp').classList.toggle('off', R.rep !== 'nn');
+  ['nTrain', 'nReset'].forEach(function (id) { $(id).disabled = R.rep !== 'nn'; });
+  document.querySelectorAll('.hseg').forEach(function (b) { b.disabled = R.rep !== 'nn'; });
+
+  if (R.rep !== 'nn' && handDirty) { trainHand(); handDirty = false; }
+
+  var leftEval = null, rightEval = null, zpts = [], vmaxR = 3.2, msg = null;
+  var acc = null, loss = null;
+  var ok = bothClasses();
+
+  if (R.rep === 'nn') {
+    vmaxR = 1.25;
+    if (R.net) {
+      leftEval = function (x, y) { return mlpForward(R.net, x, y).o; };
+      rightEval = function (u, v) { return R.net.W3[0] * u + R.net.W3[1] * v + R.net.b3[0]; };
+      zpts = R.pts.map(function (p) {
+        var f = mlpForward(R.net, p.x, p.y);
+        return { u: f.h2[0], v: f.h2[1], label: p.label };
+      });
+      if (ok) {
+        var ev = mlpEval(R.net, R.pts);
+        acc = ev.acc; loss = ev.loss;
+        if (R.net.step > 0 && (R.sb.nn === null || acc > R.sb.nn)) R.sb.nn = acc;
+      }
+    }
+    $('nStep').textContent = R.net ? R.net.step : '—';
+    $('nLoss').textContent = R.net && ok ? fmt(loss) : '—';
+  } else {
+    $('nStep').textContent = '—';
+    $('nLoss').textContent = '—';
+    if (R.cls && ok) {
+      var c = R.cls;
+      leftEval = function (x, y) {
+        var z = standApply(c.stats, phiMap(R.rep, { x: x, y: y }));
+        return c.w1 * z[0] + c.w2 * z[1] + c.b;
+      };
+      rightEval = function (u, v) { return c.w1 * u + c.w2 * v + c.b; };
+      zpts = R.pts.map(function (p) {
+        var z = standApply(c.stats, phiMap(R.rep, p));
+        return { u: z[0], v: z[1], label: p.label };
+      });
+      acc = c.acc; loss = c.loss;
+    } else if (R.pts.length) {
+      // no classifier yet: still show transformed points
+      var Zr = R.pts.map(function (p) { return phiMap(R.rep, p); });
+      var stt = standFit(Zr);
+      zpts = R.pts.map(function (p, i2) {
+        var z = standApply(stt, Zr[i2]);
+        return { u: z[0], v: z[1], label: p.label };
+      });
+    }
+  }
+  if (!ok) msg = 'Need points from both classes';
+
+  $('rAcc').textContent = pct(acc);
+  $('cAcc').textContent = pct(acc);
+  $('cLoss').textContent = ok && loss !== null ? fmt(loss) : '—';
+  $('sbRaw').textContent = pct(R.sb.raw);
+  $('sbPolar').textContent = pct(R.sb.polar);
+  $('sbProd').textContent = pct(R.sb.prod);
+  $('sbNn').textContent = pct(R.sb.nn);
+
+  mapX = drawPlane('cvX',
+    ok ? leftEval : null,
+    R.pts.map(function (p) { return { u: p.x, v: p.y, label: p.label }; }),
+    3.5, null);
+  drawPlane('cvZ', ok ? rightEval : null, zpts, vmaxR, msg);
+}
+
+/* ---------- NN training loop ---------- */
+function setTrainBtn() {
+  $('nTrain').innerHTML = nnRun ? '&#9208; Pause' : '&#9654; Train';
+}
+function nnLoop() {
+  if (!nnRun) return;
+  if (!bothClasses() || !R.net) { nnRun = false; setTrainBtn(); return; }
+  for (var k = 0; k < 15; k++) mlpAdamStep(R.net, R.pts, 0.02);
+  render();
+  if (R.net.step >= 8000) { nnRun = false; setTrainBtn(); return; }
+  requestAnimationFrame(nnLoop);
+}
+
+/* ---------- wiring ---------- */
+function wire() {
+  document.querySelectorAll('.dchip').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('.dchip').forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      R.data = btn.dataset.d;
+      newData();
+      render();
+    });
+  });
+  $('dN').addEventListener('input', function () { newData(); render(); });
+  $('dGen').addEventListener('click', function () { newData(); render(); });
+  $('dUndo').addEventListener('click', function () { R.pts.pop(); handDirty = true; render(); });
+  $('dClear').addEventListener('click', function () { R.pts = []; handDirty = true; render(); });
+
+  document.querySelectorAll('.cseg').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('.cseg').forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      R.addClass = +btn.dataset.c;
+    });
+  });
+
+  document.querySelectorAll('.rchip').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('.rchip').forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      if (R.rep === 'nn' && btn.dataset.r !== 'nn') { nnRun = false; setTrainBtn(); }
+      R.rep = btn.dataset.r;
+      handDirty = true;
+      render();
+    });
+  });
+
+  document.querySelectorAll('.hseg').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('.hseg').forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      R.H = +btn.dataset.h;
+      resetNet();
+      render();
+    });
+  });
+  $('nTrain').addEventListener('click', function () {
+    if (R.rep !== 'nn') return;
+    nnRun = !nnRun;
+    setTrainBtn();
+    if (nnRun) requestAnimationFrame(nnLoop);
+  });
+  $('nReset').addEventListener('click', function () {
+    resetNet();
+    render();
+  });
+
+  $('cvX').addEventListener('click', function (e) {
+    if (!mapX) return;
+    var r = this.getBoundingClientRect();
+    var px = e.clientX - r.left, py = e.clientY - r.top;
+    if (px < mapX.l || px > mapX.l + mapX.pw || py < mapX.t || py > mapX.t + mapX.ph) return;
+    R.pts.push({
+      x: (px - mapX.cx) / mapX.scale,
+      y: -(py - mapX.cy) / mapX.scale,
+      label: R.addClass
+    });
+    handDirty = true;
+    render();
+  });
+
+  window.addEventListener('resize', render);
+}
+
+/* KaTeX */
+var mathDone = false;
+function tryMath() {
+  if (mathDone || !window.renderMathInElement) return;
+  mathDone = true;
+  window.renderMathInElement(document.body, {
+    delimiters: [
+      { left: '$$', right: '$$', display: true },
+      { left: '\\(', right: '\\)', display: false }
+    ],
+    throwOnError: false
+  });
+}
+document.addEventListener('DOMContentLoaded', tryMath);
+window.addEventListener('load', tryMath);
+
+wire();
+newData();
+window.__onTheme = function(){ render(); };
+render();
+
+</script>
+</body>
+</html>

@@ -6,6 +6,8 @@ sitemap: false
 permalink: /playground/
 ---
 
+# Playground
+
 <iframe id="pgframe" src="{{ site.url }}{{ site.baseurl }}/pg/index.html" title="PRISM Playground"
         style="width:100%;border:0;display:block;height:900px"></iframe>
 

@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<script>
+(function(){
+  function cur(){ try{ return localStorage.getItem('theme') || (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark':'light'); }catch(e){ return 'dark'; } }
+  var t=cur(); window.__theme=t; document.documentElement.setAttribute('data-theme', t);
+  window.addEventListener('storage', function(e){ if(e.key==='theme'){ var n=e.newValue||'dark'; window.__theme=n; document.documentElement.setAttribute('data-theme', n); if(window.__onTheme) window.__onTheme(n); } });
+})();
+</script>
+
+<title>Principal Component Analysis — PRISM Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<style>
+* { box-sizing: border-box; }
+:root {
+  color-scheme: light;
+  --bg:#ffffff; --panel:#f7f9fc; --panel-2:#eef2f8; --ink:#141b33; --muted:#5a6488;
+  --border:#e2e7ee; --grid:#eef2f8; --axis:#c9d0c8;
+  --c-w:#e08a00; --c-pc1:#2563eb; --c-pc2:#8b5cf6; --c-resid:#dc2626;
+  --shadow: 0 1px 2px rgba(28,36,49,.05);
+}
+[data-theme="dark"] {
+  color-scheme: dark;
+  --bg:#15181e; --panel:#1d212a; --panel-2:#171b22; --ink:#e6edf3; --muted:#8b949e;
+  --border:#2e343f; --grid:#252b36; --axis:#3a4250;
+  --c-w:#fbbf24; --c-pc1:#60a5fa; --c-pc2:#a78bfa; --c-resid:#f87171;
+  --shadow: none;
+}
+html, body { margin:0; padding:0; }
+body {
+  background:var(--bg); color:var(--ink);
+  font:14px/1.5 "Inter", system-ui, -apple-system, 'Noto Sans KR', sans-serif;
+  accent-color: var(--ink);
+  padding:26px 20px 44px;
+}
+:focus-visible { outline:2px solid var(--c-pc1); outline-offset:2px; }
+
+.wrap{max-width:1120px;margin:0 auto}
+.topbar{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.back{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--muted);text-decoration:none;
+  border:1px solid var(--border);padding:6px 12px;border-radius:20px;transition:.14s}
+.back:hover{color:var(--c-accent,#5eead4);border-color:currentColor}
+.eyebrow{font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--muted);margin:0 0 10px;display:flex;align-items:center;gap:10px}
+.eyebrow::before{content:"";width:22px;height:1px;background:currentColor;opacity:.7}
+.title{font-family:"Space Grotesk",system-ui,sans-serif;font-weight:700;font-size:clamp(28px,4.6vw,44px);
+  line-height:1.04;margin:0 0 10px;letter-spacing:-.02em;color:var(--ink)}
+.title .thin{color:var(--muted);font-weight:500;font-size:.5em}
+.site-sub{color:var(--muted);max-width:70ch;margin:0 0 24px;font-size:15px}
+.site-sub b{color:var(--ink);font-weight:600}
+footer{margin-top:30px;color:var(--muted);font-size:12px;font-family:"JetBrains Mono",monospace;letter-spacing:.04em}
+footer a{color:var(--muted);text-decoration:underline}
+
+main { padding:0; }
+.layout { display:grid; grid-template-columns:264px minmax(0,1fr); gap:14px; align-items:start; }
+.panel { background:var(--panel); border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow); }
+.stage { display:flex; flex-direction:column; gap:12px; min-width:0; }
+
+.side { padding:14px; display:flex; flex-direction:column; gap:14px; }
+.grp { display:flex; flex-direction:column; gap:8px; }
+.grp + .grp { border-top:1px dashed var(--border); padding-top:13px; }
+.grp-t { font-size:10.5px; font-weight:700; letter-spacing:.09em; text-transform:uppercase; color:var(--muted); }
+.sl { display:flex; flex-direction:column; gap:3px; font-size:12.5px; }
+.sl > span { display:flex; justify-content:space-between; align-items:baseline; gap:8px; }
+.val { font:600 12px "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+input[type=range] { width:100%; margin:0; height:22px; }
+.hint { margin:0; font-size:11.5px; color:var(--muted); }
+.btnrow { display:flex; gap:6px; flex-wrap:wrap; }
+.btn { border:1px solid var(--border); background:var(--panel); color:var(--ink); font:inherit; font-size:12.5px; padding:5px 10px; border-radius:8px; cursor:pointer; transition:background .12s; }
+.btn:hover { background:var(--bg); }
+.btn.ghost { color:var(--muted); }
+.btn.accent { border-color:var(--c-w); color:var(--c-w); font-weight:600; }
+.ck { display:flex; align-items:center; gap:7px; font-size:12.5px; cursor:pointer; }
+.ck input { margin:0; }
+
+.plot { padding:10px 12px 8px; }
+.plot-head { display:flex; justify-content:flex-end; font-size:11.5px; color:var(--muted); padding:0 2px 4px; }
+.plot-head b { font-family:"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color:var(--ink); }
+.plot-cap { font-size:11.5px; color:var(--muted); padding:0 2px 4px; }
+canvas { display:block; width:100%; }
+#pCv { height:300px; cursor:crosshair; }
+#pLand { height:110px; cursor:crosshair; }
+.legend { display:flex; flex-wrap:wrap; gap:4px 14px; padding:8px 2px 2px; font-size:11.5px; color:var(--muted); }
+.legend span { display:inline-flex; align-items:center; gap:5px; }
+.c-w { color:var(--c-w); } .c-pc1 { color:var(--c-pc1); } .c-pc2 { color:var(--c-pc2); } .c-resid { color:var(--c-resid); } .c-ink { color:var(--ink); }
+.sw { display:inline-block; width:16px; height:0; border-top:3px solid currentColor; border-radius:2px; }
+.sw.thin { border-top-width:2px; }
+.dot { display:inline-block; width:9px; height:9px; border-radius:50%; background:currentColor; }
+.swp { display:inline-block; width:9px; height:9px; border-radius:50%; border:1.6px solid var(--ink); background:var(--panel); }
+
+.cards { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:10px; }
+.card { background:var(--panel); border:1px solid var(--border); border-top:3px solid var(--border); border-radius:12px; padding:10px 12px 9px; box-shadow:var(--shadow); }
+.card.w { border-top-color:var(--c-w); }
+.card.pc1 { border-top-color:var(--c-pc1); }
+.card.pc2 { border-top-color:var(--c-pc2); }
+.card .k { font:700 11px "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing:.08em; }
+.card.w .k { color:var(--c-w); }
+.card.pc1 .k { color:var(--c-pc1); }
+.card.pc2 .k { color:var(--c-pc2); }
+.card .nm { font-size:12px; color:var(--muted); margin-bottom:6px; }
+.stat { display:flex; justify-content:space-between; align-items:baseline; gap:8px; font-size:12px; padding:2px 0; }
+.stat span { color:var(--muted); }
+.stat b { font:600 13px "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; white-space:nowrap; }
+.card .note { margin:6px 0 0; font-size:11px; color:var(--muted); border-top:1px dashed var(--border); padding-top:5px; }
+
+.fold summary { cursor:pointer; padding:9px 13px; font-size:12.5px; font-weight:600; color:var(--muted); list-style:none; display:flex; align-items:center; gap:7px; }
+.fold summary::-webkit-details-marker { display:none; }
+.fold summary::before { content:'\25B8'; font-size:10px; transition:transform .12s; }
+.fold[open] summary::before { transform:rotate(90deg); }
+.fold-body { padding:2px 16px 12px; font-size:13px; }
+.fold ol { margin:0; padding-left:20px; display:flex; flex-direction:column; gap:6px; }
+.katex-display { margin:.5em 0; padding:2px 0; overflow-x:auto; overflow-y:hidden; }
+.katex { font-size:1.02em; }
+
+@media (max-width:760px) {
+  .layout { grid-template-columns:1fr; }
+  .cards { grid-template-columns:1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition:none !important; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar"><a class="back" href="index.html">← Playground</a></div>
+  <p class="eyebrow">PRISM · Machine Learning Playground</p>
+  <h1 class="title">Principal Component Analysis<br><span class="thin">Find the direction of maximum variance — unsupervised dimensionality reduction</span></h1>
+
+<main>
+<div class="layout">
+  <aside class="panel side">
+    <div class="grp">
+      <div class="grp-t">Data generation</div>
+      <label class="sl"><span>Sample size n <b id="pNV" class="val">60</b></span>
+        <input type="range" id="pN" min="10" max="200" step="5" value="60"></label>
+      <label class="sl"><span>Spread &sigma;&#8321; (major axis) <b id="pS1V" class="val">2.0</b></span>
+        <input type="range" id="pS1" min="0.3" max="3" step="0.1" value="2"></label>
+      <label class="sl"><span>Spread &sigma;&#8322; (minor axis) <b id="pS2V" class="val">0.6</b></span>
+        <input type="range" id="pS2" min="0.1" max="3" step="0.1" value="0.6"></label>
+      <label class="sl"><span>Data rotation angle <b id="pRotV" class="val">25&deg;</b></span>
+        <input type="range" id="pRot" min="0" max="180" step="1" value="25"></label>
+      <div class="btnrow">
+        <button id="pGen" class="btn">Regenerate</button>
+        <button id="pUndo" class="btn">&#8617; Undo point</button>
+        <button id="pClear" class="btn ghost">Clear all</button>
+      </div>
+      <p class="hint">Moving a generation slider regenerates the data &middot; Click the plot to add a point</p>
+    </div>
+    <div class="grp">
+      <div class="grp-t">Search direction w(&theta;)</div>
+      <label class="sl"><span>&theta; <b id="pThV" class="val">30&deg;</b></span>
+        <input type="range" id="pTh" min="0" max="180" step="1" value="30"></label>
+      <div class="btnrow">
+        <button id="pScan" class="btn accent">Scan &theta; &#9654;</button>
+        <button id="pSnap" class="btn">Snap to PC1</button>
+      </div>
+      <p class="hint">Click/drag the curve below to change &theta;</p>
+    </div>
+    <div class="grp">
+      <div class="grp-t">Display</div>
+      <label class="ck"><input type="checkbox" id="pShowAxes" checked><i class="sw c-pc1"></i>Principal axes PC1 &middot; PC2</label>
+      <label class="ck"><input type="checkbox" id="pShowProj" checked><i class="dot c-w"></i>Projected points</label>
+      <label class="ck"><input type="checkbox" id="pShowResid" checked><i class="sw thin c-resid"></i>Residuals (reconstruction error)</label>
+    </div>
+  </aside>
+
+  <div class="stage">
+    <div class="panel plot">
+      <div class="plot-head">
+        <span>Total variance tr(&Sigma;) = projected + residual = <b id="pTr">&mdash;</b></span>
+      </div>
+      <canvas id="pCv"></canvas>
+      <div class="legend">
+        <span><i class="swp"></i>Data</span>
+        <span><i class="dot c-ink"></i>Mean x&#772;</span>
+        <span><i class="sw c-w"></i>Direction w(&theta;)</span>
+        <span><i class="dot c-w"></i>Projected point</span>
+        <span><i class="sw thin c-resid"></i>Residual</span>
+        <span><i class="sw c-pc1"></i>PC1 (&plusmn;2&radic;&lambda;&#8321;)</span>
+        <span><i class="sw c-pc2"></i>PC2 (&plusmn;2&radic;&lambda;&#8322;)</span>
+      </div>
+    </div>
+
+    <div class="panel plot">
+      <div class="plot-cap">Projected variance w&#7488;&Sigma;w vs direction &theta; &mdash; the maximum is PC1(&lambda;&#8321;), the minimum is PC2(&lambda;&#8322;)</div>
+      <canvas id="pLand"></canvas>
+    </div>
+
+    <div class="cards">
+      <div class="card w">
+        <div class="k">w(&theta;)</div>
+        <div class="nm">Direction being searched</div>
+        <div class="stat"><span>Projected variance w&#7488;&Sigma;w</span><b id="pProj">&mdash;</b></div>
+        <div class="stat"><span>Reconstruction error</span><b id="pResid">&mdash;</b></div>
+        <div class="stat"><span>Explained ratio</span><b id="pRatioW">&mdash;</b></div>
+        <p class="note">Variance decomposition when projecting onto an arbitrary direction</p>
+      </div>
+      <div class="card pc1">
+        <div class="k">PC1</div>
+        <div class="nm">First principal component</div>
+        <div class="stat"><span>&lambda;&#8321;</span><b id="pL1">&mdash;</b></div>
+        <div class="stat"><span>Direction angle &theta;&#8321;</span><b id="pTh1">&mdash;</b></div>
+        <div class="stat"><span>Explained ratio</span><b id="pR1">&mdash;</b></div>
+        <p class="note">Maximum of w&#7488;&Sigma;w &mdash; first eigenvector</p>
+      </div>
+      <div class="card pc2">
+        <div class="k">PC2</div>
+        <div class="nm">Second principal component</div>
+        <div class="stat"><span>&lambda;&#8322;</span><b id="pL2">&mdash;</b></div>
+        <div class="stat"><span>Direction angle</span><b id="pTh2">&mdash;</b></div>
+        <div class="stat"><span>Explained ratio</span><b id="pR2">&mdash;</b></div>
+        <p class="note">Orthogonal to PC1 &mdash; remaining variance</p>
+      </div>
+    </div>
+
+    <details class="panel fold">
+      <summary>Formulas</summary>
+      <div class="fold-body">
+        $$\bar{\mathbf x}=\tfrac1n\textstyle\sum_i \mathbf x_i,\qquad \Sigma=\tfrac1n\textstyle\sum_i(\mathbf x_i-\bar{\mathbf x})(\mathbf x_i-\bar{\mathbf x})^\top$$
+        $$\max_{\|\mathbf w\|=1}\ \mathbf w^\top\Sigma\,\mathbf w\ \Longrightarrow\ \Sigma\mathbf w=\lambda\mathbf w\quad(\text{Lagrange multiplier }\lambda)$$
+        $$\underbrace{\mathbf w^\top\Sigma\,\mathbf w}_{\text{projected var}}+\underbrace{\tfrac1n\textstyle\sum_i\|\mathbf x_i-\hat{\mathbf x}_i\|^2}_{\text{reconstruction error}}=\operatorname{tr}(\Sigma),\qquad \hat{\mathbf x}_i=\bar{\mathbf x}+\mathbf w\mathbf w^\top(\mathbf x_i-\bar{\mathbf x})$$
+        $$\text{explained ratio}=\frac{\lambda_1}{\lambda_1+\lambda_2},\qquad \mathbf w(\theta)=(\cos\theta,\ \sin\theta)^\top$$
+      </div>
+    </details>
+
+    <details class="panel fold">
+      <summary>What to watch</summary>
+      <div class="fold-body">
+        <ol>
+          <li>Press <b>Scan &theta;</b> and the projected variance traces a sinusoid &mdash; the direction of the maximum is PC1 and its value is &lambda;&#8321;, while the minimum 90&deg; away is PC2(&lambda;&#8322;). &ldquo;Finding&rdquo; the eigenvectors is exactly optimizing this curve.</li>
+          <li>At any &theta;, <b>projected variance + reconstruction error = tr(&Sigma;)</b> (Pythagoras). Maximizing variance and minimizing reconstruction error are two expressions of the same problem.</li>
+          <li>Raise &sigma;&#8322; close to &sigma;&#8321; (isotropy) and the curve flattens with the explained ratio near 50% &mdash; the principal direction becomes essentially meaningless, and adding just a few points swings the axes a lot.</li>
+          <li>Try clicking to add a single far-off outlier &mdash; being variance-based, the axes get pulled toward it sensitively (PCA's outlier sensitivity).</li>
+          <li>Note that there are no labels at all &mdash; PCA is <b>unsupervised</b> learning that only looks at the spread of the data.</li>
+        </ol>
+      </div>
+    </details>
+  </div>
+</div>
+</main>
+  <footer>PRISM Lab · prototype · <a href="https://sswu-prism-lab.github.io" target="_blank" rel="noopener">sswu-prism-lab.github.io</a></footer>
+</div>
+
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script>
+'use strict';
+/* PCA interactive playground — direction search, eigen axes, variance landscape */
+
+/* ===MATH-BEGIN=== */
+function randn() {
+  var u = 0, v = 0;
+  while (u === 0) u = Math.random();
+  while (v === 0) v = Math.random();
+  return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+}
+
+function pcaStats(pts) {
+  var n = pts.length;
+  if (n === 0) return null;
+  var mx = 0, my = 0, i;
+  for (i = 0; i < n; i++) { mx += pts[i].x; my += pts[i].y; }
+  mx /= n; my /= n;
+  var Sxx = 0, Sxy = 0, Syy = 0;
+  for (i = 0; i < n; i++) {
+    var dx = pts[i].x - mx, dy = pts[i].y - my;
+    Sxx += dx * dx; Sxy += dx * dy; Syy += dy * dy;
+  }
+  Sxx /= n; Sxy /= n; Syy /= n;
+  var tr = Sxx + Syy;
+  var half = (Sxx - Syy) / 2;
+  var r = Math.sqrt(half * half + Sxy * Sxy);
+  var l1 = tr / 2 + r, l2 = Math.max(tr / 2 - r, 0);
+  var th1 = 0.5 * Math.atan2(2 * Sxy, Sxx - Syy);
+  return { n: n, mx: mx, my: my, Sxx: Sxx, Sxy: Sxy, Syy: Syy, tr: tr, l1: l1, l2: l2, th1: th1 };
+}
+
+function projVar(st, th) {
+  var c = Math.cos(th), s = Math.sin(th);
+  return st.Sxx * c * c + 2 * st.Sxy * c * s + st.Syy * s * s;
+}
+
+function normDeg(rad) {
+  var d = rad * 180 / Math.PI;
+  d %= 180;
+  if (d < 0) d += 180;
+  return d;
+}
+/* ===MATH-END=== */
+
+/* ---------- DOM helpers ---------- */
+function $(id) { return document.getElementById(id); }
+function cssv(name) {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+function hexA(hex, al) {
+  hex = hex.replace('#', '');
+  if (hex.length === 3) hex = hex.split('').map(function (c) { return c + c; }).join('');
+  var r = parseInt(hex.slice(0, 2), 16), g = parseInt(hex.slice(2, 4), 16), b = parseInt(hex.slice(4, 6), 16);
+  return 'rgba(' + r + ',' + g + ',' + b + ',' + al + ')';
+}
+function fmt(v, dg) {
+  if (dg === undefined) dg = 3;
+  if (v === null || v === undefined || !isFinite(v)) return '—';
+  var a = Math.abs(v);
+  if (a !== 0 && (a >= 1e4 || a < 1e-3)) return v.toExponential(1);
+  return v.toFixed(dg);
+}
+function setupCanvas(cv) {
+  var dpr = window.devicePixelRatio || 1;
+  var w = cv.clientWidth, h = cv.clientHeight;
+  if (w === 0 || h === 0) return null;
+  var W = Math.round(w * dpr), H = Math.round(h * dpr);
+  if (cv.width !== W || cv.height !== H) { cv.width = W; cv.height = H; }
+  var ctx = cv.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  return { ctx: ctx, w: w, h: h };
+}
+var REDUCED_MOTION = window.matchMedia &&
+  window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- state ---------- */
+var pca = {
+  n: 60, s1: 2.0, s2: 0.6, rot: 25, theta: 30, pts: [],
+  show: { axes: true, proj: true, resid: true }
+};
+var mainMap = null, landMap = null, scanOn = false;
+
+function pcaGen() {
+  pca.pts = [];
+  var a = pca.rot * Math.PI / 180, c = Math.cos(a), s = Math.sin(a);
+  for (var i = 0; i < pca.n; i++) {
+    var z1 = pca.s1 * randn(), z2 = pca.s2 * randn();
+    pca.pts.push({ x: c * z1 - s * z2, y: s * z1 + c * z2 });
+  }
+}
+
+/* ---------- render ---------- */
+function pcaRender() {
+  $('pNV').textContent = pca.n;
+  $('pS1V').textContent = pca.s1.toFixed(1);
+  $('pS2V').textContent = pca.s2.toFixed(1);
+  $('pRotV').textContent = pca.rot + '°';
+  $('pThV').textContent = Math.round(pca.theta) + '°';
+
+  var st = pcaStats(pca.pts);
+  if (st && st.n >= 2) {
+    var th = pca.theta * Math.PI / 180;
+    var pv = projVar(st, th), rv = Math.max(st.tr - pv, 0);
+    $('pProj').textContent = fmt(pv);
+    $('pResid').textContent = fmt(rv);
+    $('pRatioW').textContent = st.tr > 1e-12 ? (100 * pv / st.tr).toFixed(1) + '%' : '—';
+    $('pL1').textContent = fmt(st.l1);
+    $('pL2').textContent = fmt(st.l2);
+    var d1 = normDeg(st.th1);
+    $('pTh1').textContent = d1.toFixed(1) + '°';
+    $('pTh2').textContent = ((d1 + 90) % 180).toFixed(1) + '°';
+    $('pR1').textContent = st.tr > 1e-12 ? (100 * st.l1 / st.tr).toFixed(1) + '%' : '—';
+    $('pR2').textContent = st.tr > 1e-12 ? (100 * st.l2 / st.tr).toFixed(1) + '%' : '—';
+    $('pTr').textContent = fmt(st.tr);
+  } else {
+    ['pProj', 'pResid', 'pRatioW', 'pL1', 'pL2', 'pTh1', 'pTh2', 'pR1', 'pR2', 'pTr']
+      .forEach(function (id) { $(id).textContent = '—'; });
+  }
+  pcaDrawMain(st);
+  pcaDrawLand(st);
+}
+
+function pcaDrawMain(st) {
+  var cv = $('pCv'), s0 = setupCanvas(cv);
+  if (!s0) return;
+  var ctx = s0.ctx, w = s0.w, h = s0.h;
+  var Mg = { l: 34, r: 12, t: 12, b: 24 };
+  var pw = w - Mg.l - Mg.r, ph = h - Mg.t - Mg.b;
+  ctx.clearRect(0, 0, w, h);
+
+  var scale = ph / 7;                 // equal scale: y spans [-3.5, 3.5]
+  var cx = Mg.l + pw / 2, cy = Mg.t + ph / 2;
+  function X(wx) { return cx + wx * scale; }
+  function Y(wy) { return cy - wy * scale; }
+  var xmax = pw / 2 / scale;
+  mainMap = { l: Mg.l, t: Mg.t, pw: pw, ph: ph, cx: cx, cy: cy, scale: scale, xmax: xmax };
+
+  // grid at integer world coords
+  ctx.strokeStyle = cssv('--grid');
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  var g;
+  for (g = Math.ceil(-xmax); g <= Math.floor(xmax); g++) { ctx.moveTo(X(g), Mg.t); ctx.lineTo(X(g), Mg.t + ph); }
+  for (g = -3; g <= 3; g++) { ctx.moveTo(Mg.l, Y(g)); ctx.lineTo(Mg.l + pw, Y(g)); }
+  ctx.stroke();
+  ctx.strokeStyle = cssv('--axis');
+  ctx.strokeRect(Mg.l, Mg.t, pw, ph);
+
+  ctx.fillStyle = cssv('--muted');
+  ctx.font = '10.5px "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace';
+  ctx.textAlign = 'center';
+  for (g = Math.ceil(-xmax); g <= Math.floor(xmax); g++) ctx.fillText(g, X(g), h - 9);
+  ctx.textAlign = 'right';
+  for (g = -3; g <= 3; g++) ctx.fillText(g, Mg.l - 4, Y(g) + 3.5);
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(Mg.l, Mg.t, pw, ph);
+  ctx.clip();
+
+  if (st && st.n >= 1) {
+    var th = pca.theta * Math.PI / 180;
+    var wx = Math.cos(th), wy = Math.sin(th);
+
+    // residual segments + projections onto w
+    var i, p, d, qx, qy;
+    if (pca.show.resid) {
+      ctx.strokeStyle = hexA(cssv('--c-resid'), 0.45);
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      for (i = 0; i < pca.pts.length; i++) {
+        p = pca.pts[i];
+        d = (p.x - st.mx) * wx + (p.y - st.my) * wy;
+        qx = st.mx + d * wx; qy = st.my + d * wy;
+        ctx.moveTo(X(p.x), Y(p.y));
+        ctx.lineTo(X(qx), Y(qy));
+      }
+      ctx.stroke();
+    }
+
+    // candidate direction line w(theta)
+    ctx.strokeStyle = cssv('--c-w');
+    ctx.lineWidth = 2.4;
+    ctx.beginPath();
+    ctx.moveTo(X(st.mx - 30 * wx), Y(st.my - 30 * wy));
+    ctx.lineTo(X(st.mx + 30 * wx), Y(st.my + 30 * wy));
+    ctx.stroke();
+
+    if (pca.show.proj) {
+      ctx.fillStyle = cssv('--c-w');
+      for (i = 0; i < pca.pts.length; i++) {
+        p = pca.pts[i];
+        d = (p.x - st.mx) * wx + (p.y - st.my) * wy;
+        qx = st.mx + d * wx; qy = st.my + d * wy;
+        ctx.beginPath();
+        ctx.arc(X(qx), Y(qy), 2.4, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    // eigen axes (2*sqrt(lambda) each side)
+    if (pca.show.axes && st.n >= 2) {
+      var v1x = Math.cos(st.th1), v1y = Math.sin(st.th1);
+      var L1 = 2 * Math.sqrt(st.l1), L2 = 2 * Math.sqrt(st.l2);
+      ctx.strokeStyle = cssv('--c-pc1');
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(X(st.mx - L1 * v1x), Y(st.my - L1 * v1y));
+      ctx.lineTo(X(st.mx + L1 * v1x), Y(st.my + L1 * v1y));
+      ctx.stroke();
+      ctx.strokeStyle = cssv('--c-pc2');
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(X(st.mx + L2 * v1y), Y(st.my - L2 * v1x));
+      ctx.lineTo(X(st.mx - L2 * v1y), Y(st.my + L2 * v1x));
+      ctx.stroke();
+      ctx.font = '700 11px "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace';
+      ctx.textAlign = 'left';
+      ctx.fillStyle = cssv('--c-pc1');
+      ctx.fillText('PC1', X(st.mx + L1 * v1x) + 5, Y(st.my + L1 * v1y) - 5);
+      ctx.fillStyle = cssv('--c-pc2');
+      ctx.fillText('PC2', X(st.mx - L2 * v1y) + 5, Y(st.my + L2 * v1x) - 5);
+    }
+
+    // data points
+    for (i = 0; i < pca.pts.length; i++) {
+      p = pca.pts[i];
+      ctx.beginPath();
+      ctx.arc(X(p.x), Y(p.y), 3.4, 0, Math.PI * 2);
+      ctx.fillStyle = cssv('--panel');
+      ctx.fill();
+      ctx.lineWidth = 1.4;
+      ctx.strokeStyle = cssv('--ink');
+      ctx.stroke();
+    }
+    // mean
+    ctx.beginPath();
+    ctx.arc(X(st.mx), Y(st.my), 3.2, 0, Math.PI * 2);
+    ctx.fillStyle = cssv('--ink');
+    ctx.fill();
+  } else {
+    ctx.fillStyle = cssv('--muted');
+    ctx.font = '13px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Click the plot to add points', cx, cy);
+  }
+  ctx.restore();
+}
+
+function pcaDrawLand(st) {
+  var cv = $('pLand'), s0 = setupCanvas(cv);
+  if (!s0) return;
+  var ctx = s0.ctx, w = s0.w, h = s0.h;
+  var Mg = { l: 46, r: 14, t: 10, b: 20 };
+  var pw = w - Mg.l - Mg.r, ph = h - Mg.t - Mg.b;
+  ctx.clearRect(0, 0, w, h);
+  landMap = { l: Mg.l, t: Mg.t, pw: pw, ph: ph };
+
+  ctx.strokeStyle = cssv('--axis');
+  ctx.strokeRect(Mg.l, Mg.t, pw, ph);
+  ctx.fillStyle = cssv('--muted');
+  ctx.font = '10.5px "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace';
+  ctx.textAlign = 'center';
+  [0, 45, 90, 135, 180].forEach(function (d) {
+    ctx.fillText(d + '°', Mg.l + pw * d / 180, h - 7);
+  });
+  ctx.save();
+  ctx.translate(12, Mg.t + ph / 2);
+  ctx.rotate(-Math.PI / 2);
+  ctx.fillText('wᵀΣw', 0, 0);
+  ctx.restore();
+
+  if (!st || st.n < 2) return;
+
+  var pad = Math.max((st.l1 - st.l2) * 0.15, 0.05 * Math.max(st.l1, 1e-9));
+  var ylo = Math.max(0, st.l2 - pad), yhi = st.l1 + pad;
+  if (yhi - ylo < 1e-9) yhi = ylo + 1;
+  function X(d) { return Mg.l + pw * d / 180; }
+  function Y(v) { return Mg.t + (yhi - v) / (yhi - ylo) * ph; }
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(Mg.l, Mg.t, pw, ph);
+  ctx.clip();
+
+  // lambda reference lines
+  ctx.setLineDash([5, 4]);
+  ctx.lineWidth = 1.4;
+  ctx.strokeStyle = cssv('--c-pc1');
+  ctx.beginPath(); ctx.moveTo(Mg.l, Y(st.l1)); ctx.lineTo(Mg.l + pw, Y(st.l1)); ctx.stroke();
+  ctx.strokeStyle = cssv('--c-pc2');
+  ctx.beginPath(); ctx.moveTo(Mg.l, Y(st.l2)); ctx.lineTo(Mg.l + pw, Y(st.l2)); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // theta1 marker
+  var d1 = normDeg(st.th1);
+  ctx.strokeStyle = hexA(cssv('--c-pc1'), 0.6);
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(X(d1), Mg.t); ctx.lineTo(X(d1), Mg.t + ph); ctx.stroke();
+
+  // variance curve
+  ctx.strokeStyle = cssv('--c-w');
+  ctx.lineWidth = 2.2;
+  ctx.beginPath();
+  for (var i = 0; i <= 180; i++) {
+    var v = projVar(st, i * Math.PI / 180);
+    if (i === 0) ctx.moveTo(X(i), Y(v)); else ctx.lineTo(X(i), Y(v));
+  }
+  ctx.stroke();
+
+  // current theta point
+  var cur = projVar(st, pca.theta * Math.PI / 180);
+  ctx.beginPath();
+  ctx.arc(X(pca.theta), Y(cur), 4.2, 0, Math.PI * 2);
+  ctx.fillStyle = cssv('--c-w');
+  ctx.fill();
+  ctx.lineWidth = 1.6;
+  ctx.strokeStyle = cssv('--panel');
+  ctx.stroke();
+  ctx.restore();
+
+  ctx.font = '700 10.5px "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace';
+  ctx.textAlign = 'left';
+  ctx.fillStyle = cssv('--c-pc1');
+  ctx.fillText('λ₁', Mg.l + pw + 2, Y(st.l1) + 3.5);
+  ctx.fillStyle = cssv('--c-pc2');
+  ctx.fillText('λ₂', Mg.l + pw + 2, Y(st.l2) + 3.5);
+}
+
+/* ---------- theta control ---------- */
+function setTheta(d) {
+  pca.theta = Math.max(0, Math.min(180, d));
+  $('pTh').value = Math.round(pca.theta);
+  pcaRender();
+}
+
+function startScan() {
+  var st = pcaStats(pca.pts);
+  if (REDUCED_MOTION) {
+    if (st && st.n >= 2) setTheta(normDeg(st.th1));
+    return;
+  }
+  scanOn = true;
+  var t0 = performance.now();
+  function step(now) {
+    if (!scanOn) return;
+    var t = Math.min((now - t0) / 2400, 1);
+    setTheta(180 * t);
+    if (t < 1) requestAnimationFrame(step);
+    else scanOn = false;
+  }
+  requestAnimationFrame(step);
+}
+
+/* ---------- wiring ---------- */
+function wire() {
+  $('pN').addEventListener('input', function () { pca.n = +this.value; pcaGen(); pcaRender(); });
+  $('pS1').addEventListener('input', function () { pca.s1 = +this.value; pcaGen(); pcaRender(); });
+  $('pS2').addEventListener('input', function () { pca.s2 = +this.value; pcaGen(); pcaRender(); });
+  $('pRot').addEventListener('input', function () { pca.rot = +this.value; pcaGen(); pcaRender(); });
+  $('pTh').addEventListener('input', function () { scanOn = false; pca.theta = +this.value; pcaRender(); });
+
+  $('pGen').addEventListener('click', function () { pcaGen(); pcaRender(); });
+  $('pClear').addEventListener('click', function () { pca.pts = []; pcaRender(); });
+  $('pUndo').addEventListener('click', function () { pca.pts.pop(); pcaRender(); });
+  $('pScan').addEventListener('click', function () { scanOn = false; startScan(); });
+  $('pSnap').addEventListener('click', function () {
+    scanOn = false;
+    var st = pcaStats(pca.pts);
+    if (st && st.n >= 2) setTheta(normDeg(st.th1));
+  });
+
+  [['pShowAxes', 'axes'], ['pShowProj', 'proj'], ['pShowResid', 'resid']].forEach(function (pr) {
+    $(pr[0]).addEventListener('change', function () {
+      pca.show[pr[1]] = this.checked;
+      pcaRender();
+    });
+  });
+
+  $('pCv').addEventListener('click', function (e) {
+    if (!mainMap) return;
+    var r = this.getBoundingClientRect();
+    var px = e.clientX - r.left, py = e.clientY - r.top;
+    if (px < mainMap.l || px > mainMap.l + mainMap.pw || py < mainMap.t || py > mainMap.t + mainMap.ph) return;
+    pca.pts.push({
+      x: (px - mainMap.cx) / mainMap.scale,
+      y: -(py - mainMap.cy) / mainMap.scale
+    });
+    pcaRender();
+  });
+
+  // landscape: click/drag to set theta
+  var landDrag = false;
+  function landSet(e) {
+    if (!landMap) return;
+    var r = $('pLand').getBoundingClientRect();
+    var px = e.clientX - r.left;
+    setTheta((px - landMap.l) / landMap.pw * 180);
+  }
+  $('pLand').addEventListener('pointerdown', function (e) {
+    scanOn = false; landDrag = true;
+    this.setPointerCapture(e.pointerId);
+    landSet(e);
+  });
+  $('pLand').addEventListener('pointermove', function (e) { if (landDrag) landSet(e); });
+  $('pLand').addEventListener('pointerup', function () { landDrag = false; });
+  $('pLand').addEventListener('pointercancel', function () { landDrag = false; });
+
+  window.addEventListener('resize', pcaRender);
+}
+
+/* KaTeX */
+var mathDone = false;
+function tryMath() {
+  if (mathDone || !window.renderMathInElement) return;
+  mathDone = true;
+  window.renderMathInElement(document.body, {
+    delimiters: [
+      { left: '$$', right: '$$', display: true },
+      { left: '\\(', right: '\\)', display: false }
+    ],
+    throwOnError: false
+  });
+}
+document.addEventListener('DOMContentLoaded', tryMath);
+window.addEventListener('load', tryMath);
+
+wire();
+pcaGen();
+window.__onTheme = function(){ pcaRender(); };
+pcaRender();
+
+</script>
+</body>
+</html>

@@ -1,0 +1,1121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<script>
+(function(){
+  function cur(){ try{ return localStorage.getItem('theme') || (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark':'light'); }catch(e){ return 'dark'; } }
+  var t=cur(); window.__theme=t; document.documentElement.setAttribute('data-theme', t);
+  window.addEventListener('storage', function(e){ if(e.key==='theme'){ var n=e.newValue||'dark'; window.__theme=n; document.documentElement.setAttribute('data-theme', n); if(window.__onTheme) window.__onTheme(n); } });
+})();
+</script>
+
+<title>K-means Clustering — PRISM Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<style>
+* { box-sizing: border-box; }
+:root {
+  color-scheme: light;
+  --bg:#ffffff; --panel:#f7f9fc; --panel-2:#eef2f8; --ink:#141b33; --muted:#5a6488;
+  --border:#e2e7ee; --grid:#eef2f8; --axis:#c9d0c8;
+  --c-c1:#2563eb; --c-c2:#e08a00; --c-c3:#0f9d6b; --c-c4:#8b5cf6; --c-c5:#0d9488;
+  --c-as:#e08a00; --c-up:#8b5cf6; --c-bad:#dc2626;
+  --shadow: 0 1px 2px rgba(28,36,49,.05);
+}
+[data-theme="dark"] {
+  color-scheme: dark;
+  --bg:#15181e; --panel:#1d212a; --panel-2:#171b22; --ink:#e6edf3; --muted:#8b949e;
+  --border:#2e343f; --grid:#252b36; --axis:#3a4250;
+  --c-c1:#60a5fa; --c-c2:#fbbf24; --c-c3:#34d399; --c-c4:#a78bfa; --c-c5:#2dd4bf;
+  --c-as:#fbbf24; --c-up:#a78bfa; --c-bad:#f87171;
+  --shadow: none;
+}
+html, body { margin:0; padding:0; }
+body {
+  background:var(--bg); color:var(--ink);
+  padding:26px 20px 44px;
+  font:14px/1.5 "Inter", system-ui, -apple-system, 'Noto Sans KR', sans-serif;
+  accent-color: var(--ink);
+}
+:focus-visible { outline:2px solid var(--c-c1); outline-offset:2px; }
+
+.wrap{max-width:1120px;margin:0 auto}
+.topbar{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.back{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--muted);text-decoration:none;
+  border:1px solid var(--border);padding:6px 12px;border-radius:20px;transition:.14s}
+.back:hover{color:var(--c-accent,#5eead4);border-color:currentColor}
+.eyebrow{font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--muted);margin:0 0 10px;display:flex;align-items:center;gap:10px}
+.eyebrow::before{content:"";width:22px;height:1px;background:currentColor;opacity:.7}
+.title{font-family:"Space Grotesk",system-ui,sans-serif;font-weight:700;font-size:clamp(28px,4.6vw,44px);
+  line-height:1.04;margin:0 0 10px;letter-spacing:-.02em;color:var(--ink)}
+.title .thin{color:var(--muted);font-weight:500;font-size:.5em}
+.site-sub{color:var(--muted);max-width:70ch;margin:0 0 24px;font-size:15px}
+.site-sub b{color:var(--ink);font-weight:600}
+footer{margin-top:30px;color:var(--muted);font-size:12px;font-family:"JetBrains Mono",monospace;letter-spacing:.04em}
+footer a{color:var(--muted);text-decoration:underline}
+
+main { padding:0; }
+.layout { display:grid; grid-template-columns:264px minmax(0,1fr); gap:14px; align-items:start; }
+.panel { background:var(--panel); border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow); }
+.stage { display:flex; flex-direction:column; gap:12px; min-width:0; }
+
+.side { padding:14px; display:flex; flex-direction:column; gap:14px; }
+.grp { display:flex; flex-direction:column; gap:8px; }
+.grp + .grp { border-top:1px dashed var(--border); padding-top:13px; }
+.grp-t { font-size:10.5px; font-weight:700; letter-spacing:.09em; text-transform:uppercase; color:var(--muted); }
+.sl { display:flex; flex-direction:column; gap:3px; font-size:12.5px; }
+.sl > span { display:flex; justify-content:space-between; align-items:baseline; gap:8px; }
+.val { font:600 12px "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+input[type=range] { width:100%; margin:0; height:22px; }
+.hint { margin:0; font-size:11.5px; color:var(--muted); }
+.btnrow { display:flex; gap:6px; flex-wrap:wrap; }
+.btn { border:1px solid var(--border); background:var(--panel); color:var(--ink); font:inherit; font-size:12.5px; padding:5px 10px; border-radius:8px; cursor:pointer; transition:background .12s; }
+.btn:hover { background:var(--bg); }
+.btn:disabled { cursor:default; opacity:.45; }
+.btn.ghost { color:var(--muted); }
+.btn.assign { border-color:var(--c-as); color:var(--c-as); font-weight:600; }
+.btn.update { border-color:var(--c-up); color:var(--c-up); font-weight:600; }
+.btn.auto { border-color:var(--ink); font-weight:600; }
+.btn.small { font-size:11.5px; padding:3px 9px; }
+.chips { display:flex; gap:5px; flex-wrap:wrap; }
+.dchip { border:1px solid var(--border); background:var(--bg); color:var(--ink); font:inherit; font-size:11.5px; padding:3px 9px; border-radius:999px; cursor:pointer; transition:border-color .12s, color .12s; }
+.dchip:hover { border-color:var(--c-c1); color:var(--c-c1); }
+.dchip.active { border-color:var(--ink); font-weight:600; }
+.segs { display:flex; gap:4px; padding:3px; border:1px solid var(--border); border-radius:9px; background:var(--bg); }
+.seg { flex:1; border:0; background:transparent; color:var(--muted); font:inherit; font-size:12px; padding:4px 8px; border-radius:6px; cursor:pointer; }
+.seg.active { background:var(--ink); color:var(--bg); font-weight:600; }
+
+.plot { padding:10px 12px 8px; }
+.plot-head { display:flex; justify-content:space-between; align-items:baseline; gap:8px; font-size:11.5px; color:var(--muted); padding:0 2px 4px; }
+.plot-head b { font-family:"JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; color:var(--ink); }
+#kConv { color:var(--c-c3); font-weight:700; }
+.plot-cap { font-size:11.5px; color:var(--muted); padding:0 2px 5px; }
+.caphead { display:flex; justify-content:space-between; align-items:center; gap:8px; }
+canvas { display:block; width:100%; }
+#kCv { height:300px; cursor:crosshair; touch-action:none; }
+#kLand { height:120px; }
+#kElbow { height:120px; }
+.legend { display:flex; flex-wrap:wrap; gap:4px 14px; padding:8px 2px 2px; font-size:11.5px; color:var(--muted); }
+.legend span { display:inline-flex; align-items:center; gap:5px; }
+.c1 { color:var(--c-c1); } .c2 { color:var(--c-c2); } .c3 { color:var(--c-c3); }
+.cas { color:var(--c-as); } .cup { color:var(--c-up); } .cbad { color:var(--c-bad); } .cink { color:var(--ink); }
+.sw { display:inline-block; width:16px; height:0; border-top:3px solid currentColor; border-radius:2px; }
+.sw.dashed { border-top-style:dashed; }
+.dot { display:inline-block; width:9px; height:9px; border-radius:50%; background:currentColor; }
+.xsw { font-weight:700; font-size:12px; }
+.regsw { display:inline-block; width:16px; height:9px; border-radius:2px; background:currentColor; opacity:.16; }
+
+.cards { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:10px; }
+.card { background:var(--panel); border:1px solid var(--border); border-top:3px solid var(--border); border-radius:12px; padding:10px 12px 9px; box-shadow:var(--shadow); }
+.card.jc { border-top-color:var(--c-c1); }
+.card.as { border-top-color:var(--c-as); }
+.card.up { border-top-color:var(--c-up); }
+.card .k { font:700 11px "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing:.08em; }
+.card.jc .k { color:var(--c-c1); }
+.card.as .k { color:var(--c-as); }
+.card.up .k { color:var(--c-up); }
+.card .nm { font-size:12px; color:var(--muted); margin-bottom:6px; }
+.stat { display:flex; justify-content:space-between; align-items:baseline; gap:8px; font-size:12px; padding:2px 0; }
+.stat span { color:var(--muted); }
+.stat b { font:600 13px "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; white-space:nowrap; }
+.card .note { margin:6px 0 0; font-size:11px; color:var(--muted); border-top:1px dashed var(--border); padding-top:5px; }
+
+.fold summary { cursor:pointer; padding:9px 13px; font-size:12.5px; font-weight:600; color:var(--muted); list-style:none; display:flex; align-items:center; gap:7px; }
+.fold summary::-webkit-details-marker { display:none; }
+.fold summary::before { content:'\25B8'; font-size:10px; transition:transform .12s; }
+.fold[open] summary::before { transform:rotate(90deg); }
+.fold-body { padding:2px 16px 12px; font-size:13px; }
+.fold ol { margin:0; padding-left:20px; display:flex; flex-direction:column; gap:6px; }
+.katex-display { margin:.5em 0; padding:2px 0; overflow-x:auto; overflow-y:hidden; }
+.katex { font-size:1.02em; }
+
+@media (max-width:760px) {
+  .layout { grid-template-columns:1fr; }
+  .cards { grid-template-columns:1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition:none !important; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar"><a class="back" href="index.html">← Playground</a></div>
+  <p class="eyebrow">PRISM · Machine Learning Playground</p>
+  <h1 class="title">K-means Clustering<br><span class="thin">Nearest centroid, then the mean — coordinate descent on the distortion J</span></h1>
+
+<main>
+<div class="layout">
+  <aside class="panel side">
+    <div class="grp">
+      <div class="grp-t">Data</div>
+      <div class="chips">
+        <button class="dchip active" data-d="sep">3 separated clusters</button>
+        <button class="dchip" data-d="aniso">Elongated</button>
+        <button class="dchip" data-d="sizes">Unequal sizes</button>
+        <button class="dchip" data-d="ring">Ring</button>
+      </div>
+      <label class="sl"><span>Sample size n <b id="kNV" class="val">150</b></span>
+        <input type="range" id="kN" min="30" max="300" step="10" value="150"></label>
+      <div class="btnrow">
+        <button id="kGen" class="btn">Regenerate</button>
+        <button id="kUndo" class="btn">&#8617; Undo point</button>
+        <button id="kClear" class="btn ghost">Clear</button>
+      </div>
+      <p class="hint">Click = add point &middot; drag &times; = move centroid &middot; right-click = delete point</p>
+    </div>
+    <div class="grp">
+      <div class="grp-t">Model</div>
+      <div class="segs">
+        <button class="seg kseg" data-k="2">K=2</button>
+        <button class="seg kseg active" data-k="3">K=3</button>
+        <button class="seg kseg" data-k="4">K=4</button>
+        <button class="seg kseg" data-k="5">K=5</button>
+      </div>
+      <div class="segs">
+        <button class="seg iseg active" data-i="rand">Random init</button>
+        <button class="seg iseg" data-i="pp">k-means++</button>
+      </div>
+      <p class="hint">Changing the init method takes effect on re-initialize</p>
+    </div>
+    <div class="grp">
+      <div class="grp-t">Run &middot; Lloyd</div>
+      <div class="btnrow">
+        <button id="bAssign" class="btn assign">Assign</button>
+        <button id="bUpdate" class="btn update">Update</button>
+      </div>
+      <div class="btnrow">
+        <button id="bAuto" class="btn auto">&#9654; Auto run</button>
+        <button id="bInit" class="btn">Re-initialize</button>
+      </div>
+      <p class="hint">Assign changes only point colors (z), Update changes only &times;(&mu;) &mdash; both lower J</p>
+    </div>
+  </aside>
+
+  <div class="stage">
+    <div class="panel plot">
+      <div class="plot-head">
+        <span>iteration t = <b id="kIter">0</b> &middot; next: <b id="kPhase">Assign (z)</b></span>
+        <span id="kConv"></span>
+      </div>
+      <canvas id="kCv"></canvas>
+      <div class="legend">
+        <span><i class="dot c1"></i><i class="dot c2"></i><i class="dot c3"></i>Point color = assigned cluster (hard)</span>
+        <span><i class="xsw c1">&times;</i>Centroid &mu;&#8342; (draggable)</span>
+        <span><i class="regsw cink"></i>Voronoi region</span>
+        <span><i class="sw dashed c2"></i>Centroid trail</span>
+      </div>
+    </div>
+
+    <div class="panel plot">
+      <div class="plot-cap">Distortion J/n &mdash; <b>both half-steps (assign &middot; update)</b> step downward (manual moves may jump up)</div>
+      <canvas id="kLand"></canvas>
+      <div class="legend">
+        <span><i class="sw cink"></i>J/n</span>
+        <span><i class="dot cas"></i>Assign step</span>
+        <span><i class="dot cup"></i>Update step</span>
+        <span><i class="dot cbad"></i>Manual move</span>
+      </div>
+    </div>
+
+    <div class="panel plot">
+      <div class="plot-cap caphead">
+        <span>Elbow method &mdash; lowest J per K (k-means++ &middot; 6 restarts); look for the <b>bend</b>, not the minimum</span>
+        <button id="bElbow" class="btn small">Scan K (1&ndash;8)</button>
+      </div>
+      <canvas id="kElbow"></canvas>
+    </div>
+
+    <div class="cards">
+      <div class="card jc">
+        <div class="k">DISTORTION</div>
+        <div class="nm">Distortion &middot; inertia</div>
+        <div class="stat"><span>J/n</span><b id="kJ">&mdash;</b></div>
+        <div class="stat"><span>&Delta;J/n (half-step)</span><b id="kDJ">&mdash;</b></div>
+        <div class="stat"><span>Lowest J/n (this data)</span><b id="kBest">&mdash;</b></div>
+        <p class="note">Finite number of partitions &rarr; must converge in a finite number of steps</p>
+      </div>
+      <div class="card as">
+        <div class="k">ASSIGN</div>
+        <div class="nm">z&#8345; = argmin&#8342; &Vert;x&minus;&mu;&#8342;&Vert;&sup2;</div>
+        <div class="stat"><span>Reassigned points</span><b id="kChanged">&mdash;</b></div>
+        <div class="stat"><span>Cluster sizes N&#8342;</span><b id="kNks">&mdash;</b></div>
+        <p class="note">Nearest-centroid assignment = Voronoi partition &middot; 0 reassignments = converged</p>
+      </div>
+      <div class="card up">
+        <div class="k">UPDATE</div>
+        <div class="nm">&mu;&#8342; = cluster mean</div>
+        <div class="stat"><span>Centroid movement &Sigma;&Vert;&Delta;&mu;&Vert;</span><b id="kMoved">&mdash;</b></div>
+        <div class="stat"><span>Empty-cluster reseeds (cumulative)</span><b id="kReseed">&mdash;</b></div>
+        <p class="note">The mean minimizes the sum of squared distances &mdash; guarantees J&darr;</p>
+      </div>
+    </div>
+
+    <details class="panel fold">
+      <summary>Formulas</summary>
+      <div class="fold-body">
+        $$J\big(\{z_n\},\{\mu_k\}\big)=\sum_{n}\big\|x_n-\mu_{z_n}\big\|^2=\sum_n\sum_k r_{nk}\,\|x_n-\mu_k\|^2,\qquad r_{nk}=\mathbb 1[z_n{=}k]$$
+        $$\textbf{Assign: }\ z_n=\arg\min_k\|x_n-\mu_k\|^2\ \ (\text{each term minimized}\ \Rightarrow\ J\downarrow)$$
+        $$\textbf{Update: }\ \mu_k=\frac{1}{N_k}\sum_{n:z_n=k}x_n\ \ (\text{mean minimizes squared distance}\ \Rightarrow\ J\downarrow)$$
+        $$\text{k-means++: }\ p(x_n\ \text{chosen as next seed})\ \propto\ D(x_n)^2,\qquad D(x_n)=\min_{j}\|x_n-\mu_j\|$$
+        $$\text{EM link: }\ \text{K-means}=\lim_{\sigma\to 0}\ \text{hard-EM with }\Sigma_k=\sigma^2 I\ \ (\text{isotropic}\cdot\text{equal-size assumption})$$
+      </div>
+    </details>
+
+    <details class="panel fold">
+      <summary>What to watch</summary>
+      <div class="fold-body">
+        <ol>
+          <li><b>Both half-steps lower J</b>: Assign minimizes each point's term individually; Update uses the mean, which is the minimizer of squared distance &mdash; the J curve steps down at every half-step (contrast with EM, where &#8467; rose only at the M-step). Since the number of partitions is finite, it converges in a finite number of steps &mdash; 0 reassignments is the stopping condition.</li>
+          <li><b>Initialization</b>: Repeatedly re-initializing with random init lands on different local optima (compare against the best-J record). Switching to k-means++ gives a lower J from the very first step and sharply cuts the chance of falling into a bad solution &mdash; because D&sup2;-proportional sampling picks seeds that are far apart.</li>
+          <li><b>Drag a centroid directly</b> &mdash; J jumps up (red dot), then the algorithm pulls it back down. Cramming two centroids into a single cluster also reproduces getting stuck in a local optimum where a cluster is split.</li>
+          <li><b>Model assumptions</b>: On elongated / unequal-size data the Voronoi boundaries are straight lines, so they cut through elongated clusters and carve up large ones &mdash; K-means is hard EM with a fixed &sigma;&sup2;I and &sigma;&rarr;0 (isotropic, equal-variance assumption). If you need a full &Sigma;, use a GMM.</li>
+          <li><b>Elbow</b>: J decreases monotonically in K &mdash; chasing the minimum just gives K=n. On separated data it drops sharply at K=3 then flattens (the bend); on ring data the elbow itself is ambiguous &mdash; if the model is wrong, choosing K is meaningless too.</li>
+        </ol>
+      </div>
+    </details>
+  </div>
+</div>
+</main>
+  <footer>PRISM Lab · prototype · <a href="https://sswu-prism-lab.github.io" target="_blank" rel="noopener">sswu-prism-lab.github.io</a></footer>
+</div>
+
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script>
+'use strict';
+/* K-means playground — Lloyd's algorithm as coordinate descent on distortion J
+   Assign recolors points (Voronoi), Update moves centroids (means).
+   Both half-steps decrease J. Draggable centroids, k-means++, elbow scan. */
+
+/* ===MATH-BEGIN=== */
+var RNG = Math.random;
+function randn() {
+  var u = 0, v = 0;
+  while (u === 0) u = RNG();
+  while (v === 0) v = RNG();
+  return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+}
+
+function makeData(name, total) {
+  var pts = [], i, t, r;
+  function rotblob(cx, cy, s1, s2, deg, m) {
+    var a = deg * Math.PI / 180, c = Math.cos(a), s = Math.sin(a);
+    for (var q = 0; q < m; q++) {
+      var z1 = s1 * randn(), z2 = s2 * randn();
+      pts.push({ x: cx + c * z1 - s * z2, y: cy + s * z1 + c * z2 });
+    }
+  }
+  if (name === 'sep') {
+    var per = Math.max(1, Math.round(total / 3));
+    rotblob(-2, -1.2, 0.55, 0.55, 0, per);
+    rotblob(2, -1, 0.55, 0.55, 0, per);
+    rotblob(0, 1.8, 0.55, 0.55, 0, total - 2 * per);
+  } else if (name === 'aniso') {
+    var pa = Math.max(1, Math.round(total / 3));
+    rotblob(-1.4, 0.5, 1.5, 0.28, 20, pa);
+    rotblob(1.5, -0.9, 1.3, 0.26, -35, pa);
+    rotblob(0.6, 1.9, 0.9, 0.25, 70, total - 2 * pa);
+  } else if (name === 'sizes') {
+    var big = Math.max(1, Math.round(total * 0.7));
+    var sm = Math.max(1, Math.round(total * 0.15));
+    rotblob(-0.8, -0.4, 1.1, 1.1, 0, big);
+    rotblob(2.2, 1.6, 0.35, 0.35, 0, sm);
+    rotblob(2.4, -1.8, 0.35, 0.35, 0, total - big - sm);
+  } else { // ring
+    for (i = 0; i < total; i++) {
+      t = RNG() * 2 * Math.PI;
+      r = 2.2 + 0.18 * randn();
+      pts.push({ x: r * Math.cos(t), y: r * Math.sin(t) });
+    }
+  }
+  return pts;
+}
+
+function dist2(p, c) {
+  var dx = p.x - c[0], dy = p.y - c[1];
+  return dx * dx + dy * dy;
+}
+
+function assignStep(pts, mu, prevZ) {
+  var n = pts.length, K = mu.length;
+  var z = new Array(n), J = 0, changed = 0;
+  for (var i = 0; i < n; i++) {
+    var bk = 0, bd = dist2(pts[i], mu[0]);
+    for (var k = 1; k < K; k++) {
+      var d = dist2(pts[i], mu[k]);
+      if (d < bd) { bd = d; bk = k; }
+    }
+    z[i] = bk;
+    J += bd;
+    if (!prevZ || prevZ[i] !== bk) changed++;
+  }
+  return { z: z, J: J, changed: changed };
+}
+
+function updateStep(pts, z, K, muOld) {
+  var n = pts.length, i, k;
+  var sx = new Array(K).fill(0), sy = new Array(K).fill(0), cnt = new Array(K).fill(0);
+  for (i = 0; i < n; i++) {
+    sx[z[i]] += pts[i].x;
+    sy[z[i]] += pts[i].y;
+    cnt[z[i]]++;
+  }
+  var mu = [], moved = 0, reseeded = 0;
+  for (k = 0; k < K; k++) {
+    var mk;
+    if (cnt[k] === 0) {
+      var idx = Math.floor(RNG() * n);
+      mk = [pts[idx].x, pts[idx].y];
+      reseeded++;
+    } else {
+      mk = [sx[k] / cnt[k], sy[k] / cnt[k]];
+    }
+    moved += Math.sqrt(dist2({ x: mk[0], y: mk[1] }, muOld[k]));
+    mu.push(mk);
+  }
+  return { mu: mu, moved: moved, reseeded: reseeded, counts: cnt };
+}
+
+function Jof(pts, z, mu) {
+  var J = 0;
+  for (var i = 0; i < pts.length; i++) J += dist2(pts[i], mu[z[i]]);
+  return J;
+}
+
+function kmeansInit(pts, K, method) {
+  var n = pts.length, i;
+  if (n < K) return null;
+  var mu = [];
+  if (method === 'pp') {
+    var f = pts[Math.floor(RNG() * n)];
+    mu.push([f.x, f.y]);
+    while (mu.length < K) {
+      var d = new Array(n), tot = 0;
+      for (i = 0; i < n; i++) {
+        var dm = Infinity;
+        for (var c = 0; c < mu.length; c++) {
+          var dd = dist2(pts[i], mu[c]);
+          if (dd < dm) dm = dd;
+        }
+        d[i] = dm;
+        tot += dm;
+      }
+      var pick;
+      if (tot <= 1e-12) {
+        pick = Math.floor(RNG() * n);
+      } else {
+        var rr = RNG() * tot, acc = 0;
+        pick = n - 1;
+        for (i = 0; i < n; i++) {
+          acc += d[i];
+          if (acc >= rr) { pick = i; break; }
+        }
+      }
+      mu.push([pts[pick].x, pts[pick].y]);
+    }
+  } else {
+    var used = {};
+    while (mu.length < K) {
+      var idx = Math.floor(RNG() * n);
+      if (used[idx]) continue;
+      used[idx] = true;
+      mu.push([pts[idx].x, pts[idx].y]);
+    }
+  }
+  return mu;
+}
+
+function fullRun(pts, K, method, maxIter) {
+  if (pts.length < K) return null;
+  var mu = kmeansInit(pts, K, method), z = null;
+  for (var it = 0; it < maxIter; it++) {
+    var a = assignStep(pts, mu, z);
+    if (z && a.changed === 0) return { J: a.J, mu: mu, iters: it };
+    z = a.z;
+    var u = updateStep(pts, z, K, mu);
+    mu = u.mu;
+  }
+  return { J: Jof(pts, z, mu), mu: mu, iters: maxIter };
+}
+
+function elbowScan(pts, Kmax, restarts, maxIter) {
+  var out = [];
+  for (var K = 1; K <= Kmax; K++) {
+    if (pts.length < K) { out.push(null); continue; }
+    var best = Infinity;
+    for (var r = 0; r < restarts; r++) {
+      var res = fullRun(pts, K, 'pp', maxIter);
+      if (res && res.J < best) best = res.J;
+    }
+    out.push(isFinite(best) ? best : null);
+  }
+  return out;
+}
+/* ===MATH-END=== */
+
+/* ---------- DOM helpers ---------- */
+function $(id) { return document.getElementById(id); }
+function cssv(name) {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+function hex2rgb(hex) {
+  hex = hex.replace('#', '');
+  if (hex.length === 3) hex = hex.split('').map(function (c) { return c + c; }).join('');
+  return [parseInt(hex.slice(0, 2), 16), parseInt(hex.slice(2, 4), 16), parseInt(hex.slice(4, 6), 16)];
+}
+function hexA(hex, al) {
+  var r = hex2rgb(hex);
+  return 'rgba(' + r[0] + ',' + r[1] + ',' + r[2] + ',' + al + ')';
+}
+function fmt(v, dg) {
+  if (dg === undefined) dg = 3;
+  if (v === null || v === undefined || !isFinite(v)) return '—';
+  var a = Math.abs(v);
+  if (a !== 0 && (a >= 1e4 || a < 1e-4)) return v.toExponential(1);
+  return v.toFixed(dg);
+}
+function setupCanvas(cv) {
+  var dpr = window.devicePixelRatio || 1;
+  var w = cv.clientWidth, h = cv.clientHeight;
+  if (w === 0 || h === 0) return null;
+  var W = Math.round(w * dpr), H = Math.round(h * dpr);
+  if (cv.width !== W || cv.height !== H) { cv.width = W; cv.height = H; }
+  var ctx = cv.getContext('2d');
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  return { ctx: ctx, w: w, h: h };
+}
+
+/* ---------- state ---------- */
+var km = {
+  data: 'sep', K: 3, init: 'rand',
+  pts: [], mu: null, z: null,
+  phase: 'assign', iter: 0, hist: [], lastJ: null, dJ: null,
+  bestJ: null, changedLast: null, movedLast: null, reseedCount: 0,
+  conv: false, trails: [], elbow: null
+};
+var autoOn = false, lastTick = 0, kMap = null;
+
+function compColor(k) { return cssv('--c-c' + (k + 1)); }
+
+function reinit() {
+  autoOn = false;
+  setAutoBtn();
+  km.mu = kmeansInit(km.pts, km.K, km.init);
+  km.z = null;
+  km.phase = 'assign';
+  km.iter = 0;
+  km.hist = [];
+  km.lastJ = null;
+  km.dJ = null;
+  km.changedLast = null;
+  km.movedLast = null;
+  km.reseedCount = 0;
+  km.conv = false;
+  km.trails = km.mu ? km.mu.map(function (m) { return [[m[0], m[1]]]; }) : [];
+}
+
+function newData() {
+  km.pts = makeData(km.data, +$('kN').value);
+  km.bestJ = null;
+  km.elbow = null;
+  reinit();
+}
+
+function pushHist(t) {
+  var J = Jof(km.pts, km.z, km.mu);
+  km.dJ = km.lastJ === null ? null : J - km.lastJ;
+  km.lastJ = J;
+  if (km.bestJ === null || J < km.bestJ) km.bestJ = J;
+  km.hist.push({ j: J / km.pts.length, t: t });
+  if (km.hist.length > 400) autoOn = false;
+}
+
+function halfStep() {
+  if (!km.mu || km.pts.length < 1) return;
+  if (km.phase === 'assign') {
+    var a = assignStep(km.pts, km.mu, km.z);
+    km.changedLast = a.changed;
+    if (km.z && a.changed === 0) km.conv = true;
+    km.z = a.z;
+    pushHist('a');
+    km.phase = 'update';
+  } else {
+    var u = updateStep(km.pts, km.z, km.K, km.mu);
+    km.mu = u.mu;
+    km.movedLast = u.moved;
+    km.reseedCount += u.reseeded;
+    for (var k = 0; k < km.K; k++) {
+      var tr = km.trails[k];
+      tr.push([km.mu[k][0], km.mu[k][1]]);
+      if (tr.length > 80) tr.shift();
+    }
+    pushHist('u');
+    km.iter++;
+    km.phase = 'assign';
+  }
+  render();
+}
+
+/* ---------- auto ---------- */
+function setAutoBtn() {
+  $('bAuto').innerHTML = autoOn ? '&#9208; Stop' : '&#9654; Auto run';
+}
+function autoLoop(ts) {
+  if (!autoOn) return;
+  if (ts - lastTick >= 380) {
+    lastTick = ts;
+    halfStep();
+    if (km.conv || km.iter >= 150 || !km.mu) {
+      autoOn = false;
+      setAutoBtn();
+      render();
+      return;
+    }
+  }
+  requestAnimationFrame(autoLoop);
+}
+
+/* ---------- render ---------- */
+function render() {
+  $('kNV').textContent = $('kN').value;
+  var n = km.pts.length;
+  var ok = !!km.mu;
+
+  $('bAssign').disabled = !ok || autoOn || km.phase !== 'assign';
+  $('bUpdate').disabled = !ok || autoOn || km.phase !== 'update';
+  $('bAuto').disabled = !ok;
+
+  $('kIter').textContent = km.iter;
+  $('kPhase').textContent = ok ? (km.phase === 'assign' ? 'Assign (z)' : 'Update (μ)') : '—';
+  $('kConv').textContent = km.conv ? 'Converged ✓' : '';
+
+  var Jnow = ok && km.z ? Jof(km.pts, km.z, km.mu) : null;
+  $('kJ').textContent = Jnow !== null && n ? fmt(Jnow / n) : '—';
+  if (km.dJ !== null && n) {
+    var okd = km.dJ <= 1e-9;
+    $('kDJ').textContent = (km.dJ > 0 ? '+' : '') + fmt(km.dJ / n, 4) + (okd ? ' ✓' : ' ✗');
+    $('kDJ').style.color = okd ? cssv('--c-c3') : cssv('--c-bad');
+  } else {
+    $('kDJ').textContent = '—';
+    $('kDJ').style.color = '';
+  }
+  $('kBest').textContent = km.bestJ !== null && n ? fmt(km.bestJ / n) : '—';
+
+  $('kChanged').textContent = km.changedLast !== null ? km.changedLast + ' / ' + n : '—';
+  if (km.z) {
+    var cnt = new Array(km.K).fill(0), i;
+    for (i = 0; i < n; i++) cnt[km.z[i]]++;
+    var hh = [];
+    for (var k = 0; k < km.K; k++) {
+      hh.push('<span style="color:' + compColor(k) + '">' + cnt[k] + '</span>');
+    }
+    $('kNks').innerHTML = hh.join(' / ');
+  } else {
+    $('kNks').textContent = '—';
+  }
+  $('kMoved').textContent = km.movedLast !== null ? fmt(km.movedLast) : '—';
+  $('kReseed').textContent = ok ? km.reseedCount : '—';
+
+  drawMain();
+  drawCurve();
+  drawElbow();
+}
+
+var renderPending = false;
+function scheduleRender() {
+  if (renderPending) return;
+  renderPending = true;
+  requestAnimationFrame(function () {
+    renderPending = false;
+    render();
+  });
+}
+
+function drawMain() {
+  var cv = $('kCv'), s0 = setupCanvas(cv);
+  if (!s0) return;
+  var ctx = s0.ctx, w = s0.w, h = s0.h;
+  var Mg = { l: 34, r: 12, t: 12, b: 24 };
+  var pw = w - Mg.l - Mg.r, ph = h - Mg.t - Mg.b;
+  ctx.clearRect(0, 0, w, h);
+
+  var scale = ph / 7;
+  var cx = Mg.l + pw / 2, cy = Mg.t + ph / 2;
+  function X(wx) { return cx + wx * scale; }
+  function Y(wy) { return cy - wy * scale; }
+  var xmax = pw / 2 / scale;
+  kMap = { l: Mg.l, t: Mg.t, pw: pw, ph: ph, cx: cx, cy: cy, scale: scale, xmax: xmax };
+
+  ctx.strokeStyle = cssv('--grid');
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  var g;
+  for (g = Math.ceil(-xmax); g <= Math.floor(xmax); g++) { ctx.moveTo(X(g), Mg.t); ctx.lineTo(X(g), Mg.t + ph); }
+  for (g = -3; g <= 3; g++) { ctx.moveTo(Mg.l, Y(g)); ctx.lineTo(Mg.l + pw, Y(g)); }
+  ctx.stroke();
+  ctx.strokeStyle = cssv('--axis');
+  ctx.strokeRect(Mg.l, Mg.t, pw, ph);
+  ctx.fillStyle = cssv('--muted');
+  ctx.font = '10.5px "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace';
+  ctx.textAlign = 'center';
+  for (g = Math.ceil(-xmax); g <= Math.floor(xmax); g++) ctx.fillText(g, X(g), h - 9);
+  ctx.textAlign = 'right';
+  for (g = -3; g <= 3; g++) ctx.fillText(g, Mg.l - 4, Y(g) + 3.5);
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(Mg.l, Mg.t, pw, ph);
+  ctx.clip();
+
+  var i, k;
+  // Voronoi region tint + boundaries
+  if (km.mu) {
+    var cell = 5;
+    var ncx = Math.ceil(pw / cell), ncy = Math.ceil(ph / cell);
+    var lab = new Int16Array(ncx * ncy);
+    for (var jy = 0; jy < ncy; jy++) {
+      var py = Mg.t + jy * cell + cell / 2;
+      var wy = -(py - cy) / scale;
+      for (var jx = 0; jx < ncx; jx++) {
+        var px = Mg.l + jx * cell + cell / 2;
+        var wx = (px - cx) / scale;
+        var bk = 0, bd = Infinity;
+        for (k = 0; k < km.K; k++) {
+          var dx = wx - km.mu[k][0], dy = wy - km.mu[k][1];
+          var d = dx * dx + dy * dy;
+          if (d < bd) { bd = d; bk = k; }
+        }
+        lab[jy * ncx + jx] = bk;
+      }
+    }
+    for (jy = 0; jy < ncy; jy++) {
+      for (jx = 0; jx < ncx; jx++) {
+        ctx.fillStyle = hexA(compColor(lab[jy * ncx + jx]), 0.06);
+        ctx.fillRect(Mg.l + jx * cell, Mg.t + jy * cell, cell, cell);
+      }
+    }
+    ctx.strokeStyle = hexA(cssv('--ink'), 0.35);
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (jy = 0; jy < ncy; jy++) {
+      for (jx = 0; jx < ncx; jx++) {
+        var L = lab[jy * ncx + jx];
+        if (jx + 1 < ncx && lab[jy * ncx + jx + 1] !== L) {
+          var ex = Mg.l + (jx + 1) * cell;
+          ctx.moveTo(ex, Mg.t + jy * cell);
+          ctx.lineTo(ex, Mg.t + (jy + 1) * cell);
+        }
+        if (jy + 1 < ncy && lab[(jy + 1) * ncx + jx] !== L) {
+          var ey = Mg.t + (jy + 1) * cell;
+          ctx.moveTo(Mg.l + jx * cell, ey);
+          ctx.lineTo(Mg.l + (jx + 1) * cell, ey);
+        }
+      }
+    }
+    ctx.stroke();
+  }
+
+  // centroid trails
+  if (km.mu) {
+    ctx.setLineDash([3, 3]);
+    ctx.lineWidth = 1.2;
+    for (k = 0; k < km.K; k++) {
+      var tr = km.trails[k];
+      if (!tr || tr.length < 2) continue;
+      ctx.strokeStyle = hexA(compColor(k), 0.45);
+      ctx.beginPath();
+      ctx.moveTo(X(tr[0][0]), Y(tr[0][1]));
+      for (i = 1; i < tr.length; i++) ctx.lineTo(X(tr[i][0]), Y(tr[i][1]));
+      ctx.stroke();
+    }
+    ctx.setLineDash([]);
+  }
+
+  // data points
+  for (i = 0; i < km.pts.length; i++) {
+    var p = km.pts[i];
+    ctx.beginPath();
+    ctx.arc(X(p.x), Y(p.y), 3.6, 0, Math.PI * 2);
+    if (km.z) {
+      ctx.fillStyle = compColor(km.z[i]);
+      ctx.fill();
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = cssv('--panel');
+      ctx.stroke();
+    } else {
+      ctx.fillStyle = cssv('--panel');
+      ctx.fill();
+      ctx.lineWidth = 1.4;
+      ctx.strokeStyle = cssv('--ink');
+      ctx.stroke();
+    }
+  }
+
+  // centroids (draggable)
+  if (km.mu) {
+    for (k = 0; k < km.K; k++) {
+      var mx = X(km.mu[k][0]), my = Y(km.mu[k][1]);
+      var col = compColor(k);
+      ctx.beginPath();
+      ctx.arc(mx, my, 9, 0, Math.PI * 2);
+      ctx.strokeStyle = cssv('--panel');
+      ctx.lineWidth = 4;
+      ctx.stroke();
+      ctx.strokeStyle = hexA(col, 0.9);
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.strokeStyle = cssv('--panel');
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(mx - 5, my - 5); ctx.lineTo(mx + 5, my + 5);
+      ctx.moveTo(mx - 5, my + 5); ctx.lineTo(mx + 5, my - 5);
+      ctx.stroke();
+      ctx.strokeStyle = col;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(mx - 5, my - 5); ctx.lineTo(mx + 5, my + 5);
+      ctx.moveTo(mx - 5, my + 5); ctx.lineTo(mx + 5, my - 5);
+      ctx.stroke();
+    }
+  }
+
+  if (!km.mu) {
+    ctx.fillStyle = cssv('--muted');
+    ctx.font = '13px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(km.pts.length
+      ? 'Fewer samples than K — regenerate'
+      : 'Add points or regenerate', cx, cy);
+  }
+  ctx.restore();
+}
+
+function drawCurve() {
+  var cv = $('kLand'), s0 = setupCanvas(cv);
+  if (!s0) return;
+  var ctx = s0.ctx, w = s0.w, h = s0.h;
+  var Mg = { l: 46, r: 14, t: 10, b: 20 };
+  var pw = w - Mg.l - Mg.r, ph = h - Mg.t - Mg.b;
+  ctx.clearRect(0, 0, w, h);
+
+  ctx.strokeStyle = cssv('--axis');
+  ctx.strokeRect(Mg.l, Mg.t, pw, ph);
+  ctx.fillStyle = cssv('--muted');
+  ctx.font = '10.5px "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace';
+  ctx.save();
+  ctx.translate(12, Mg.t + ph / 2);
+  ctx.rotate(-Math.PI / 2);
+  ctx.textAlign = 'center';
+  ctx.fillText('J/n', 0, 0);
+  ctx.restore();
+
+  var H = km.hist;
+  if (!H.length) return;
+  var lo = Infinity, hi = -Infinity, i;
+  for (i = 0; i < H.length; i++) { lo = Math.min(lo, H[i].j); hi = Math.max(hi, H[i].j); }
+  var pad = Math.max((hi - lo) * 0.1, 1e-6);
+  lo -= pad; hi += pad;
+  var m = Math.max(H.length - 1, 1);
+  function X(idx) { return Mg.l + pw * idx / m; }
+  function Y(v) { return Mg.t + (hi - v) / (hi - lo) * ph; }
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(Mg.l, Mg.t, pw, ph);
+  ctx.clip();
+
+  ctx.strokeStyle = cssv('--ink');
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  for (i = 0; i < H.length; i++) {
+    if (i === 0) ctx.moveTo(X(i), Y(H[i].j));
+    else ctx.lineTo(X(i), Y(H[i].j));
+  }
+  ctx.stroke();
+
+  for (i = 0; i < H.length; i++) {
+    var t = H[i].t;
+    ctx.fillStyle = t === 'a' ? cssv('--c-as') : (t === 'u' ? cssv('--c-up') : cssv('--c-bad'));
+    ctx.beginPath();
+    ctx.arc(X(i), Y(H[i].j), 2.6, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
+function drawElbow() {
+  var cv = $('kElbow'), s0 = setupCanvas(cv);
+  if (!s0) return;
+  var ctx = s0.ctx, w = s0.w, h = s0.h;
+  var Mg = { l: 46, r: 14, t: 10, b: 20 };
+  var pw = w - Mg.l - Mg.r, ph = h - Mg.t - Mg.b;
+  ctx.clearRect(0, 0, w, h);
+
+  ctx.strokeStyle = cssv('--axis');
+  ctx.strokeRect(Mg.l, Mg.t, pw, ph);
+  ctx.fillStyle = cssv('--muted');
+  ctx.font = '10.5px "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace';
+  ctx.save();
+  ctx.translate(12, Mg.t + ph / 2);
+  ctx.rotate(-Math.PI / 2);
+  ctx.textAlign = 'center';
+  ctx.fillText('J/n', 0, 0);
+  ctx.restore();
+
+  var E = km.elbow, n = km.pts.length;
+  var Kmax = 8;
+  function X(K) { return Mg.l + pw * (K - 1) / (Kmax - 1); }
+  ctx.textAlign = 'center';
+  for (var K = 1; K <= Kmax; K++) ctx.fillText(K, X(K), h - 7);
+
+  if (!E || !n) {
+    ctx.fillStyle = cssv('--muted');
+    ctx.font = '12px sans-serif';
+    ctx.fillText('Press "Scan K" to compute the lowest J per K', Mg.l + pw / 2, Mg.t + ph / 2);
+    return;
+  }
+  var vals = E.filter(function (v) { return v !== null; }).map(function (v) { return v / n; });
+  if (!vals.length) return;
+  var lo = Math.min.apply(null, vals), hi = Math.max.apply(null, vals);
+  var pad = Math.max((hi - lo) * 0.1, 1e-6);
+  lo -= pad; hi += pad;
+  function Y(v) { return Mg.t + (hi - v) / (hi - lo) * ph; }
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(Mg.l, Mg.t, pw, ph);
+  ctx.clip();
+  ctx.strokeStyle = cssv('--ink');
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  var started = false;
+  for (K = 1; K <= Kmax; K++) {
+    if (E[K - 1] === null) continue;
+    var xx = X(K), yy = Y(E[K - 1] / n);
+    if (!started) { ctx.moveTo(xx, yy); started = true; }
+    else ctx.lineTo(xx, yy);
+  }
+  ctx.stroke();
+  for (K = 1; K <= Kmax; K++) {
+    if (E[K - 1] === null) continue;
+    ctx.fillStyle = cssv('--ink');
+    ctx.beginPath();
+    ctx.arc(X(K), Y(E[K - 1] / n), 3, 0, Math.PI * 2);
+    ctx.fill();
+    if (K === km.K) {
+      ctx.strokeStyle = cssv('--c-c1');
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(X(K), Y(E[K - 1] / n), 6.5, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+  }
+  ctx.restore();
+}
+
+/* ---------- pointer: drag centroids, click add, right-click delete ---------- */
+function toWorld(px, py) {
+  return { x: (px - kMap.cx) / kMap.scale, y: -(py - kMap.cy) / kMap.scale };
+}
+function clampW(p) {
+  var xm = kMap ? kMap.xmax - 0.1 : 4;
+  p.x = Math.max(-xm, Math.min(xm, p.x));
+  p.y = Math.max(-3.4, Math.min(3.4, p.y));
+  return p;
+}
+function nearestCentroid(px, py, rad) {
+  if (!km.mu || !kMap) return -1;
+  var best = -1, bd = rad * rad;
+  for (var k = 0; k < km.K; k++) {
+    var dx = kMap.cx + km.mu[k][0] * kMap.scale - px;
+    var dy = kMap.cy - km.mu[k][1] * kMap.scale - py;
+    var d = dx * dx + dy * dy;
+    if (d < bd) { bd = d; best = k; }
+  }
+  return best;
+}
+function nearestPoint(px, py, rad) {
+  if (!kMap) return -1;
+  var best = -1, bd = rad * rad;
+  for (var i = 0; i < km.pts.length; i++) {
+    var dx = kMap.cx + km.pts[i].x * kMap.scale - px;
+    var dy = kMap.cy - km.pts[i].y * kMap.scale - py;
+    var d = dx * dx + dy * dy;
+    if (d < bd) { bd = d; best = i; }
+  }
+  return best;
+}
+
+function wirePointer() {
+  var cv = $('kCv');
+  var dragK = -1, down = null, moved = false;
+  function pos(e) {
+    var r = cv.getBoundingClientRect();
+    return { x: e.clientX - r.left, y: e.clientY - r.top };
+  }
+  cv.addEventListener('pointerdown', function (e) {
+    if (!kMap) return;
+    var q = pos(e);
+    if (q.x < kMap.l || q.x > kMap.l + kMap.pw || q.y < kMap.t || q.y > kMap.t + kMap.ph) return;
+    down = q; moved = false;
+    dragK = nearestCentroid(q.x, q.y, 14);
+    cv.setPointerCapture(e.pointerId);
+    e.preventDefault();
+  });
+  cv.addEventListener('pointermove', function (e) {
+    if (!down) return;
+    var q = pos(e);
+    if (Math.abs(q.x - down.x) + Math.abs(q.y - down.y) > 3) moved = true;
+    if (dragK >= 0 && moved) {
+      autoOn = false;
+      setAutoBtn();
+      var wpt = clampW(toWorld(q.x, q.y));
+      km.mu[dragK][0] = wpt.x;
+      km.mu[dragK][1] = wpt.y;
+      scheduleRender();
+    }
+  });
+  function finish(e) {
+    if (!down) return;
+    if (dragK >= 0 && moved) {
+      km.trails[dragK].push([km.mu[dragK][0], km.mu[dragK][1]]);
+      km.phase = 'assign';
+      km.conv = false;
+      if (km.z) pushHist('d');
+      render();
+    } else if (dragK < 0 && !moved) {
+      var q = pos(e);
+      var wpt = clampW(toWorld(q.x, q.y));
+      km.pts.push(wpt);
+      if (km.z && km.mu) {
+        var bk = 0, bd = dist2(wpt, km.mu[0]);
+        for (var k = 1; k < km.K; k++) {
+          var d = dist2(wpt, km.mu[k]);
+          if (d < bd) { bd = d; bk = k; }
+        }
+        km.z.push(bk);
+        km.lastJ = Jof(km.pts, km.z, km.mu);
+      } else if (!km.mu && km.pts.length >= km.K) {
+        reinit();
+      }
+      km.elbow = null;
+      render();
+    }
+    dragK = -1; down = null;
+  }
+  cv.addEventListener('pointerup', finish);
+  cv.addEventListener('pointercancel', function () { dragK = -1; down = null; });
+  cv.addEventListener('contextmenu', function (e) {
+    e.preventDefault();
+    var q = pos(e);
+    if (nearestCentroid(q.x, q.y, 14) >= 0) return; // don't delete under a centroid
+    var idx = nearestPoint(q.x, q.y, 12);
+    if (idx >= 0) {
+      km.pts.splice(idx, 1);
+      if (km.z) km.z.splice(idx, 1);
+      if (km.pts.length < km.K) { km.mu = null; km.z = null; }
+      else if (km.z) km.lastJ = Jof(km.pts, km.z, km.mu);
+      km.elbow = null;
+      render();
+    }
+  });
+}
+
+/* ---------- wiring ---------- */
+function wire() {
+  document.querySelectorAll('.dchip').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('.dchip').forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      km.data = btn.dataset.d;
+      newData();
+      render();
+    });
+  });
+  $('kN').addEventListener('input', function () { newData(); render(); });
+  $('kGen').addEventListener('click', function () { newData(); render(); });
+  $('kUndo').addEventListener('click', function () {
+    km.pts.pop();
+    if (km.z) km.z.pop();
+    if (km.pts.length < km.K) { km.mu = null; km.z = null; }
+    else if (km.z) km.lastJ = Jof(km.pts, km.z, km.mu);
+    km.elbow = null;
+    render();
+  });
+  $('kClear').addEventListener('click', function () {
+    km.pts = [];
+    km.bestJ = null;
+    km.elbow = null;
+    reinit();
+    render();
+  });
+
+  document.querySelectorAll('.kseg').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('.kseg').forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      km.K = +btn.dataset.k;
+      reinit();
+      render();
+    });
+  });
+  document.querySelectorAll('.iseg').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('.iseg').forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      km.init = btn.dataset.i;
+      reinit();
+      render();
+    });
+  });
+
+  $('bAssign').addEventListener('click', function () { if (km.phase === 'assign') halfStep(); });
+  $('bUpdate').addEventListener('click', function () { if (km.phase === 'update') halfStep(); });
+  $('bAuto').addEventListener('click', function () {
+    if (!km.mu) return;
+    autoOn = !autoOn;
+    setAutoBtn();
+    if (autoOn) { lastTick = 0; requestAnimationFrame(autoLoop); }
+  });
+  $('bInit').addEventListener('click', function () { reinit(); render(); });
+
+  $('bElbow').addEventListener('click', function () {
+    if (!km.pts.length) return;
+    km.elbow = elbowScan(km.pts, 8, 6, 60);
+    render();
+  });
+
+  wirePointer();
+  window.addEventListener('resize', render);
+}
+
+/* KaTeX */
+var mathDone = false;
+function tryMath() {
+  if (mathDone || !window.renderMathInElement) return;
+  mathDone = true;
+  window.renderMathInElement(document.body, {
+    delimiters: [
+      { left: '$$', right: '$$', display: true },
+      { left: '\\(', right: '\\)', display: false }
+    ],
+    throwOnError: false
+  });
+}
+document.addEventListener('DOMContentLoaded', tryMath);
+window.addEventListener('load', tryMath);
+
+wire();
+newData();
+window.__onTheme = function(){ render(); };
+render();
+
+</script>
+</body>
+</html>

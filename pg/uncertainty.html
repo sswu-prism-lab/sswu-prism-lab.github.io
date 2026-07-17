@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<script>
+(function(){
+  function cur(){ try{ return localStorage.getItem('theme') || (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark':'light'); }catch(e){ return 'dark'; } }
+  var t=cur(); window.__theme=t; document.documentElement.setAttribute('data-theme', t);
+  window.addEventListener('storage', function(e){ if(e.key==='theme'){ var n=e.newValue||'dark'; window.__theme=n; document.documentElement.setAttribute('data-theme', n); if(window.__onTheme) window.__onTheme(n); } });
+})();
+</script>
+
+<title>Uncertainty: Aleatoric vs Epistemic — PRISM Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --void:#ffffff; --panel:#f7f9fc; --panel-2:#eef2f8; --line:#e2e7ee;
+    --ink:#141b33; --muted:#5a6488;
+    --cool:#5eead4; --sharp:#ff6b5a; --warm-a:#ffc24b; --warm-b:#ff5a3c; --test:#a78bff; --blue:#6ea8ff;
+    --focus:#9cc7ff;
+  }
+  html[data-theme="dark"]{
+    --void:#15181e; --panel:#1d212a; --panel-2:#171b22; --line:#2e343f;
+    --ink:#e6edf3; --muted:#8b949e;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--void);
+    color:var(--ink); font-family:"Inter",system-ui,-apple-system,'Noto Sans KR',sans-serif; line-height:1.5;
+    -webkit-font-smoothing:antialiased; padding:26px 20px 44px;
+  }
+  .wrap{max-width:1120px;margin:0 auto}
+
+  .topbar{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+  .back{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--muted);text-decoration:none;
+    border:1px solid var(--line);padding:6px 12px;border-radius:20px;transition:.14s}
+  .back:hover{color:var(--cool);border-color:var(--cool)}
+
+  .eyebrow{font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--cool);margin:0 0 10px;display:flex;align-items:center;gap:10px}
+  .eyebrow::before{content:"";width:22px;height:1px;background:var(--cool);opacity:.7}
+  .title{font-family:"Space Grotesk",system-ui,sans-serif;font-weight:700;font-size:clamp(28px,4.6vw,46px);
+    line-height:1.02;margin:0 0 10px;letter-spacing:-.02em;color:var(--ink)}
+  .title .thin{color:var(--muted);font-weight:500}
+  .subtitle{color:var(--muted);max-width:64ch;margin:0 0 26px;font-size:15px}
+  .subtitle b{color:var(--ink);font-weight:600}
+
+  .grid{display:grid;grid-template-columns:1.62fr 1fr;gap:18px;align-items:start}
+  @media (max-width:860px){ .grid{grid-template-columns:1fr} }
+
+  .card{background:linear-gradient(180deg,var(--panel) 0%,var(--panel-2) 100%);
+    border:1px solid var(--line);border-radius:16px;padding:16px}
+  .card + .card{margin-top:14px}
+  .card-h{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--muted);margin:0 0 12px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .card-h .hint{color:#3f7f76;letter-spacing:.02em;text-transform:none;font-size:11px}
+
+  .stage{padding:14px 12px 10px}
+  .canvas-hold{position:relative;width:100%}
+  canvas{display:block;width:100%;height:auto;border-radius:8px;touch-action:none}
+  #reg{height:312px;cursor:crosshair}
+  #decomp{height:150px}
+  .blegend{display:flex;flex-wrap:wrap;gap:14px;margin:10px 6px 2px;align-items:center;
+    font-family:"JetBrains Mono",monospace;font-size:10.5px;color:var(--muted)}
+  .blegend i{display:inline-block;width:12px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+  .blegend .ln{display:inline-block;width:15px;border-top:2px solid var(--ink);margin-right:5px;vertical-align:3px}
+  .blegend .ds{border-top:2px dashed var(--test)}
+  .axis-cap{font-family:"JetBrains Mono",monospace;font-size:10.5px;color:var(--muted);
+    display:flex;justify-content:space-between;margin:2px 6px 0}
+
+  .ctl{margin-bottom:15px}
+  .ctl:last-child{margin-bottom:0}
+  .ctl-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px}
+  .ctl-name{font-size:13px;font-weight:500}
+  .ctl-name .sub{color:var(--muted);font-weight:400;font-size:12px}
+  .ctl-val{font-family:"JetBrains Mono",monospace;font-size:13px;color:var(--cool)}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:3px;
+    background:var(--line);outline:none;margin:6px 0 0}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;
+    background:var(--ink);border:2px solid var(--void);cursor:pointer;box-shadow:0 0 0 1px var(--line)}
+  input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--ink);
+    border:2px solid var(--void);cursor:pointer}
+  #ndata{background:linear-gradient(90deg,#2b3a63 0%, var(--cool) 100%)}
+  #noise{background:linear-gradient(90deg,#2b3a63 0%, var(--warm-a) 100%)}
+
+  .opt-row{display:flex;align-items:center;gap:9px;margin-top:11px;font-size:12.5px;color:var(--muted)}
+  .opt-row input{accent-color:var(--cool);width:15px;height:15px;flex:none}
+
+  .btnrow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+  .btnrow .wide{grid-column:1 / -1}
+  .btn{border:1px solid var(--line);background:var(--panel-2);color:var(--ink);font-family:"Inter",sans-serif;
+    font-size:13px;font-weight:500;padding:10px 8px;border-radius:9px;cursor:pointer;transition:.14s}
+  .btn:hover{border-color:#3a486e;background:var(--panel-2)}
+  .btn:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+  .btn-primary{background:var(--cool);border-color:var(--cool);color:#04231f;font-weight:600}
+  .btn-primary:hover{filter:brightness(1.06)}
+  .noteline{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--muted);margin-top:9px;min-height:16px}
+  .noteline b{color:var(--cool)}
+
+  .ro-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);
+    border-radius:10px;overflow:hidden}
+  .ro{background:var(--panel);padding:10px 12px}
+  .ro .k{font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:.06em;color:var(--muted);text-transform:uppercase}
+  .ro .v{font-family:"JetBrains Mono",monospace;font-size:17px;margin-top:3px}
+  .ro .v.epi{color:var(--cool)} .ro .v.ale{color:var(--warm-a)}
+  .u-tag{font-size:12px;padding:2px 8px;border-radius:20px;font-family:"Inter",sans-serif;font-weight:600}
+  .u-tag.epi{background:rgba(94,234,212,.14);color:var(--cool)}
+  .u-tag.bal{background:rgba(167,139,255,.16);color:var(--test)}
+  .u-tag.ale{background:rgba(255,194,75,.16);color:var(--warm-a)}
+
+  .try{margin-top:18px}
+  .try ol{margin:0;padding-left:20px;color:var(--muted);font-size:13.5px}
+  .try li{margin-bottom:6px}
+  .try li b{color:var(--ink);font-weight:600}
+  .try li .kbd{font-family:"JetBrains Mono",monospace;color:var(--cool);font-size:12.5px}
+
+  .explain{margin-top:26px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media (max-width:860px){ .explain{grid-template-columns:1fr} }
+  .ex{border-top:2px solid var(--line);padding-top:12px}
+  .ex.a{border-color:var(--warm-a)} .ex.b{border-color:var(--cool)} .ex.c{border-color:var(--test)}
+  .ex h4{font-family:"Space Grotesk",sans-serif;font-size:15px;margin:0 0 7px;font-weight:500}
+  .ex p{margin:0;font-size:13px;color:var(--muted)}
+  .ex code{font-family:"JetBrains Mono",monospace;color:var(--ink);font-size:12.5px;background:var(--panel);padding:1px 5px;border-radius:4px}
+
+  footer{margin-top:30px;color:var(--muted);font-size:12px;font-family:"JetBrains Mono",monospace;letter-spacing:.04em}
+  footer a{color:var(--muted);text-decoration:underline}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar"><a class="back" href="index.html">← Playground</a></div>
+  <p class="eyebrow">PRISM · Machine Learning Playground</p>
+  <h1 class="title">Uncertainty: Aleatoric vs Epistemic<br><span class="thin">What the model doesn't know — and what it can never know</span></h1>
+  <p class="subtitle">
+    Regress with a Gaussian process (GP) and split uncertainty in two.
+    <b>epistemic</b> (teal) is <b>reducible</b> model uncertainty that shrinks as data grows and swells in empty regions and extrapolation;
+    <b>aleatoric</b> (amber) is the <b>irreducible</b> observation noise that remains no matter how much data you gather.
+    Click the canvas to place your own data points.
+  </p>
+
+  <div class="grid">
+    <!-- ===== LEFT ===== -->
+    <div>
+      <div class="card stage">
+        <div class="card-h">GP regression · predictive band <span class="hint" id="regHint">Click to add data · move mouse to move the probe</span></div>
+        <div class="canvas-hold"><canvas id="reg"></canvas></div>
+        <div class="blegend">
+          <span><i style="background:rgba(94,234,212,.5)"></i>epistemic</span>
+          <span><i style="background:rgba(255,194,75,.5)"></i>aleatoric</span>
+          <span><span class="ln"></span>mean μ</span>
+          <span><span class="ln ds"></span>true function</span>
+        </div>
+      </div>
+
+      <div class="card stage">
+        <div class="card-h">Variance decomposition <span class="hint">Var_tot = Var_epi + Var_ale (variances add)</span></div>
+        <div class="canvas-hold"><canvas id="decomp"></canvas></div>
+        <div class="axis-cap"><span>x = −5</span><span>input x</span><span>x = +5</span></div>
+      </div>
+    </div>
+
+    <!-- ===== RIGHT ===== -->
+    <div>
+      <div class="card">
+        <div class="card-h">Controls</div>
+
+        <div class="ctl">
+          <div class="ctl-top">
+            <span class="ctl-name">Data count N <span class="sub">add observations to shrink epistemic</span></span>
+            <span class="ctl-val" id="nV">0</span>
+          </div>
+          <input type="range" id="ndata" min="0" max="40" step="1" value="0" aria-label="Data count N" />
+        </div>
+
+        <div class="ctl">
+          <div class="ctl-top">
+            <span class="ctl-name">Noise σ <span class="sub">aleatoric · irreducible</span></span>
+            <span class="ctl-val" id="noiseV">0.15</span>
+          </div>
+          <input type="range" id="noise" min="0.02" max="0.8" step="0.01" value="0.15" aria-label="Noise sigma" />
+        </div>
+
+        <div class="ctl">
+          <div class="ctl-top">
+            <span class="ctl-name">Kernel width ℓ <span class="sub">lengthscale · reach of knowledge</span></span>
+            <span class="ctl-val" id="ellV">1.00</span>
+          </div>
+          <input type="range" id="ell" min="0.2" max="2.5" step="0.01" value="1.0" aria-label="lengthscale" />
+        </div>
+
+        <div class="opt-row"><input type="checkbox" id="hetero" /><label for="hetero">heteroscedastic noise σ(x) — grows toward the right</label></div>
+        <div class="opt-row"><input type="checkbox" id="showSamp" checked /><label for="showSamp">show posterior function samples (plausible functions)</label></div>
+        <div class="opt-row"><input type="checkbox" id="showTrue" /><label for="showTrue">show true function</label></div>
+
+        <div class="btnrow">
+          <button class="btn btn-primary wide" id="active">Next observation point → (active learning)</button>
+          <button class="btn" id="clear">Clear</button>
+          <button class="btn" id="reseed">Resample data</button>
+        </div>
+        <div class="noteline" id="noteLine">Raise N from 0 and epistemic melts away near the data.</div>
+      </div>
+
+      <div class="card">
+        <div class="card-h">Probe <span id="probeX" style="color:#3f7f76;font-family:'JetBrains Mono',monospace;text-transform:none;letter-spacing:0">x = 2.00</span> <span id="uTag" class="u-tag epi">mostly epistemic</span></div>
+        <div class="ro-grid">
+          <div class="ro"><div class="k">mean μ(x)</div><div class="v" id="roMean">–</div></div>
+          <div class="ro"><div class="k">data count N</div><div class="v" id="roN">0</div></div>
+          <div class="ro"><div class="k">epistemic σ</div><div class="v epi" id="roEpi">–</div></div>
+          <div class="ro"><div class="k">aleatoric σ</div><div class="v ale" id="roAle">–</div></div>
+          <div class="ro"><div class="k">total σ (predictive)</div><div class="v" id="roTot">–</div></div>
+          <div class="ro"><div class="k">reducible fraction</div><div class="v" id="roRatio">–</div></div>
+        </div>
+      </div>
+
+      <div class="card try">
+        <div class="card-h">Try it</div>
+        <ol>
+          <li><b>Shrink:</b> raise <span class="kbd">N</span> and the teal (epistemic) near the data disappears, leaving only amber below.</li>
+          <li><b>Empty regions:</b> the center [1,3] and both ends (extrapolation) keep high teal even as data grows — where the model doesn't know.</li>
+          <li><b>Irreducible:</b> raise <span class="kbd">σ</span> and amber thickens, but raising <span class="kbd">N</span> never removes that floor.</li>
+          <li><b>Active learning:</b> <span class="kbd">Next observation point</span> places a point where epistemic is largest and collapses that peak.</li>
+          <li><b>Input dependent:</b> turn on <span class="kbd">heteroscedastic</span> and aleatoric grows toward the right.</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <div class="explain">
+    <div class="ex a">
+      <h4>Two kinds of uncertainty</h4>
+      <p><code>aleatoric</code> is the noise <code>σ(x)</code> of the data-generating process — it remains even with infinite data. <code>epistemic</code> is uncertainty about the function/parameters and shrinks as data grows. Variances add: <code>Var_tot = Var_epi + Var_ale</code>.</p>
+    </div>
+    <div class="ex b">
+      <h4>GP posterior</h4>
+      <p>The kernel encodes "nearby inputs give similar outputs". Near observations the posterior function variance shrinks; far away it returns to the prior and grows up to <code>s²</code>. <code>ℓ</code> sets that reach, and the fan of function samples shows the epistemic part.</p>
+    </div>
+    <div class="ex c">
+      <h4>Why it matters (clinical)</h4>
+      <p><code>epistemic ↑</code> = OOD / data scarcity → flag it as "don't know" and use active learning to decide where to gather more. <code>aleatoric</code> is irreducible, like label disagreement between raters — directly tied to Bayesian uncertainty on small clinical datasets.</p>
+    </div>
+  </div>
+
+  <footer>PRISM Lab · prototype · <a href="https://sswu-prism-lab.github.io" target="_blank" rel="noopener">sswu-prism-lab.github.io</a></footer>
+</div>
+
+<script>
+(() => {
+  "use strict";
+  const C = { ink:"#e7ecff", muted:"#8493b8", line:"#26314f", cool:"#5eead4",
+    sharp:"#ff6b5a", warmA:"#ffc24b", test:"#a78bff", panel:"#111a30" };
+  function cssv(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim();}
+  function refreshC(){ C.ink=cssv('--ink'); C.muted=cssv('--muted'); C.line=cssv('--line'); C.panel=cssv('--panel'); }
+
+  const XMIN=-5, XMAX=5, YMIN=-4, YMAX=4;
+  const s2=1.0;                               // GP signal amplitude (prior variance)
+  const GRID=200, GS=64, NSAMP=5;
+  const clamp=(x,a,b)=> x<a?a : x>b?b : x;
+
+  const S = {
+    N:0, sig:0.15, ell:1.0, hetero:false, showSamp:true, showTrue:false,
+    pool:[], extra:[], probe:2.0,
+    // caches
+    model:null, gx:[], gmean:[], gvepi:[], gvale:[], gvtot:[], samples:[],
+  };
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // ---------- true function + noise ----------
+  const fTrue = (x)=> 1.2*Math.sin(1.1*x) + 0.5*Math.sin(0.45*x);
+  const sigAt = (x)=> S.hetero ? S.sig*(0.35 + 1.3*(x-XMIN)/(XMAX-XMIN)) : S.sig;
+
+  let spare=null;
+  function gauss(){
+    if(spare!==null){const v=spare;spare=null;return v;}
+    let u=0; do{u=Math.random();}while(u<=1e-12);
+    const w=Math.sqrt(-2*Math.log(u)), a=2*Math.PI*Math.random();
+    spare=w*Math.sin(a); return w*Math.cos(a);
+  }
+
+  // ---------- data pool (fixed x + standardized noise; N slider takes first N) ----------
+  function genPool(){
+    const regions=[[-4.5,1.0],[3.0,4.5]]; const w=[5.5,1.5], wsum=7.0;
+    const pool=[];
+    for(let k=0;k<44;k++){
+      const reg = (Math.random()*wsum < w[0]) ? regions[0] : regions[1];
+      pool.push({x: reg[0]+Math.random()*(reg[1]-reg[0]), z: gauss()});
+    }
+    // shuffle so the first-N subset is spatially spread
+    for(let i=pool.length-1;i>0;i--){const j=(Math.random()*(i+1))|0; const t=pool[i];pool[i]=pool[j];pool[j]=t;}
+    S.pool=pool;
+  }
+
+  function dataset(){
+    const X=[], Y=[];
+    for(let i=0;i<S.N && i<S.pool.length;i++){
+      const p=S.pool[i]; X.push(p.x); Y.push(fTrue(p.x)+sigAt(p.x)*p.z);
+    }
+    for(const e of S.extra){ X.push(e.x); Y.push(e.y); }
+    return {X,Y};
+  }
+
+  // ---------- linear algebra ----------
+  const rbf=(a,b)=> s2*Math.exp(-((a-b)*(a-b))/(2*S.ell*S.ell));
+  function chol(A,n){
+    const L=Array.from({length:n},()=>new Float64Array(n));
+    for(let i=0;i<n;i++)for(let j=0;j<=i;j++){
+      let s=A[i][j]; for(let k=0;k<j;k++) s-=L[i][k]*L[j][k];
+      if(i===j){ if(s<=0) return null; L[i][j]=Math.sqrt(s);} else L[i][j]=s/L[j][j];
+    } return L;
+  }
+  const fwd=(L,b,n)=>{const y=new Float64Array(n);for(let i=0;i<n;i++){let s=b[i];for(let k=0;k<i;k++)s-=L[i][k]*y[k];y[i]=s/L[i][i];}return y;};
+  const bwd=(L,y,n)=>{const x=new Float64Array(n);for(let i=n-1;i>=0;i--){let s=y[i];for(let k=i+1;k<n;k++)s-=L[k][i]*x[k];x[i]=s/L[i][i];}return x;};
+
+  function fit(X,Y){
+    const n=X.length; if(n===0) return null;
+    const A=Array.from({length:n},()=>new Float64Array(n));
+    for(let i=0;i<n;i++)for(let j=0;j<n;j++){
+      A[i][j]=rbf(X[i],X[j]) + (i===j ? sigAt(X[i])*sigAt(X[i]) + 1e-7*s2 : 0);
+    }
+    const L=chol(A,n); if(!L) return null;
+    const alpha=bwd(L,fwd(L,Y,n),n);
+    return {X,L,alpha,n};
+  }
+  function predict(m,xs){
+    if(!m) return {mean:0, vepi:s2};
+    const n=m.n, ks=new Float64Array(n);
+    for(let i=0;i<n;i++) ks[i]=rbf(xs,m.X[i]);
+    const v=fwd(m.L,ks,n);
+    let mean=0,vv=0; for(let i=0;i<n;i++){mean+=ks[i]*m.alpha[i]; vv+=v[i]*v[i];}
+    return {mean, vepi:Math.max(0, s2-vv)};
+  }
+
+  // posterior function samples on grid G (joint) — recomputed on data change
+  function drawSamples(m, G){
+    const mm=G.length, out=[];
+    const meanG=new Float64Array(mm), vepiG=new Float64Array(mm);
+    if(!m){ // prior samples
+      const K=Array.from({length:mm},()=>new Float64Array(mm));
+      for(let i=0;i<mm;i++)for(let j=0;j<mm;j++)K[i][j]=rbf(G[i],G[j])+(i===j?1e-6:0);
+      const Lc=chol(K,mm); if(!Lc) return [];
+      for(let s=0;s<NSAMP;s++){const z=new Float64Array(mm);for(let i=0;i<mm;i++)z[i]=gauss();
+        const f=new Float64Array(mm); for(let i=0;i<mm;i++){let acc=0;for(let k=0;k<=i;k++)acc+=Lc[i][k]*z[k];f[i]=acc;} out.push(f);}
+      return out;
+    }
+    for(let i=0;i<mm;i++){const p=predict(m,G[i]);meanG[i]=p.mean;}
+    // Sigma = K_GG - B^T B,  B = L^{-1} K_XG
+    const K=Array.from({length:mm},()=>new Float64Array(mm));
+    for(let i=0;i<mm;i++)for(let j=0;j<mm;j++)K[i][j]=rbf(G[i],G[j]);
+    const B=Array.from({length:m.n},()=>new Float64Array(mm));
+    for(let j=0;j<mm;j++){const kx=new Float64Array(m.n);for(let i=0;i<m.n;i++)kx[i]=rbf(m.X[i],G[j]);
+      const v=fwd(m.L,kx,m.n); for(let i=0;i<m.n;i++)B[i][j]=v[i];}
+    const Sg=Array.from({length:mm},()=>new Float64Array(mm));
+    for(let i=0;i<mm;i++)for(let j=0;j<mm;j++){let s=K[i][j];for(let k=0;k<m.n;k++)s-=B[k][i]*B[k][j];Sg[i][j]=s+(i===j?1e-6:0);}
+    const Lc=chol(Sg,mm); if(!Lc) return [];
+    for(let s=0;s<NSAMP;s++){const z=new Float64Array(mm);for(let i=0;i<mm;i++)z[i]=gauss();
+      const f=new Float64Array(mm);for(let i=0;i<mm;i++){let acc=meanG[i];for(let k=0;k<=i;k++)acc+=Lc[i][k]*z[k];f[i]=acc;}out.push(f);}
+    return out;
+  }
+
+  // ---------- recompute caches ----------
+  function recompute(){
+    const {X,Y}=dataset();
+    S.model=fit(X,Y);
+    S.gx=[]; S.gmean=[]; S.gvepi=[]; S.gvale=[]; S.gvtot=[];
+    for(let i=0;i<GRID;i++){
+      const x=XMIN+(XMAX-XMIN)*i/(GRID-1);
+      const p=predict(S.model,x); const va=sigAt(x)*sigAt(x);
+      S.gx.push(x); S.gmean.push(p.mean); S.gvepi.push(p.vepi); S.gvale.push(va); S.gvtot.push(p.vepi+va);
+    }
+    if(S.showSamp){
+      const G=[]; for(let i=0;i<GS;i++)G.push(XMIN+(XMAX-XMIN)*i/(GS-1));
+      S.samples=drawSamples(S.model,G).map(f=>({G,f}));
+    } else S.samples=[];
+    document.getElementById("roN").textContent=X.length;
+  }
+
+  // ---------- canvas ----------
+  const cvR=document.getElementById("reg"), cxR=cvR.getContext("2d");
+  const cvD=document.getElementById("decomp"), cxD=cvD.getContext("2d");
+  const PAD={l:40,r:14,t:12,b:20};
+  function fit2(cv,ctx){
+    const dpr=Math.min(window.devicePixelRatio||1,2);
+    const w=cv.clientWidth,h=cv.clientHeight;
+    cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);return {w,h};
+  }
+  const X2p=(x,w)=> PAD.l+(x-XMIN)/(XMAX-XMIN)*(w-PAD.l-PAD.r);
+  const p2X=(px,w)=> XMIN+(px-PAD.l)/(w-PAD.l-PAD.r)*(XMAX-XMIN);
+  const Y2p=(y,h)=> PAD.t+(1-(y-YMIN)/(YMAX-YMIN))*(h-PAD.t-PAD.b);
+  const p2Y=(py,h)=> YMIN+(1-(py-PAD.t)/(h-PAD.t-PAD.b))*(YMAX-YMIN);
+
+  function bandPath(ctx,gx,hiY,loY,w,h){
+    ctx.beginPath();
+    for(let i=0;i<gx.length;i++){const px=X2p(gx[i],w),py=hiY[i]; i?ctx.lineTo(px,py):ctx.moveTo(px,py);}
+    for(let i=gx.length-1;i>=0;i--){ctx.lineTo(X2p(gx[i],w),loY[i]);}
+    ctx.closePath();
+  }
+
+  // ---------- draw regression ----------
+  function drawReg(){
+    const {w,h}=fit2(cvR,cxR); cxR.clearRect(0,0,w,h);
+
+    // y gridlines
+    cxR.font='10px "JetBrains Mono", monospace'; cxR.textBaseline="middle"; cxR.textAlign="right";
+    for(let y=-3;y<=3;y+=1){ const py=Y2p(y,h);
+      cxR.strokeStyle= C.line; cxR.globalAlpha= y===0 ? 1 : .5; cxR.lineWidth=1;
+      cxR.beginPath(); cxR.moveTo(PAD.l,py); cxR.lineTo(w-PAD.r,py); cxR.stroke();
+      cxR.globalAlpha=1;
+      cxR.fillStyle=C.muted; cxR.fillText(y.toString(), PAD.l-6, py);
+    }
+
+    const gx=S.gx, n=gx.length;
+    const epiUp=new Float64Array(n),epiLo=new Float64Array(n),totUp=new Float64Array(n),totLo=new Float64Array(n),meanY=new Float64Array(n);
+    for(let i=0;i<n;i++){
+      const m=S.gmean[i], se=2*Math.sqrt(S.gvepi[i]), st=2*Math.sqrt(S.gvtot[i]);
+      meanY[i]=Y2p(m,h); epiUp[i]=Y2p(m+se,h); epiLo[i]=Y2p(m-se,h); totUp[i]=Y2p(m+st,h); totLo[i]=Y2p(m-st,h);
+    }
+    // aleatoric rings (amber): between epistemic edge and total edge
+    cxR.fillStyle="rgba(255,194,75,.16)";
+    bandPath(cxR,gx,totUp,epiUp,w,h); cxR.fill();
+    bandPath(cxR,gx,epiLo,totLo,w,h); cxR.fill();
+    // epistemic core (teal)
+    cxR.fillStyle="rgba(94,234,212,.15)";
+    bandPath(cxR,gx,epiUp,epiLo,w,h); cxR.fill();
+
+    // posterior function samples
+    if(S.showSamp && S.samples.length){
+      cxR.lineWidth=1; cxR.strokeStyle=C.muted; cxR.globalAlpha=.55;
+      for(const s of S.samples){
+        cxR.beginPath();
+        for(let i=0;i<s.G.length;i++){const px=X2p(s.G[i],w),py=Y2p(s.f[i],h); i?cxR.lineTo(px,py):cxR.moveTo(px,py);}
+        cxR.stroke();
+      }
+      cxR.globalAlpha=1;
+    }
+    // true function
+    if(S.showTrue){
+      cxR.setLineDash([5,4]); cxR.lineWidth=1.6; cxR.strokeStyle="rgba(167,139,255,.6)";
+      cxR.beginPath();
+      for(let i=0;i<n;i++){const px=X2p(gx[i],w),py=Y2p(fTrue(gx[i]),h); i?cxR.lineTo(px,py):cxR.moveTo(px,py);}
+      cxR.stroke(); cxR.setLineDash([]);
+    }
+    // mean
+    cxR.lineWidth=2.4; cxR.strokeStyle=C.ink;
+    cxR.beginPath(); for(let i=0;i<n;i++){ i?cxR.lineTo(X2p(gx[i],w),meanY[i]):cxR.moveTo(X2p(gx[i],w),meanY[i]); } cxR.stroke();
+
+    // data points
+    const {X,Y}=dataset();
+    for(let i=0;i<X.length;i++){
+      const px=X2p(X[i],w), py=Y2p(Y[i],h);
+      cxR.fillStyle=C.ink; cxR.beginPath(); cxR.arc(px,py,3.2,0,7); cxR.fill();
+      cxR.fillStyle=C.panel; cxR.beginPath(); cxR.arc(px,py,1.3,0,7); cxR.fill();
+    }
+    // probe line
+    const lx=X2p(S.probe,w);
+    cxR.strokeStyle="rgba(132,147,184,.5)"; cxR.setLineDash([3,3]); cxR.lineWidth=1;
+    cxR.beginPath(); cxR.moveTo(lx,PAD.t); cxR.lineTo(lx,h-PAD.b); cxR.stroke(); cxR.setLineDash([]);
+    const pp=predict(S.model,S.probe);
+    cxR.fillStyle=C.ink; cxR.beginPath(); cxR.arc(lx,Y2p(pp.mean,h),3,0,7); cxR.fill();
+  }
+
+  // ---------- draw decomposition ----------
+  function drawDecomp(){
+    const {w,h}=fit2(cvD,cxD); cxD.clearRect(0,0,w,h);
+    const baseY=h-PAD.b;
+    let vmax=0.1; for(let i=0;i<S.gvtot.length;i++) if(S.gvtot[i]>vmax)vmax=S.gvtot[i];
+    vmax*=1.14;
+    const V2p=(v)=> baseY - (v/vmax)*(h-PAD.t-PAD.b);
+
+    // gridlines
+    cxD.font='10px "JetBrains Mono", monospace'; cxD.textBaseline="middle"; cxD.textAlign="right";
+    for(let g=1;g<=3;g++){ const v=vmax*g/3.2; const py=V2p(v);
+      cxD.strokeStyle=C.line; cxD.globalAlpha=.5; cxD.lineWidth=1;
+      cxD.beginPath(); cxD.moveTo(PAD.l,py); cxD.lineTo(w-PAD.r,py); cxD.stroke();
+      cxD.globalAlpha=1;
+      cxD.fillStyle=C.muted; cxD.fillText(v.toFixed(2), PAD.l-6, py);
+    }
+
+    const gx=S.gx, n=gx.length;
+    const valeY=new Float64Array(n), vtotY=new Float64Array(n), baseArr=new Float64Array(n);
+    for(let i=0;i<n;i++){ valeY[i]=V2p(S.gvale[i]); vtotY[i]=V2p(S.gvtot[i]); baseArr[i]=baseY; }
+
+    // aleatoric area (amber): 0 → vale
+    cxD.fillStyle="rgba(255,194,75,.34)";
+    bandPath(cxD,gx,valeY,baseArr,w,h); cxD.fill();
+    // epistemic area (teal): vale → vtot
+    cxD.fillStyle="rgba(94,234,212,.30)";
+    bandPath(cxD,gx,vtotY,valeY,w,h); cxD.fill();
+    // total outline
+    cxD.strokeStyle=C.ink; cxD.lineWidth=1.4;
+    cxD.beginPath(); for(let i=0;i<n;i++){ i?cxD.lineTo(X2p(gx[i],w),vtotY[i]):cxD.moveTo(X2p(gx[i],w),vtotY[i]); } cxD.stroke();
+    // aleatoric top line
+    cxD.strokeStyle=C.warmA; cxD.lineWidth=1.2;
+    cxD.beginPath(); for(let i=0;i<n;i++){ i?cxD.lineTo(X2p(gx[i],w),valeY[i]):cxD.moveTo(X2p(gx[i],w),valeY[i]); } cxD.stroke();
+
+    // data ticks
+    const {X}=dataset();
+    cxD.strokeStyle=C.ink; cxD.globalAlpha=.55; cxD.lineWidth=1;
+    for(const x of X){ const px=X2p(x,w); cxD.beginPath(); cxD.moveTo(px,baseY); cxD.lineTo(px,baseY-6); cxD.stroke(); }
+    cxD.globalAlpha=1;
+
+    // probe
+    const lx=X2p(S.probe,w);
+    cxD.strokeStyle="rgba(132,147,184,.5)"; cxD.setLineDash([3,3]); cxD.lineWidth=1;
+    cxD.beginPath(); cxD.moveTo(lx,PAD.t); cxD.lineTo(lx,baseY); cxD.stroke(); cxD.setLineDash([]);
+  }
+
+  // ---------- readouts ----------
+  function updateReadouts(){
+    const p=predict(S.model,S.probe); const va=sigAt(S.probe)*sigAt(S.probe);
+    const vepi=p.vepi, vtot=vepi+va, ratio= vtot>1e-9 ? vepi/vtot : 0;
+    document.getElementById("probeX").textContent="x = "+S.probe.toFixed(2);
+    document.getElementById("roMean").textContent=p.mean.toFixed(2);
+    document.getElementById("roEpi").textContent=Math.sqrt(vepi).toFixed(3);
+    document.getElementById("roAle").textContent=Math.sqrt(va).toFixed(3);
+    document.getElementById("roTot").textContent=Math.sqrt(vtot).toFixed(3);
+    document.getElementById("roRatio").textContent=Math.round(ratio*100)+"%";
+    const tag=document.getElementById("uTag");
+    if(ratio>0.7){ tag.textContent="mostly epistemic"; tag.className="u-tag epi"; }
+    else if(ratio>0.35){ tag.textContent="balanced"; tag.className="u-tag bal"; }
+    else { tag.textContent="mostly aleatoric"; tag.className="u-tag ale"; }
+  }
+
+  function draw(){ refreshC(); drawReg(); drawDecomp(); updateReadouts(); }
+  function update(){ recompute(); draw(); }
+
+  // ---------- interaction ----------
+  cvR.addEventListener("pointermove",(e)=>{
+    const r=cvR.getBoundingClientRect();
+    S.probe=clamp(p2X(e.clientX-r.left, cvR.clientWidth), XMIN, XMAX);
+    draw();
+  });
+  cvR.addEventListener("pointerdown",(e)=>{
+    const r=cvR.getBoundingClientRect();
+    const x=clamp(p2X(e.clientX-r.left, cvR.clientWidth), XMIN, XMAX);
+    const y=clamp(p2Y(e.clientY-r.top, cvR.clientHeight), YMIN, YMAX);
+    S.extra.push({x,y}); update();
+    document.getElementById("noteLine").textContent="Observation added — epistemic nearby drops immediately.";
+  });
+
+  // ---------- controls ----------
+  const bind=(id,valId,fmt,fn)=>{
+    const el=document.getElementById(id);
+    el.addEventListener("input",()=>{ const v=parseFloat(el.value); fn(v);
+      if(valId) document.getElementById(valId).textContent=fmt(v); update(); });
+  };
+  bind("ndata","nV",v=>String(v|0),v=>S.N=v|0);
+  bind("noise","noiseV",v=>v.toFixed(2),v=>S.sig=v);
+  bind("ell","ellV",v=>v.toFixed(2),v=>S.ell=v);
+  document.getElementById("hetero").onchange=(e)=>{S.hetero=e.target.checked; update();};
+  document.getElementById("showSamp").onchange=(e)=>{S.showSamp=e.target.checked; update();};
+  document.getElementById("showTrue").onchange=(e)=>{S.showTrue=e.target.checked; draw();};
+
+  document.getElementById("active").onclick=()=>{
+    // argmax epistemic std over grid → acquire a label there
+    let bi=0,bv=-1; for(let i=0;i<S.gvepi.length;i++) if(S.gvepi[i]>bv){bv=S.gvepi[i];bi=i;}
+    const x=S.gx[bi], y=fTrue(x)+sigAt(x)*gauss();
+    S.extra.push({x,y}); update();
+    document.getElementById("noteLine").innerHTML=`Observation added at max-epistemic point <b>x=${x.toFixed(2)}</b> — the peak collapses.`;
+  };
+  document.getElementById("clear").onclick=()=>{
+    S.extra=[]; S.N=0; document.getElementById("ndata").value=0; document.getElementById("nV").textContent="0";
+    update(); document.getElementById("noteLine").textContent="All data cleared (prior = uniform epistemic).";
+  };
+  document.getElementById("reseed").onclick=()=>{ genPool(); update();
+    document.getElementById("noteLine").textContent="Data resampled with a fresh noise realization."; };
+
+  window.addEventListener("resize",()=>{ clearTimeout(window.__rt); window.__rt=setTimeout(draw,80); });
+
+  // ---------- init ----------
+  window.__onTheme = function(){ draw(); };
+  genPool();
+  update();
+})();
+</script>
+</body>
+</html>
