@@ -15,7 +15,8 @@
 <title>Playground — PRISM Lab</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <style>
   :root{
     --void:#15181e; --panel:#1d212a; --panel-2:#171b22; --line:#2e343f;
@@ -129,7 +130,7 @@
   /* ---------- i18n ---------- */
   html[data-lang="en"] .i18n-ko{ display:none !important; }
   html[data-lang="ko"] .i18n-en{ display:none !important; }
-  .i18n-ko{ font-family:'Nanum Gothic','Inter',sans-serif; word-break:keep-all; }
+  .i18n-ko{ font-family:'Pretendard','Inter',sans-serif; word-break:keep-all; }
 </style>
 </head>
 <body>
@@ -606,6 +607,22 @@
       </div>
     </a>
 
+    <a class="card-demo c-vi" href="variational-inference.html">
+      <div class="glyph">
+        <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M62 30 C82 12 112 18 122 34 C134 54 108 68 86 63 C62 58 42 46 62 30 Z" stroke="#8b949e" stroke-width="1.6" fill="none" opacity=".6"/>
+          <ellipse cx="94" cy="43" rx="26" ry="15" stroke="#f472b6" stroke-width="2.2" fill="none"/>
+          <circle cx="94" cy="43" r="2.4" fill="#f472b6"/>
+        </svg>
+      </div>
+      <div class="body">
+        <div class="tags"><span><span class="i18n-en">ELBO</span><span class="i18n-ko">ELBO</span></span><span><span class="i18n-en">Mean-field</span><span class="i18n-ko">평균장</span></span></div>
+        <h3><span class="i18n-en">Variational Inference</span><span class="i18n-ko">변분 추론</span></h3>
+        <p><span class="i18n-en">Approximate an intractable posterior with a simple q by maximizing the ELBO — mean-field factorization and the reparameterization trick behind VAEs.</span><span class="i18n-ko">ELBO를 최대화하여 다루기 힘든 사후분포를 단순한 q로 근사합니다 — 평균장 인수분해와 VAE 뒤에 있는 재매개변수화 트릭까지.</span></p>
+        <div class="go"><span class="i18n-en">Open →</span><span class="i18n-ko">열기 →</span></div>
+      </div>
+    </a>
+
     <div class="card-demo c-bp soon">
       <div class="glyph">
         <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -716,22 +733,6 @@
         <div class="go"><span class="i18n-en">Coming soon</span><span class="i18n-ko">준비 중</span></div>
       </div>
     </div>
-
-    <a class="card-demo c-vi" href="variational-inference.html">
-      <div class="glyph">
-        <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <path d="M62 30 C82 12 112 18 122 34 C134 54 108 68 86 63 C62 58 42 46 62 30 Z" stroke="#8b949e" stroke-width="1.6" fill="none" opacity=".6"/>
-          <ellipse cx="94" cy="43" rx="26" ry="15" stroke="#f472b6" stroke-width="2.2" fill="none"/>
-          <circle cx="94" cy="43" r="2.4" fill="#f472b6"/>
-        </svg>
-      </div>
-      <div class="body">
-        <div class="tags"><span><span class="i18n-en">ELBO</span><span class="i18n-ko">ELBO</span></span><span><span class="i18n-en">Mean-field</span><span class="i18n-ko">평균장</span></span></div>
-        <h3><span class="i18n-en">Variational Inference</span><span class="i18n-ko">변분 추론</span></h3>
-        <p><span class="i18n-en">Approximate an intractable posterior with a simple q by maximizing the ELBO — mean-field factorization and the reparameterization trick behind VAEs.</span><span class="i18n-ko">ELBO를 최대화하여 다루기 힘든 사후분포를 단순한 q로 근사합니다 — 평균장 인수분해와 VAE 뒤에 있는 재매개변수화 트릭까지.</span></p>
-        <div class="go"><span class="i18n-en">Open →</span><span class="i18n-ko">열기 →</span></div>
-      </div>
-    </a>
 
   </div>
 

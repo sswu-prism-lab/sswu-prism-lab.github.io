@@ -344,7 +344,14 @@ html[data-theme="dark"] .deadlines-status-badge { background: #4a3a12; color: #f
     past: document.getElementById("deadlines-grid-past")
   };
 
+  function currentLang() { return document.documentElement.getAttribute("data-lang") === "ko" ? "ko" : "en"; }
+  function T(en, ko) { return currentLang() === "ko" ? ko : en; }
   function formatDate(d) {
+    if (currentLang() === "ko") {
+      var pad = function (n) { return (n < 10 ? "0" : "") + n; };
+      var h = d.getHours(), ampm = h >= 12 ? "PM" : "AM", h12 = h % 12; if (h12 === 0) h12 = 12;
+      return d.getFullYear() + "년 " + (d.getMonth() + 1) + "월 " + d.getDate() + "일 " + pad(h12) + ":" + pad(d.getMinutes()) + " " + ampm;
+    }
     return d.toLocaleString("en-US", {
       year: "numeric", month: "short", day: "numeric",
       hour: "2-digit", minute: "2-digit"
@@ -380,8 +387,8 @@ html[data-theme="dark"] .deadlines-status-badge { background: #4a3a12; color: #f
         hoursEl.textContent = "-";
         minutesEl.textContent = "-";
         secondsEl.textContent = "-";
-        if (localLabelEl) localLabelEl.textContent = "Deadline in KST";
-        if (localTimeEl) localTimeEl.textContent = "TBD";
+        if (localLabelEl) localLabelEl.textContent = T("Deadline in KST", "마감 (KST)");
+        if (localTimeEl) localTimeEl.textContent = T("TBD", "미정");
         return;
       }
 
@@ -394,7 +401,7 @@ html[data-theme="dark"] .deadlines-status-badge { background: #4a3a12; color: #f
       // ---- 2) 제출 마감이 아직 안 지남: Open for Submission ----
       if (now < deadlineDate.getTime()) {
         card.dataset.status = "upcoming";
-        if (localLabelEl) localLabelEl.textContent = "Deadline in KST";
+        if (localLabelEl) localLabelEl.textContent = T("Deadline in KST", "마감 (KST)");
         if (localTimeEl && !localTimeEl.dataset.filled) {
           localTimeEl.textContent = formatDate(deadlineDate);
           localTimeEl.dataset.filled = "1";
@@ -407,8 +414,8 @@ html[data-theme="dark"] .deadlines-status-badge { background: #4a3a12; color: #f
       if (now < effectiveEnd.getTime()) {
         card.classList.add("deadlines-ongoing");
         card.dataset.status = "ongoing";
-        if (badgeEl) { badgeEl.textContent = "Awaiting Conference"; badgeEl.style.display = "inline-block"; }
-        if (localLabelEl) localLabelEl.textContent = "Deadline in KST";
+        if (badgeEl) { badgeEl.textContent = T("Awaiting Conference", "학회 대기 중"); badgeEl.style.display = "inline-block"; }
+        if (localLabelEl) localLabelEl.textContent = T("Deadline in KST", "마감 (KST)");
         if (localTimeEl && !localTimeEl.dataset.filled) {
           localTimeEl.textContent = formatDate(deadlineDate);
           localTimeEl.dataset.filled = "1";
@@ -423,7 +430,7 @@ html[data-theme="dark"] .deadlines-status-badge { background: #4a3a12; color: #f
       // ---- 4) 학회까지 완전히 끝남: Completed ----
       card.classList.add("deadlines-past");
       card.dataset.status = "past";
-      if (localLabelEl) localLabelEl.textContent = confEndUnknown ? "Deadline in KST" : "Conference ended (KST)";
+      if (localLabelEl) localLabelEl.textContent = confEndUnknown ? T("Deadline in KST", "마감 (KST)") : T("Conference ended (KST)", "학회 종료 (KST)");
       localTimeEl.textContent = formatDate(effectiveEnd);
       daysEl.textContent = "0";
       hoursEl.textContent = "0";
@@ -470,6 +477,19 @@ html[data-theme="dark"] .deadlines-status-badge { background: #4a3a12; color: #f
 
   updateCountdowns();
   setInterval(updateCountdowns, 1000);
+
+  // Re-render labels/dates instantly when the site language toggles
+  (function () {
+    var last = currentLang();
+    new MutationObserver(function () {
+      var now = currentLang();
+      if (now !== last) {
+        last = now;
+        document.querySelectorAll(".deadlines-local-time-value").forEach(function (el) { delete el.dataset.filled; });
+        updateCountdowns();
+      }
+    }).observe(document.documentElement, { attributes: true, attributeFilter: ["data-lang"] });
+  })();
 
   // ---- 필터 버튼 ----
   var filterButtons = document.querySelectorAll(".deadlines-filter-btn");

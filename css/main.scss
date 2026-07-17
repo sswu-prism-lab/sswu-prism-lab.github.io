@@ -18,9 +18,9 @@ code, pre, kbd, samp {
 /* ===== Language toggle (English / Korean) ===== */
 html[data-lang="en"] .i18n-ko { display: none !important; }
 html[data-lang="ko"] .i18n-en { display: none !important; }
-/* Korean text uses Nanum Gothic; keep-all avoids awkward mid-word line breaks */
+/* Korean text uses Pretendard; keep-all avoids awkward mid-word line breaks */
 .i18n-ko {
-  font-family: 'Nanum Gothic', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Pretendard', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   word-break: keep-all;
 }
 /* Navbar 한국어 / EN button */
