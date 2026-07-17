@@ -7,13 +7,14 @@
 (function(){
   function cur(){ try{ return localStorage.getItem('theme') || (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark':'light'); }catch(e){ return 'dark'; } }
   var t=cur(); window.__theme=t; document.documentElement.setAttribute('data-theme', t);
-  window.addEventListener('storage', function(e){ if(e.key==='theme'){ var n=e.newValue||'dark'; window.__theme=n; document.documentElement.setAttribute('data-theme', n); if(window.__onTheme) window.__onTheme(n); } });
+  try{ document.documentElement.setAttribute('data-lang', (localStorage.getItem('lang')||'en')); }catch(e){ document.documentElement.setAttribute('data-lang','en'); }
+  window.addEventListener('storage', function(e){ if(e.key==='theme'){ var n=e.newValue||'dark'; window.__theme=n; document.documentElement.setAttribute('data-theme', n); if(window.__onTheme) window.__onTheme(n); } if(e.key==='lang'){ document.documentElement.setAttribute('data-lang', e.newValue||'en'); if(window.__onLang) window.__onLang(); } });
 })();
 </script>
 <title>BOLD / HRF — PRISM Lab</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet" />
 <style>
   :root{
     --void:#15181e; --panel:#1d212a; --panel-2:#171b22; --line:#2e343f;
@@ -107,71 +108,78 @@
     --cool:#12a08d; --cool-dim:#2f8c80; --sharp:#e04a37; --warm-a:#c98a12; --test:#6d4fe0; --blue:#2f6fd6; --bold:#e0662f; --focus:#2f6fd6;
   }
   html[data-theme="light"] .btn:hover{ border-color:#b9c4da; background:#e9eef7; }
+
+  html[data-lang="en"] .i18n-ko{ display:none !important; }
+  html[data-lang="ko"] .i18n-en{ display:none !important; }
+  .i18n-ko{ font-family:'Nanum Gothic','Inter',sans-serif; word-break:keep-all; }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="topbar"><a class="back" href="index.html">← Playground</a></div>
-  <p class="eyebrow">PRISM · Statistical-Mechanics Playground</p>
-  <h1 class="title">BOLD / HRF<br><span class="thin">From neural events to the fMRI signal — and back</span></h1>
+  <div class="topbar"><a class="back" href="index.html"><span class="i18n-en">← Playground</span><span class="i18n-ko">← 놀이터</span></a></div>
+  <p class="eyebrow"><span class="i18n-en">PRISM · Statistical-Mechanics Playground</span><span class="i18n-ko">PRISM · 통계역학 놀이터</span></p>
+  <h1 class="title">BOLD / HRF<br><span class="thin"><span class="i18n-en">From neural events to the fMRI signal — and back</span><span class="i18n-ko">자극 시퀀스를 HRF와 컨볼브해 신경 이벤트가 BOLD로 바뀌는 과정을 보이고, 노이즈를 넣어 디컨볼루션이 왜 어려운지 체감</span></span></h1>
   <p class="subtitle">
-    fMRI doesn't see neurons — it sees blood. A burst of activity is blurred by the sluggish
+    <span class="i18n-en">fMRI doesn't see neurons — it sees blood. A burst of activity is blurred by the sluggish
     <b>hemodynamic response function (HRF)</b>: the measured <b>BOLD</b> signal is the neural event train
     <b>convolved</b> with the HRF, plus noise. <b>Left:</b> build BOLD from events. <b>Right:</b> try to invert it —
-    and feel why <b>deconvolution</b> is so fragile once noise is in.
+    and feel why <b>deconvolution</b> is so fragile once noise is in.</span><span class="i18n-ko">fMRI는 뉴런이 아니라 혈류를 봅니다. 짧게 몰아친 활동은 느린
+    <b>혈류역학 반응 함수(hemodynamic response function, HRF)</b>에 의해 뭉개집니다. 즉, 측정되는 <b>BOLD</b> 신호는 신경 이벤트 열을
+    HRF와 <b>컨볼루션</b>한 결과에 노이즈가 더해진 것입니다. <b>왼쪽:</b> 이벤트로부터 BOLD를 만들어 봅니다. <b>오른쪽:</b> 이를 거꾸로 되돌려 보며,
+    노이즈가 끼는 순간 <b>디컨볼루션</b>이 왜 그토록 불안정해지는지 체감해 봅니다.</span>
   </p>
 
   <div class="grid">
     <div>
       <div class="card stage">
-        <div class="card-h">Forward model <span class="hint">events ⊛ HRF = BOLD</span></div>
+        <div class="card-h"><span class="i18n-en">Forward model</span><span class="i18n-ko">순방향 모델</span> <span class="hint">events ⊛ HRF = BOLD</span></div>
         <div class="canvas-hold"><canvas id="forward"></canvas></div>
         <div class="legend">
-          <span class="sw"><i style="background:var(--test)"></i> neural events</span>
-          <span class="sw"><i style="background:var(--warm-a)"></i> HRF kernel</span>
-          <span class="sw"><i style="background:var(--bold)"></i> BOLD (clean)</span>
-          <span class="sw"><i style="background:var(--muted)"></i> BOLD + noise</span>
+          <span class="sw"><i style="background:var(--test)"></i> <span class="i18n-en">neural events</span><span class="i18n-ko">신경 이벤트</span></span>
+          <span class="sw"><i style="background:var(--warm-a)"></i> <span class="i18n-en">HRF kernel</span><span class="i18n-ko">HRF 커널</span></span>
+          <span class="sw"><i style="background:var(--bold)"></i> <span class="i18n-en">BOLD (clean)</span><span class="i18n-ko">BOLD (깨끗한 신호)</span></span>
+          <span class="sw"><i style="background:var(--muted)"></i> <span class="i18n-en">BOLD + noise</span><span class="i18n-ko">BOLD + 노이즈</span></span>
         </div>
-        <div class="axis-cap"><span>t = 0 s</span><span>time</span><span>t = 48 s</span></div>
+        <div class="axis-cap"><span>t = 0 s</span><span><span class="i18n-en">time</span><span class="i18n-ko">시간</span></span><span>t = 48 s</span></div>
       </div>
     </div>
 
     <div>
       <div class="card">
-        <div class="card-h">Controls</div>
+        <div class="card-h"><span class="i18n-en">Controls</span><span class="i18n-ko">컨트롤</span></div>
         <div class="ctl">
-          <div class="ctl-top"><span class="ctl-name">Design</span></div>
+          <div class="ctl-top"><span class="ctl-name"><span class="i18n-en">Design</span><span class="i18n-ko">설계</span></span></div>
           <div class="seg" id="designSeg">
-            <button data-d="event" class="on">event-related</button>
-            <button data-d="block">block</button>
+            <button data-d="event" class="on"><span class="i18n-en">event-related</span><span class="i18n-ko">사건 관련(event-related)</span></button>
+            <button data-d="block"><span class="i18n-en">block</span><span class="i18n-ko">블록(block)</span></button>
           </div>
         </div>
         <div class="ctl">
-          <div class="ctl-top"><span class="ctl-name">Measurement noise <span class="sub">+ scanner drift</span></span><span class="ctl-val" id="nV">0.25</span></div>
+          <div class="ctl-top"><span class="ctl-name"><span class="i18n-en">Measurement noise</span><span class="i18n-ko">측정 노이즈</span> <span class="sub"><span class="i18n-en">+ scanner drift</span><span class="i18n-ko">+ 스캐너 드리프트</span></span></span><span class="ctl-val" id="nV">0.25</span></div>
           <input type="range" id="noise" min="0" max="1" step="0.01" value="0.25" aria-label="Noise" />
         </div>
         <div class="ctl">
-          <div class="ctl-top"><span class="ctl-name">HRF undershoot <span class="sub">post-stimulus dip</span></span><span class="ctl-val" id="uV">0.35</span></div>
+          <div class="ctl-top"><span class="ctl-name"><span class="i18n-en">HRF undershoot</span><span class="i18n-ko">HRF 언더슛</span> <span class="sub"><span class="i18n-en">post-stimulus dip</span><span class="i18n-ko">자극 후 하강</span></span></span><span class="ctl-val" id="uV">0.35</span></div>
           <input type="range" id="under" min="0" max="0.8" step="0.01" value="0.35" aria-label="HRF undershoot" />
         </div>
         <div class="ctl">
-          <div class="ctl-top"><span class="ctl-name">Deconvolution λ <span class="sub">Tikhonov regularization</span></span><span class="ctl-val" id="lV">0.05</span></div>
+          <div class="ctl-top"><span class="ctl-name"><span class="i18n-en">Deconvolution λ</span><span class="i18n-ko">디컨볼루션 λ</span> <span class="sub"><span class="i18n-en">Tikhonov regularization</span><span class="i18n-ko">티호노프(Tikhonov) 정규화</span></span></span><span class="ctl-val" id="lV">0.05</span></div>
           <input type="range" id="lambda" min="0.003" max="0.6" step="0.003" value="0.05" aria-label="Regularization lambda" />
         </div>
-        <div class="btnrow"><button class="btn" id="regen">↻ New event times &amp; noise</button></div>
+        <div class="btnrow"><button class="btn" id="regen"><span class="i18n-en">↻ New event times &amp; noise</span><span class="i18n-ko">↻ 새 이벤트 시각 &amp; 노이즈</span></button></div>
         <div class="ro-grid">
-          <div class="ro"><div class="k">recovery r (x̂ vs events)</div><div class="v big" id="roR">–</div></div>
-          <div class="ro"><div class="k">false peaks</div><div class="v" id="roF">–</div></div>
+          <div class="ro"><div class="k"><span class="i18n-en">recovery r (x̂ vs events)</span><span class="i18n-ko">복원 r (x̂ vs 이벤트)</span></div><div class="v big" id="roR">–</div></div>
+          <div class="ro"><div class="k"><span class="i18n-en">false peaks</span><span class="i18n-ko">거짓 피크</span></div><div class="v" id="roF">–</div></div>
         </div>
-        <div class="noteline" id="note">Small λ amplifies noise into spurious spikes; large λ smears real events.</div>
+        <div class="noteline" id="note"><span class="i18n-en">Small λ amplifies noise into spurious spikes; large λ smears real events.</span><span class="i18n-ko">λ가 작으면 노이즈가 가짜 스파이크로 증폭되고, λ가 크면 실제 이벤트가 뭉개집니다.</span></div>
       </div>
 
       <div class="card stage">
-        <div class="card-h">Deconvolution <span class="hint">recover events from noisy BOLD</span></div>
+        <div class="card-h"><span class="i18n-en">Deconvolution</span><span class="i18n-ko">디컨볼루션</span> <span class="hint"><span class="i18n-en">recover events from noisy BOLD</span><span class="i18n-ko">노이즈 낀 BOLD에서 이벤트 복원</span></span></div>
         <div class="canvas-hold"><canvas id="deconv"></canvas></div>
         <div class="legend">
-          <span class="sw"><i style="background:var(--test)"></i> true events</span>
-          <span class="sw"><i style="background:var(--cool)"></i> recovered x̂</span>
+          <span class="sw"><i style="background:var(--test)"></i> <span class="i18n-en">true events</span><span class="i18n-ko">실제 이벤트</span></span>
+          <span class="sw"><i style="background:var(--cool)"></i> <span class="i18n-en">recovered x̂</span><span class="i18n-ko">복원된 x̂</span></span>
         </div>
       </div>
     </div>
@@ -179,25 +187,26 @@
 
   <div class="explain">
     <div class="ex a">
-      <h4>Convolution blurs time</h4>
-      <p>Each neural event triggers the same slow HRF — rise to a peak near <code>5 s</code>, then a dip. The BOLD signal <code>y = x ⊛ h</code> smears sharp events across ~20 s, so nearby events overlap and merge.</p>
+      <h4><span class="i18n-en">Convolution blurs time</span><span class="i18n-ko">컨볼루션은 시간을 뭉갠다</span></h4>
+      <p><span class="i18n-en">Each neural event triggers the same slow HRF — rise to a peak near <code>5 s</code>, then a dip. The BOLD signal <code>y = x ⊛ h</code> smears sharp events across ~20 s, so nearby events overlap and merge.</span><span class="i18n-ko">각 신경 이벤트는 동일한 느린 HRF를 일으킵니다. <code>5 s</code> 부근에서 정점까지 오른 뒤 하강하죠. BOLD 신호 <code>y = x ⊛ h</code>는 날카로운 이벤트를 약 20 s에 걸쳐 뭉개기 때문에, 가까운 이벤트들은 서로 겹쳐 하나로 뭉쳐집니다.</span></p>
     </div>
     <div class="ex b">
-      <h4>Deconvolution is ill-posed</h4>
-      <p>Undoing the blur means dividing by the HRF spectrum <code>ĥ(f)</code>, which is tiny at high frequencies. Any noise there blows up. Regularization <code>x̂ = ĥ*ŷ / (|ĥ|²+λ)</code> trades ringing against lost detail — there is no free lunch.</p>
+      <h4><span class="i18n-en">Deconvolution is ill-posed</span><span class="i18n-ko">디컨볼루션은 부적절 문제다</span></h4>
+      <p><span class="i18n-en">Undoing the blur means dividing by the HRF spectrum <code>ĥ(f)</code>, which is tiny at high frequencies. Any noise there blows up. Regularization <code>x̂ = ĥ*ŷ / (|ĥ|²+λ)</code> trades ringing against lost detail — there is no free lunch.</span><span class="i18n-ko">뭉개짐을 되돌린다는 것은 HRF 스펙트럼 <code>ĥ(f)</code>로 나누는 것인데, 이 값은 고주파에서 매우 작습니다. 그곳의 노이즈는 무엇이든 폭발적으로 증폭되죠. 정규화 <code>x̂ = ĥ*ŷ / (|ĥ|²+λ)</code>는 링잉과 잃어버린 세부를 맞바꾸는 것이라, 공짜 점심은 없습니다.</span></p>
     </div>
     <div class="ex c">
-      <h4>Why it matters</h4>
-      <p>Recovering neural timing from BOLD underlies event-related fMRI and effective-connectivity models. Its fragility is exactly why PRISM leans on priors and representation learning rather than naïve inversion.</p>
+      <h4><span class="i18n-en">Why it matters</span><span class="i18n-ko">왜 중요한가</span></h4>
+      <p><span class="i18n-en">Recovering neural timing from BOLD underlies event-related fMRI and effective-connectivity models. Its fragility is exactly why PRISM leans on priors and representation learning rather than naïve inversion.</span><span class="i18n-ko">BOLD로부터 신경 활동의 타이밍을 복원하는 일은 event-related fMRI와 유효 연결성(effective-connectivity) 모델의 바탕이 됩니다. 이것이 불안정하다는 점이야말로, PRISM이 순진한 역변환 대신 사전분포와 표현 학습(representation learning)에 기대는 이유입니다.</span></p>
     </div>
   </div>
 
-  <footer>PRISM Lab · prototype · <a href="https://sswu-prism-lab.github.io" target="_blank" rel="noopener">sswu-prism-lab.github.io</a></footer>
+  <footer>PRISM Lab · <span class="i18n-en">prototype</span><span class="i18n-ko">프로토타입</span> · <a href="https://sswu-prism-lab.github.io" target="_blank" rel="noopener">sswu-prism-lab.github.io</a></footer>
 </div>
 
 <script>
 (() => {
   "use strict";
+  function L(en,ko){ return document.documentElement.getAttribute('data-lang')==='ko' ? ko : en; }
   const clamp=(x,a,b)=> x<a?a : x>b?b : x;
   const PAL={
     dark:{ ink:"#e6edf3", muted:"#8b949e", grid:a=>`rgba(80,90,110,${a})`, cool:"#5eead4", sharp:"#ff6b5a", warmA:"#ffc24b", test:"#a78bff", blue:"#6ea8ff", bold:"#ff8a5c" },
@@ -305,14 +314,14 @@
     cxF.strokeStyle=C.test; cxF.lineWidth=2;
     for(let i=0;i<Nn;i++){ if(S.x[i]>0.5){ const x=X(i); cxF.beginPath(); cxF.moveTo(x,p.bot); cxF.lineTo(x,p.top+2); cxF.stroke();
       cxF.fillStyle=C.test; cxF.beginPath(); cxF.arc(x,p.top+2,2.4,0,7); cxF.fill(); } }
-    lab(cxF,"neural events", p.top-2, C.test);
+    lab(cxF,L("neural events","신경 이벤트"), p.top-2, C.test);
     // HRF (single kernel from left)
     p=panel(rowH); cxF.strokeStyle=C.grid(.5); cxF.beginPath(); cxF.moveTo(PADL,(p.top+p.bot)/2); cxF.lineTo(w-PADR,(p.top+p.bot)/2); cxF.stroke();
     const hL=S.h.length; cxF.strokeStyle=C.warmA; cxF.lineWidth=2; cxF.beginPath();
     let hmn=0; for(const v of S.h) hmn=Math.min(hmn,v);
     const hy=v=> (p.top+p.bot)/2 - v*((p.bot-p.top)/2)*0.9;
     for(let i=0;i<hL;i++){ const x=X(i), y=hy(S.h[i]); i?cxF.lineTo(x,y):cxF.moveTo(x,y); } cxF.stroke();
-    lab(cxF,"HRF kernel h(t)", p.top-2, C.warmA);
+    lab(cxF,L("HRF kernel h(t)","HRF 커널 h(t)"), p.top-2, C.warmA);
     // BOLD
     p=panel(2*rowH); cxF.strokeStyle=C.grid(.5); cxF.beginPath(); cxF.moveTo(PADL,p.bot); cxF.lineTo(w-PADR,p.bot); cxF.stroke();
     let bmx=1e-6,bmn=0; for(const v of S.boldN){bmx=Math.max(bmx,v);bmn=Math.min(bmn,v);} for(const v of S.bold){bmx=Math.max(bmx,v);bmn=Math.min(bmn,v);}
@@ -323,7 +332,7 @@
     // clean bold
     cxF.strokeStyle=C.bold; cxF.lineWidth=2.2; cxF.beginPath();
     for(let i=0;i<Nn;i++){ const x=X(i),y=by(S.bold[i]); i?cxF.lineTo(x,y):cxF.moveTo(x,y); } cxF.stroke();
-    lab(cxF,"BOLD = events ⊛ HRF", p.top-2, C.bold);
+    lab(cxF,L("BOLD = events ⊛ HRF","BOLD = 이벤트 ⊛ HRF"), p.top-2, C.bold);
   }
   function lab(ctx,txt,y,col){ ctx.fillStyle=col; ctx.font='10px "JetBrains Mono",monospace'; ctx.textAlign="left"; ctx.textBaseline="top"; ctx.fillText(txt, PADL, y); }
   function drawDeconv(){
@@ -347,8 +356,8 @@
     rEl.style.color = S.r>0.7?"var(--cool)":S.r>0.4?"var(--warm-a)":"var(--sharp)";
     document.getElementById("roF").textContent=S.falsePk;
     document.getElementById("note").innerHTML = S.noise>0.5
-      ? `High noise — deconvolution invents <b>${S.falsePk}</b> false spike(s).`
-      : `Small λ amplifies noise into spurious spikes; large λ smears real events.`;
+      ? L(`High noise — deconvolution invents <b>${S.falsePk}</b> false spike(s).`, `노이즈가 큼 — 디컨볼루션이 가짜 스파이크 <b>${S.falsePk}</b>개를 만들어 냅니다.`)
+      : L(`Small λ amplifies noise into spurious spikes; large λ smears real events.`, `λ가 작으면 노이즈가 가짜 스파이크로 증폭되고, λ가 크면 실제 이벤트가 뭉개집니다.`);
   }
 
   const bind=(id,valId,fmt,fn,ev)=>{ const el=document.getElementById(id);
@@ -362,6 +371,7 @@
   document.getElementById("regen").onclick=()=>{ regenTiming(); recompute(); };
 
   window.__onTheme=t=>{ C=PAL[t==='light'?'light':'dark']; draw(); };
+  window.__onLang=()=>{ draw(); updateReadouts(); };
   window.addEventListener("resize",()=>{ clearTimeout(window.__rt); window.__rt=setTimeout(draw,90); });
 
   regenTiming(); recompute();

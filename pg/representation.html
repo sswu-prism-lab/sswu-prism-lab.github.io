@@ -7,17 +7,21 @@
 (function(){
   function cur(){ try{ return localStorage.getItem('theme') || (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark':'light'); }catch(e){ return 'dark'; } }
   var t=cur(); window.__theme=t; document.documentElement.setAttribute('data-theme', t);
-  window.addEventListener('storage', function(e){ if(e.key==='theme'){ var n=e.newValue||'dark'; window.__theme=n; document.documentElement.setAttribute('data-theme', n); if(window.__onTheme) window.__onTheme(n); } });
+  try{ document.documentElement.setAttribute('data-lang', (localStorage.getItem('lang')||'en')); }catch(e){ document.documentElement.setAttribute('data-lang','en'); }
+  window.addEventListener('storage', function(e){ if(e.key==='theme'){ var n=e.newValue||'dark'; window.__theme=n; document.documentElement.setAttribute('data-theme', n); if(window.__onTheme) window.__onTheme(n); } if(e.key==='lang'){ document.documentElement.setAttribute('data-lang', e.newValue||'en'); if(window.__onLang) window.__onLang(); } });
 })();
 </script>
 
 <title>Representation — PRISM Lab</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <style>
 * { box-sizing: border-box; }
+html[data-lang="en"] .i18n-ko{ display:none !important; }
+html[data-lang="ko"] .i18n-en{ display:none !important; }
+.i18n-ko{ font-family:'Nanum Gothic','Inter',sans-serif; word-break:keep-all; }
 :root {
   color-scheme: light;
   --bg:#ffffff; --panel:#f7f9fc; --panel-2:#eef2f8; --ink:#141b33; --muted:#5a6488;
@@ -147,79 +151,79 @@ canvas { display:block; width:100%; }
 </head>
 <body>
 <div class="wrap">
-  <div class="topbar"><a class="back" href="index.html">← Playground</a></div>
-  <p class="eyebrow">PRISM · Machine Learning Playground</p>
-  <h1 class="title">Representation<br><span class="thin">Change the representation, change the difficulty — deep learning learns representations</span></h1>
+  <div class="topbar"><a class="back" href="index.html"><span class="i18n-en">← Playground</span><span class="i18n-ko">← 놀이터</span></a></div>
+  <p class="eyebrow"><span class="i18n-en">PRISM · Machine Learning Playground</span><span class="i18n-ko">PRISM · 머신러닝 놀이터</span></p>
+  <h1 class="title"><span class="i18n-en">Representation</span><span class="i18n-ko">표현 (Representation)</span><br><span class="thin"><span class="i18n-en">Change the representation, change the difficulty — deep learning learns representations</span><span class="i18n-ko">표현이 바뀌면 문제의 난이도가 바뀐다 — 딥러닝은 표현을 학습한다</span></span></h1>
 
 <main>
 <div class="layout">
   <aside class="panel side">
     <div class="grp">
-      <div class="grp-t">Data</div>
+      <div class="grp-t"><span class="i18n-en">Data</span><span class="i18n-ko">데이터</span></div>
       <div class="chips">
-        <button class="dchip active" data-d="circles">Circles</button>
+        <button class="dchip active" data-d="circles"><span class="i18n-en">Circles</span><span class="i18n-ko">동심원</span></button>
         <button class="dchip" data-d="xor">XOR</button>
-        <button class="dchip" data-d="moons">Moons</button>
-        <button class="dchip" data-d="spiral">Spiral</button>
+        <button class="dchip" data-d="moons"><span class="i18n-en">Moons</span><span class="i18n-ko">초승달</span></button>
+        <button class="dchip" data-d="spiral"><span class="i18n-en">Spiral</span><span class="i18n-ko">나선</span></button>
       </div>
-      <label class="sl"><span>Samples per class <b id="dNV" class="val">40</b></span>
+      <label class="sl"><span><span class="i18n-en">Samples per class</span><span class="i18n-ko">클래스당 표본</span> <b id="dNV" class="val">40</b></span>
         <input type="range" id="dN" min="15" max="80" step="5" value="40"></label>
       <div class="btnrow">
-        <button id="dGen" class="btn">Regenerate</button>
-        <button id="dUndo" class="btn">&#8617; Undo point</button>
-        <button id="dClear" class="btn ghost">Clear</button>
+        <button id="dGen" class="btn"><span class="i18n-en">Regenerate</span><span class="i18n-ko">재생성</span></button>
+        <button id="dUndo" class="btn">&#8617; <span class="i18n-en">Undo point</span><span class="i18n-ko">한 점 취소</span></button>
+        <button id="dClear" class="btn ghost"><span class="i18n-en">Clear</span><span class="i18n-ko">지우기</span></button>
       </div>
       <div class="segs">
-        <button class="seg cseg active" data-c="1">&#9679; Add +1</button>
-        <button class="seg cseg" data-c="-1">&#9679; Add &minus;1</button>
+        <button class="seg cseg active" data-c="1">&#9679; <span class="i18n-en">Add +1</span><span class="i18n-ko">+1 추가</span></button>
+        <button class="seg cseg" data-c="-1">&#9679; <span class="i18n-en">Add &minus;1</span><span class="i18n-ko">&minus;1 추가</span></button>
       </div>
-      <p class="hint">Click the left plot to add a point</p>
+      <p class="hint"><span class="i18n-en">Click the left plot to add a point</span><span class="i18n-ko">왼쪽 그래프 클릭 = 점 추가</span></p>
     </div>
     <div class="grp">
-      <div class="grp-t">Representation z = &phi;(x)</div>
+      <div class="grp-t"><span class="i18n-en">Representation z = &phi;(x)</span><span class="i18n-ko">표현 z = &phi;(x)</span></div>
       <div class="rlist">
-        <button class="rchip active" data-r="raw">Raw <small>z = (x&#8321;, x&#8322;)</small></button>
-        <button class="rchip" data-r="polar">Polar <small>z = (r, &theta;)</small></button>
-        <button class="rchip" data-r="prod">Product&middot;Sum <small>z = (x&#8321;x&#8322;, x&#8321;+x&#8322;)</small></button>
-        <button class="rchip" data-r="nn">Neural net <small>z = h(x) &mdash; learned</small></button>
+        <button class="rchip active" data-r="raw"><span class="i18n-en">Raw</span><span class="i18n-ko">원본</span> <small>z = (x&#8321;, x&#8322;)</small></button>
+        <button class="rchip" data-r="polar"><span class="i18n-en">Polar</span><span class="i18n-ko">극좌표</span> <small>z = (r, &theta;)</small></button>
+        <button class="rchip" data-r="prod"><span class="i18n-en">Product&middot;Sum</span><span class="i18n-ko">곱&middot;합</span> <small>z = (x&#8321;x&#8322;, x&#8321;+x&#8322;)</small></button>
+        <button class="rchip" data-r="nn"><span class="i18n-en">Neural net</span><span class="i18n-ko">신경망</span> <small>z = h(x) &mdash; <span class="i18n-en">learned</span><span class="i18n-ko">학습됨</span></small></button>
       </div>
-      <p class="hint">The classifier is always a single <b>straight line</b> in representation space</p>
+      <p class="hint"><span class="i18n-en">The classifier is always a single <b>straight line</b> in representation space</span><span class="i18n-ko">분류기는 언제나 표현 공간의 <b>직선</b> 하나입니다</span></p>
     </div>
     <div class="grp" id="nnGrp">
-      <div class="grp-t">Neural net h(x)</div>
+      <div class="grp-t"><span class="i18n-en">Neural net h(x)</span><span class="i18n-ko">신경망 h(x)</span></div>
       <div class="segs">
         <button class="seg hseg" data-h="8">H=8</button>
         <button class="seg hseg active" data-h="16">H=16</button>
         <button class="seg hseg" data-h="32">H=32</button>
       </div>
       <div class="btnrow">
-        <button id="nTrain" class="btn accent">&#9654; Train</button>
-        <button id="nReset" class="btn">Reset</button>
+        <button id="nTrain" class="btn accent">&#9654; <span class="i18n-en">Train</span><span class="i18n-ko">학습</span></button>
+        <button id="nReset" class="btn"><span class="i18n-en">Reset</span><span class="i18n-ko">재초기화</span></button>
       </div>
-      <p class="hint">2 &rarr; H &rarr; <b>2 (representation layer)</b> &rarr; 1, tanh &middot; Adam &mdash; the right-hand space moves in real time</p>
+      <p class="hint"><span class="i18n-en">2 &rarr; H &rarr; <b>2 (representation layer)</b> &rarr; 1, tanh &middot; Adam &mdash; the right-hand space moves in real time</span><span class="i18n-ko">2 &rarr; H &rarr; <b>2 (표현층)</b> &rarr; 1, tanh &middot; Adam &mdash; 오른쪽 공간이 실시간으로 움직입니다</span></p>
     </div>
   </aside>
 
   <div class="stage">
     <div class="duo">
       <div class="panel plot">
-        <div class="plot-cap">Input space (x&#8321;, x&#8322;) &mdash; the boundary can be <b>curved</b></div>
+        <div class="plot-cap"><span class="i18n-en">Input space (x&#8321;, x&#8322;) &mdash; the boundary can be <b>curved</b></span><span class="i18n-ko">원 공간 (x&#8321;, x&#8322;) &mdash; 경계가 <b>곡선</b>이 될 수 있음</span></div>
         <canvas id="cvX"></canvas>
         <div class="legend">
           <span><i class="dot c-pos"></i>+1</span>
           <span><i class="dot c-neg"></i>&minus;1</span>
-          <span><i class="sw c-ink"></i>decision boundary</span>
+          <span><i class="sw c-ink"></i><span class="i18n-en">decision boundary</span><span class="i18n-ko">결정 경계</span></span>
         </div>
       </div>
       <div class="panel plot">
         <div class="plot-cap caphead">
-          <span>Representation space z = &phi;(x) &mdash; the boundary is always a <b>line</b></span>
+          <span><span class="i18n-en">Representation space z = &phi;(x) &mdash; the boundary is always a <b>line</b></span><span class="i18n-ko">표현 공간 z = &phi;(x) &mdash; 경계는 항상 <b>직선</b></span></span>
           <b id="rAcc">&mdash;</b>
         </div>
         <canvas id="cvZ"></canvas>
         <div class="legend">
           <span><i class="sw c-ink"></i>w&#7488;z + b = 0</span>
-          <span>the same classifier seen in both spaces</span>
+          <span><span class="i18n-en">the same classifier seen in both spaces</span><span class="i18n-ko">같은 분류기를 두 공간에서 본 것</span></span>
         </div>
       </div>
     </div>
@@ -227,30 +231,30 @@ canvas { display:block; width:100%; }
     <div class="cards">
       <div class="card lin">
         <div class="k">LINEAR READOUT</div>
-        <div class="nm">Linear classifier on the representation</div>
-        <div class="stat"><span>Train accuracy</span><b id="cAcc">&mdash;</b></div>
-        <div class="stat"><span>Logistic loss</span><b id="cLoss">&mdash;</b></div>
-        <p class="note">The model is one straight line &mdash; the representation decides performance</p>
+        <div class="nm"><span class="i18n-en">Linear classifier on the representation</span><span class="i18n-ko">표현 위의 선형 분류기</span></div>
+        <div class="stat"><span><span class="i18n-en">Train accuracy</span><span class="i18n-ko">훈련 정확도</span></span><b id="cAcc">&mdash;</b></div>
+        <div class="stat"><span><span class="i18n-en">Logistic loss</span><span class="i18n-ko">로지스틱 손실</span></span><b id="cLoss">&mdash;</b></div>
+        <p class="note"><span class="i18n-en">The model is one straight line &mdash; the representation decides performance</span><span class="i18n-ko">모델은 직선 하나 &mdash; 성능은 표현이 결정</span></p>
       </div>
       <div class="card nn">
         <div class="k">TRAINING</div>
-        <div class="nm">Neural net training status</div>
+        <div class="nm"><span class="i18n-en">Neural net training status</span><span class="i18n-ko">신경망 학습 상태</span></div>
         <div class="stat"><span>step</span><b id="nStep">&mdash;</b></div>
-        <div class="stat"><span>loss</span><b id="nLoss">&mdash;</b></div>
-        <p class="note">The hidden layer h(x) is the learned representation</p>
+        <div class="stat"><span><span class="i18n-en">loss</span><span class="i18n-ko">손실</span></span><b id="nLoss">&mdash;</b></div>
+        <p class="note"><span class="i18n-en">The hidden layer h(x) is the learned representation</span><span class="i18n-ko">은닉층 h(x)가 곧 학습된 표현</span></p>
       </div>
       <div class="card sb">
         <div class="k">LINEAR PROBE</div>
-        <div class="nm">Scoreboard by representation (current data)</div>
-        <div class="stat"><span>Raw</span><b id="sbRaw">&mdash;</b></div>
-        <div class="stat"><span>Polar</span><b id="sbPolar">&mdash;</b></div>
-        <div class="stat"><span>Product&middot;Sum</span><b id="sbProd">&mdash;</b></div>
-        <div class="stat"><span>Neural net</span><b id="sbNn">&mdash;</b></div>
+        <div class="nm"><span class="i18n-en">Scoreboard by representation (current data)</span><span class="i18n-ko">표현별 성적표 (현재 데이터)</span></div>
+        <div class="stat"><span><span class="i18n-en">Raw</span><span class="i18n-ko">원본</span></span><b id="sbRaw">&mdash;</b></div>
+        <div class="stat"><span><span class="i18n-en">Polar</span><span class="i18n-ko">극좌표</span></span><b id="sbPolar">&mdash;</b></div>
+        <div class="stat"><span><span class="i18n-en">Product&middot;Sum</span><span class="i18n-ko">곱&middot;합</span></span><b id="sbProd">&mdash;</b></div>
+        <div class="stat"><span><span class="i18n-en">Neural net</span><span class="i18n-ko">신경망</span></span><b id="sbNn">&mdash;</b></div>
       </div>
     </div>
 
     <details class="panel fold">
-      <summary>Formulas</summary>
+      <summary><span class="i18n-en">Formulas</span><span class="i18n-ko">수식</span></summary>
       <div class="fold-body">
         $$z=\phi(x):\ \mathcal X\to\mathcal Z,\qquad \hat y=\sigma(\mathbf w^\top z+b)\quad(\text{linear readout})$$
         $$\phi_{\text{polar}}(x)=\big(\sqrt{x_1^2+x_2^2},\ \operatorname{atan2}(x_2,x_1)\big),\qquad \phi_{\text{prod}}(x)=(x_1x_2,\ x_1+x_2)$$
@@ -261,21 +265,21 @@ canvas { display:block; width:100%; }
     </details>
 
     <details class="panel fold">
-      <summary>What to watch</summary>
+      <summary><span class="i18n-en">What to watch</span><span class="i18n-ko">수업 관찰 포인트</span></summary>
       <div class="fold-body">
         <ol>
-          <li><b>Circles + Raw</b>: impossible with a straight line (&asymp;50%). Switch to polar and the <i>same</i> linear classifier hits 100% &mdash; the problem didn't get easier, <b>the representation got better</b>.</li>
-          <li>That same polar map fails on XOR, while product&middot;sum solves only XOR &mdash; hand-crafted features are keys that fit just one geometry (the limits of feature engineering).</li>
-          <li><b>Spiral</b>: every hand-crafted representation fails. Pick the neural net and hit &#9654; Train &mdash; watch the points in the right-hand representation space <b>unfold</b> until a straight line can separate them. The hidden layer learns the representation itself = representation learning.</li>
-          <li>Reset and retrain, and it converges to a <b>different</b> representation each time yet reaches similar accuracy &mdash; a good representation is not unique. If H=8 struggles on the spiral, raise it to H=32 to see the effect of capacity.</li>
-          <li>The scoreboard card is exactly a <b>linear probe</b>: &ldquo;representation quality = the score of a linear classifier placed on top.&rdquo; It is the standard protocol for evaluating modern representation learning, such as self-supervised learning.</li>
+          <li><span class="i18n-en"><b>Circles + Raw</b>: impossible with a straight line (&asymp;50%). Switch to polar and the <i>same</i> linear classifier hits 100% &mdash; the problem didn't get easier, <b>the representation got better</b>.</span><span class="i18n-ko"><b>동심원 + 원본</b>: 직선으로는 불가능(&asymp;50%). 극좌표로 바꾸는 순간 <i>같은</i> 선형 분류기가 100% &mdash; 문제가 쉬워진 게 아니라 <b>표현이 좋아진 것</b>이다.</span></li>
+          <li><span class="i18n-en">That same polar map fails on XOR, while product&middot;sum solves only XOR &mdash; hand-crafted features are keys that fit just one geometry (the limits of feature engineering).</span><span class="i18n-ko">그 극좌표가 XOR에서는 실패하고, 곱&middot;합은 XOR만 해결한다 &mdash; 수작업 특징은 특정 기하 구조에만 맞는 열쇠다 (feature engineering의 한계).</span></li>
+          <li><span class="i18n-en"><b>Spiral</b>: every hand-crafted representation fails. Pick the neural net and hit &#9654; Train &mdash; watch the points in the right-hand representation space <b>unfold</b> until a straight line can separate them. The hidden layer learns the representation itself = representation learning.</span><span class="i18n-ko"><b>나선</b>: 어떤 수작업 표현도 실패한다. 신경망을 선택하고 &#9654; 학습 &mdash; 오른쪽 표현 공간에서 점들이 직선으로 나뉠 때까지 <b>풀려나가는(unfold)</b> 과정을 보라. 은닉층이 표현 자체를 학습한다 = representation learning.</span></li>
+          <li><span class="i18n-en">Reset and retrain, and it converges to a <b>different</b> representation each time yet reaches similar accuracy &mdash; a good representation is not unique. If H=8 struggles on the spiral, raise it to H=32 to see the effect of capacity.</span><span class="i18n-ko">재초기화 후 다시 학습하면 매번 <b>다른</b> 표현으로 수렴하지만 정확도는 비슷하다 &mdash; 좋은 표현은 유일하지 않다. H=8이 나선에서 버거워하면 H=32로 늘려 용량의 효과도 확인해 보라.</span></li>
+          <li><span class="i18n-en">The scoreboard card is exactly a <b>linear probe</b>: &ldquo;representation quality = the score of a linear classifier placed on top.&rdquo; It is the standard protocol for evaluating modern representation learning, such as self-supervised learning.</span><span class="i18n-ko">성적표 카드가 곧 <b>linear probe</b>: &ldquo;표현의 품질 = 그 위에 얹은 선형 분류기의 성적&rdquo;. 자기지도학습 등 현대 표현 학습 평가의 표준 프로토콜이다.</span></li>
         </ol>
       </div>
     </details>
   </div>
 </div>
 </main>
-  <footer>PRISM Lab · prototype · <a href="https://sswu-prism-lab.github.io" target="_blank" rel="noopener">sswu-prism-lab.github.io</a></footer>
+  <footer>PRISM Lab · <span class="i18n-en">prototype</span><span class="i18n-ko">프로토타입</span> · <a href="https://sswu-prism-lab.github.io" target="_blank" rel="noopener">sswu-prism-lab.github.io</a></footer>
 </div>
 
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
@@ -285,6 +289,8 @@ canvas { display:block; width:100%; }
 /* Representation playground — same data, different representation
    left: input space (x1,x2) with pulled-back boundary
    right: representation space z = phi(x) where the classifier is ALWAYS a line */
+
+function L(en,ko){ return document.documentElement.getAttribute('data-lang')==='ko' ? ko : en; }
 
 /* ===MATH-BEGIN=== */
 var RNG = Math.random;
@@ -754,7 +760,7 @@ function render() {
       });
     }
   }
-  if (!ok) msg = 'Need points from both classes';
+  if (!ok) msg = L('Need points from both classes', '두 클래스의 점이 필요합니다');
 
   $('rAcc').textContent = pct(acc);
   $('cAcc').textContent = pct(acc);
@@ -875,6 +881,7 @@ window.addEventListener('load', tryMath);
 wire();
 newData();
 window.__onTheme = function(){ render(); };
+window.__onLang = function(){ render(); };
 render();
 
 </script>

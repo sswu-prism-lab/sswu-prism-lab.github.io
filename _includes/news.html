@@ -1,5 +1,5 @@
 <div class="well">
-  <h4>News</h4>
+  <h4><span class="i18n-en">News</span><span class="i18n-ko">뉴스</span></h4>
 
   {% for article in site.data.news limit:3 %}
     <div style="text-align: justify; margin-bottom: 12px;">
@@ -7,10 +7,10 @@
       <span style="font-size: 1.05em; font-weight: bold;">{{ article.date }}</span>
       <br>
       
-      {{ article.headline | markdownify | remove: '<p>' | remove: '</p>' }}
+      <span class="i18n-en">{{ article.headline | markdownify | remove: '<p>' | remove: '</p>' }}</span><span class="i18n-ko">{{ article.headline_ko | markdownify | remove: '<p>' | remove: '</p>' }}</span>
       
     </div>
   {% endfor %}
 
-  <h4><a href="{{ site.url }}{{ site.baseurl }}/allnews.html">... see all News</a></h4>
+  <h4><a href="{{ site.url }}{{ site.baseurl }}/allnews.html"><span class="i18n-en">... see all News</span><span class="i18n-ko">... 전체 뉴스 보기</span></a></h4>
 </div>

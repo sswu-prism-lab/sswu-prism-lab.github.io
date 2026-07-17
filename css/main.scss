@@ -15,6 +15,26 @@ code, pre, kbd, samp {
   font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
+/* ===== Language toggle (English / Korean) ===== */
+html[data-lang="en"] .i18n-ko { display: none !important; }
+html[data-lang="ko"] .i18n-en { display: none !important; }
+/* Korean text uses Nanum Gothic; keep-all avoids awkward mid-word line breaks */
+.i18n-ko {
+  font-family: 'Nanum Gothic', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  word-break: keep-all;
+}
+/* Navbar 한국어 / EN button */
+#lang-toggle {
+  cursor: pointer;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: .02em;
+}
+#lang-toggle .lang-label { display: none; }
+html[data-lang="en"] #lang-toggle .lang-to-ko { display: inline; }
+html[data-lang="ko"] #lang-toggle .lang-to-en { display: inline; }
+
 img { margin-bottom: 24px;
      margin-top: 17px; 
     border-radius:2%;

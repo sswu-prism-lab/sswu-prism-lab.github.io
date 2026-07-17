@@ -7,14 +7,15 @@
 (function(){
   function cur(){ try{ return localStorage.getItem('theme') || (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark':'light'); }catch(e){ return 'dark'; } }
   var t=cur(); window.__theme=t; document.documentElement.setAttribute('data-theme', t);
-  window.addEventListener('storage', function(e){ if(e.key==='theme'){ var n=e.newValue||'dark'; window.__theme=n; document.documentElement.setAttribute('data-theme', n); if(window.__onTheme) window.__onTheme(n); } });
+  try{ document.documentElement.setAttribute('data-lang', (localStorage.getItem('lang')||'en')); }catch(e){ document.documentElement.setAttribute('data-lang','en'); }
+  window.addEventListener('storage', function(e){ if(e.key==='theme'){ var n=e.newValue||'dark'; window.__theme=n; document.documentElement.setAttribute('data-theme', n); if(window.__onTheme) window.__onTheme(n); } if(e.key==='lang'){ document.documentElement.setAttribute('data-lang', e.newValue||'en'); if(window.__onLang) window.__onLang(); } });
 })();
 </script>
 
 <title>Flat Minima & Generalization — PRISM Lab</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet" />
 <style>
   :root{
     --void:#15181e;        /* phase-space night */
@@ -197,41 +198,47 @@
   }
   html[data-theme="light"] body{ background: var(--void); }
   html[data-theme="light"] .btn:hover{ border-color:#b9c4da; background:#e9eef7; }
+
+  html[data-lang="en"] .i18n-ko{ display:none !important; }
+  html[data-lang="ko"] .i18n-en{ display:none !important; }
+  .i18n-ko{ font-family:'Nanum Gothic','Inter',sans-serif; word-break:keep-all; }
 </style>
 </head>
 <body>
 <div class="wrap">
 
-  <div class="topbar"><a class="back" href="index.html">← Playground</a></div>
-  <p class="eyebrow">PRISM · Statistical-Mechanics Playground</p>
-  <h1 class="title">Flat Minima &amp; Generalization<br><span class="thin">Flat minima, thermal noise, and free energy</span></h1>
+  <div class="topbar"><a class="back" href="index.html"><span class="i18n-en">← Playground</span><span class="i18n-ko">← 놀이터</span></a></div>
+  <p class="eyebrow"><span class="i18n-en">PRISM · Statistical-Mechanics Playground</span><span class="i18n-ko">PRISM · 통계역학 놀이터</span></p>
+  <h1 class="title"><span class="i18n-en">Flat Minima &amp; Generalization</span><span class="i18n-ko">평평한 최솟값과 일반화</span><br><span class="thin"><span class="i18n-en">Flat minima, thermal noise, and free energy</span><span class="i18n-ko">평평한 최솟값, 열적 잡음, 그리고 자유 에너지</span></span></h1>
   <p class="subtitle">
-    For the same training loss, a <b>wide valley</b> generalizes better than a narrow one.
+    <span class="i18n-en">For the same training loss, a <b>wide valley</b> generalizes better than a narrow one.
     Adjust the temperature (mini-batch noise), the test-distribution shift, and the optimizer (SGD · SAM) to see
-    why the <b>free energy F = ⟨E⟩ − T·S</b> favors flat valleys.
+    why the <b>free energy F = ⟨E⟩ − T·S</b> favors flat valleys.</span><span class="i18n-ko">같은 학습 손실이라도 <b>넓은 골짜기</b>가 좁은 골짜기보다 일반화가 잘 된다.
+    온도(미니배치 잡음), 테스트 분포 이동, 옵티마이저(SGD · SAM)를 조절해
+    왜 <b>자유 에너지 F = ⟨E⟩ − T·S</b>가 평평한 골짜기를 선호하는지 보라.</span>
   </p>
 
   <div class="grid">
     <!-- ============ LEFT: stage ============ -->
     <div>
       <div class="card stage">
-        <div class="card-h">Energy landscape <span class="hint" id="stageHint">L_train (solid) · L_test (dashed, shift s)</span></div>
+        <div class="card-h"><span class="i18n-en">Energy landscape</span><span class="i18n-ko">에너지 지형</span> <span class="hint" id="stageHint"><span class="i18n-en">L_train (solid) · L_test (dashed, shift s)</span><span class="i18n-ko">L_train (실선) · L_test (점선, 이동 s)</span></span></div>
         <div class="canvas-hold"><canvas id="landscape"></canvas></div>
-        <div class="axis-cap"><span>θ = −4</span><span>parameter θ</span><span>θ = +4</span></div>
+        <div class="axis-cap"><span>θ = −4</span><span><span class="i18n-en">parameter θ</span><span class="i18n-ko">파라미터 θ</span></span><span>θ = +4</span></div>
       </div>
 
       <div class="card stage">
-        <div class="card-h">Boltzmann occupancy <span class="hint">p(θ) ∝ e<sup>−L/T</sup> · time-avg ≈ ensemble-avg</span></div>
+        <div class="card-h"><span class="i18n-en">Boltzmann occupancy</span><span class="i18n-ko">볼츠만 점유 분포</span> <span class="hint">p(θ) ∝ e<sup>−L/T</sup> · <span class="i18n-en">time-avg ≈ ensemble-avg</span><span class="i18n-ko">시간 평균 ≈ 앙상블 평균</span></span></div>
         <div class="canvas-hold"><canvas id="boltzmann"></canvas></div>
         <div class="fe">
           <div class="bars">
             <div class="bar-row">
-              <span class="bar-lbl">sharp well</span>
+              <span class="bar-lbl"><span class="i18n-en">sharp well</span><span class="i18n-ko">좁은 골</span></span>
               <span class="bar-track"><span class="bar-fill sharp" id="massSharp"></span></span>
               <span class="bar-val" id="massSharpV">0%</span>
             </div>
             <div class="bar-row">
-              <span class="bar-lbl">flat well</span>
+              <span class="bar-lbl"><span class="i18n-en">flat well</span><span class="i18n-ko">넓은 골</span></span>
               <span class="bar-track"><span class="bar-fill flat" id="massFlat"></span></span>
               <span class="bar-val" id="massFlatV">0%</span>
             </div>
@@ -247,11 +254,11 @@
     <!-- ============ RIGHT: controls ============ -->
     <div>
       <div class="card">
-        <div class="card-h">Controls</div>
+        <div class="card-h"><span class="i18n-en">Controls</span><span class="i18n-ko">조절기</span></div>
 
         <div class="ctl">
           <div class="ctl-top">
-            <span class="ctl-name">Temperature T <span class="sub">mini-batch noise</span></span>
+            <span class="ctl-name"><span class="i18n-en">Temperature T</span><span class="i18n-ko">온도 T</span> <span class="sub"><span class="i18n-en">mini-batch noise</span><span class="i18n-ko">미니배치 잡음</span></span></span>
             <span class="ctl-val" id="tempV">0.15</span>
           </div>
           <input type="range" id="temp" min="0" max="2.5" step="0.01" value="0.15" aria-label="Temperature T" />
@@ -259,7 +266,7 @@
 
         <div class="ctl">
           <div class="ctl-top">
-            <span class="ctl-name">Test shift s <span class="sub">covariate shift</span></span>
+            <span class="ctl-name"><span class="i18n-en">Test shift s</span><span class="i18n-ko">테스트 이동 s</span> <span class="sub"><span class="i18n-en">covariate shift</span><span class="i18n-ko">공변량 이동</span></span></span>
             <span class="ctl-val" id="shiftV">0.50</span>
           </div>
           <input type="range" id="shift" min="-1.2" max="1.2" step="0.01" value="0.5" aria-label="Test shift s" />
@@ -267,7 +274,7 @@
 
         <div class="ctl">
           <div class="ctl-top">
-            <span class="ctl-name">Narrow-well sharpness <span class="sub">width σₛ</span></span>
+            <span class="ctl-name"><span class="i18n-en">Narrow-well sharpness</span><span class="i18n-ko">좁은 골 뾰족함</span> <span class="sub"><span class="i18n-en">width σₛ</span><span class="i18n-ko">폭 σₛ</span></span></span>
             <span class="ctl-val" id="sigV">0.30</span>
           </div>
           <input type="range" id="sig" min="0.22" max="0.70" step="0.01" value="0.30" aria-label="Narrow-well sharpness" />
@@ -275,48 +282,48 @@
 
         <div class="ctl">
           <div class="ctl-top">
-            <span class="ctl-name">SAM radius ρ <span class="sub">sharpness-aware objective</span></span>
+            <span class="ctl-name"><span class="i18n-en">SAM radius ρ</span><span class="i18n-ko">SAM 반지름 ρ</span> <span class="sub"><span class="i18n-en">sharpness-aware objective</span><span class="i18n-ko">뾰족함 인식 목적함수</span></span></span>
             <span class="ctl-val" id="rhoV">0.35</span>
           </div>
           <input type="range" id="rho" min="0.05" max="0.80" step="0.01" value="0.35" aria-label="SAM radius rho" />
           <div class="sampled-row" style="margin-top:10px">
-            <input type="checkbox" id="samOn" /><label for="samOn">Show SAM objective W(θ)=max<sub>|δ|≤ρ</sub> L(θ+δ)</label>
+            <input type="checkbox" id="samOn" /><label for="samOn"><span class="i18n-en">Show SAM objective W(θ)=max<sub>|δ|≤ρ</sub> L(θ+δ)</span><span class="i18n-ko">SAM 목적함수 W(θ)=max<sub>|δ|≤ρ</sub> L(θ+δ) 표시</span></label>
           </div>
           <div class="batchline" id="wcLine" style="margin-top:6px"></div>
         </div>
 
         <div class="btnrow">
-          <button class="btn btn-primary wide" id="run">▶ Run</button>
-          <button class="btn" id="reset">Reset position</button>
-          <button class="btn" id="rand">Random drop</button>
-          <button class="btn wide" id="batch">20 random drops · wide-well landing rate</button>
+          <button class="btn btn-primary wide" id="run"><span class="i18n-en">▶ Run</span><span class="i18n-ko">▶ 실행</span></button>
+          <button class="btn" id="reset"><span class="i18n-en">Reset position</span><span class="i18n-ko">위치 초기화</span></button>
+          <button class="btn" id="rand"><span class="i18n-en">Random drop</span><span class="i18n-ko">무작위 낙하</span></button>
+          <button class="btn wide" id="batch"><span class="i18n-en">20 random drops · wide-well landing rate</span><span class="i18n-ko">무작위 낙하 20회 · 넓은 골 안착률</span></button>
         </div>
-        <div class="batchline" id="batchLine">The ball starts in the narrow well. Raise T to see thermal escape.</div>
+        <div class="batchline" id="batchLine"><span class="i18n-en">The ball starts in the narrow well. Raise T to see thermal escape.</span><span class="i18n-ko">공은 좁은 골에서 시작한다. T를 높여 열적 탈출을 관찰하라.</span></div>
       </div>
 
       <div class="card">
-        <div class="card-h">Measurements <span id="basinTag" class="basin-tag sharp">sharp well</span></div>
+        <div class="card-h"><span class="i18n-en">Measurements</span><span class="i18n-ko">측정값</span> <span id="basinTag" class="basin-tag sharp"><span class="i18n-en">sharp well</span><span class="i18n-ko">좁은 골</span></span></div>
         <div class="ro-grid">
           <div class="ro"><div class="k">θ</div><div class="v" id="roTheta">–</div></div>
-          <div class="ro"><div class="k">curvature κ (sharpness)</div><div class="v" id="roKappa">–</div></div>
+          <div class="ro"><div class="k"><span class="i18n-en">curvature κ (sharpness)</span><span class="i18n-ko">곡률 κ (뾰족함)</span></div><div class="v" id="roKappa">–</div></div>
           <div class="ro"><div class="k">L_train</div><div class="v" id="roTrain">–</div></div>
           <div class="ro"><div class="k">L_test</div><div class="v" id="roTest">–</div></div>
-          <div class="ro"><div class="k">generalization gap</div><div class="v" id="roGap">–</div></div>
-          <div class="ro"><div class="k">steps</div><div class="v" id="roSteps">0</div></div>
+          <div class="ro"><div class="k"><span class="i18n-en">generalization gap</span><span class="i18n-ko">일반화 격차</span></div><div class="v" id="roGap">–</div></div>
+          <div class="ro"><div class="k"><span class="i18n-en">steps</span><span class="i18n-ko">스텝 수</span></div><div class="v" id="roSteps">0</div></div>
         </div>
         <div class="sampled-row">
-          <input type="checkbox" id="sampled" /><label for="sampled">Show time-occupancy histogram</label>
-          <button class="clr" id="clrHist">Clear</button>
+          <input type="checkbox" id="sampled" /><label for="sampled"><span class="i18n-en">Show time-occupancy histogram</span><span class="i18n-ko">시간 점유 히스토그램 표시</span></label>
+          <button class="clr" id="clrHist"><span class="i18n-en">Clear</span><span class="i18n-ko">지우기</span></button>
         </div>
       </div>
 
       <div class="card try">
-        <div class="card-h">Things to try</div>
+        <div class="card-h"><span class="i18n-en">Things to try</span><span class="i18n-ko">해볼 것들</span></div>
         <ol>
-          <li><b>Trapped:</b> at the start (low <span class="kbd">T</span>) the ball is stuck in the narrow well.</li>
-          <li><b>Thermal escape:</b> raise <span class="kbd">T</span> to cross the barrier; over time the ball spends longer in the wide well (mass bars below).</li>
-          <li><b>Generalization:</b> move <span class="kbd">s</span> to see how the <span class="kbd">gap</span> differs between the narrow and wide wells.</li>
-          <li><b>SAM objective:</b> turn on <span class="kbd">SAM</span> to see how shallow the narrow well becomes under the sharpness-aware loss.</li>
+          <li><span class="i18n-en"><b>Trapped:</b> at the start (low <span class="kbd">T</span>) the ball is stuck in the narrow well.</span><span class="i18n-ko"><b>갇힘:</b> 처음에는 (낮은 <span class="kbd">T</span>) 공이 좁은 골에 갇혀 있다.</span></li>
+          <li><span class="i18n-en"><b>Thermal escape:</b> raise <span class="kbd">T</span> to cross the barrier; over time the ball spends longer in the wide well (mass bars below).</span><span class="i18n-ko"><b>열적 탈출:</b> <span class="kbd">T</span>를 높여 장벽을 넘어라. 시간이 지나면 공은 넓은 골에 더 오래 머문다 (아래 질량 막대).</span></li>
+          <li><span class="i18n-en"><b>Generalization:</b> move <span class="kbd">s</span> to see how the <span class="kbd">gap</span> differs between the narrow and wide wells.</span><span class="i18n-ko"><b>일반화:</b> <span class="kbd">s</span>를 움직여 좁은 골과 넓은 골 사이에서 <span class="kbd">격차</span>가 어떻게 달라지는지 보라.</span></li>
+          <li><span class="i18n-en"><b>SAM objective:</b> turn on <span class="kbd">SAM</span> to see how shallow the narrow well becomes under the sharpness-aware loss.</span><span class="i18n-ko"><b>SAM 목적함수:</b> <span class="kbd">SAM</span>을 켜서 뾰족함 인식 손실에서 좁은 골이 얼마나 얕아지는지 보라.</span></li>
         </ol>
       </div>
     </div>
@@ -325,25 +332,28 @@
   <!-- ============ explainer ============ -->
   <div class="explain">
     <div class="ex a">
-      <h4>Wide well = low curvature</h4>
-      <p>When the test distribution is offset by <code>s</code> (covariate shift), the narrow well climbs its steep walls and loss spikes, while the wide well barely changes. So low-curvature <code>κ</code> minima have a smaller generalization gap.</p>
+      <h4><span class="i18n-en">Wide well = low curvature</span><span class="i18n-ko">넓은 골 = 낮은 곡률</span></h4>
+      <p><span class="i18n-en">When the test distribution is offset by <code>s</code> (covariate shift), the narrow well climbs its steep walls and loss spikes, while the wide well barely changes. So low-curvature <code>κ</code> minima have a smaller generalization gap.</span><span class="i18n-ko">테스트 분포가 <code>s</code>만큼 이동하면 (공변량 이동), 좁은 골은 가파른 벽을 타고 올라 손실이 급증하지만 넓은 골은 거의 변하지 않는다. 그래서 곡률 <code>κ</code>가 낮은 최솟값일수록 일반화 격차가 작다.</span></p>
     </div>
     <div class="ex b">
-      <h4>Temperature = Langevin noise</h4>
-      <p>SGD ≈ gradient descent + thermal noise, with stationary distribution <code>p ∝ e^(−L/T)</code>. This minimizes the free energy <code>F = ⟨E⟩ − T·S</code>, favoring flat minima whose entropy <code>S</code> (basin volume) is large.</p>
+      <h4><span class="i18n-en">Temperature = Langevin noise</span><span class="i18n-ko">온도 = 랑주뱅 잡음</span></h4>
+      <p><span class="i18n-en">SGD ≈ gradient descent + thermal noise, with stationary distribution <code>p ∝ e^(−L/T)</code>. This minimizes the free energy <code>F = ⟨E⟩ − T·S</code>, favoring flat minima whose entropy <code>S</code> (basin volume) is large.</span><span class="i18n-ko">SGD ≈ 경사 하강 + 열적 잡음이며, 정상 분포는 <code>p ∝ e^(−L/T)</code>이다. 이는 자유 에너지 <code>F = ⟨E⟩ − T·S</code>를 최소화하여, 엔트로피 <code>S</code>(골의 부피)가 큰 평평한 최솟값을 선호한다.</span></p>
     </div>
     <div class="ex c">
-      <h4>SAM: worst-neighbor loss</h4>
-      <p>It minimizes the worst-case loss within a <code>ρ</code>-ball, <code>W(θ)=max L(θ+δ)</code>. The narrow well is steep right next door so <code>W</code> spikes and it is avoided; the wide well barely moves and is selected.</p>
+      <h4><span class="i18n-en">SAM: worst-neighbor loss</span><span class="i18n-ko">SAM: 최악 이웃 손실</span></h4>
+      <p><span class="i18n-en">It minimizes the worst-case loss within a <code>ρ</code>-ball, <code>W(θ)=max L(θ+δ)</code>. The narrow well is steep right next door so <code>W</code> spikes and it is avoided; the wide well barely moves and is selected.</span><span class="i18n-ko"><code>ρ</code>-공 안에서 최악의 손실 <code>W(θ)=max L(θ+δ)</code>을 최소화한다. 좁은 골은 바로 옆이 가팔라 <code>W</code>가 급증하므로 회피되고, 넓은 골은 거의 변하지 않아 선택된다.</span></p>
     </div>
   </div>
 
-  <footer>PRISM Lab · prototype · <a href="https://sswu-prism-lab.github.io" target="_blank" rel="noopener">sswu-prism-lab.github.io</a></footer>
+  <footer>PRISM Lab · <span class="i18n-en">prototype</span><span class="i18n-ko">프로토타입</span> · <a href="https://sswu-prism-lab.github.io" target="_blank" rel="noopener">sswu-prism-lab.github.io</a></footer>
 </div>
 
 <script>
 (() => {
   "use strict";
+
+  // ---------- language helper ----------
+  function L(en,ko){ return document.documentElement.getAttribute('data-lang')==='ko' ? ko : en; }
 
   // ---------- colors (mirror CSS for canvas drawing) ----------
   const PAL={
@@ -494,9 +504,9 @@
     const baseY=h-PAD.b;
     ctxL.textBaseline="bottom"; ctxL.font='600 11px "Inter", sans-serif';
     ctxL.fillStyle=C.sharp; ctxL.textAlign="center";
-    ctxL.fillText("sharp", xToPx(P.muS,w), baseY-3);
+    ctxL.fillText(L("sharp","좁은 골"), xToPx(P.muS,w), baseY-3);
     ctxL.fillStyle=C.cool;
-    ctxL.fillText("flat", xToPx(P.muF,w), baseY-3);
+    ctxL.fillText(L("flat","넓은 골"), xToPx(P.muF,w), baseY-3);
 
     // gap visualization at ball θ
     const t=S.theta, Ltr=Ltrain(t), Lte=Ltest(t);
@@ -619,18 +629,19 @@
     rg.className="v "+(Math.abs(gap)>0.5?"sharp":"flat");
     document.getElementById("roSteps").textContent=S.steps;
     const tag=document.getElementById("basinTag");
-    tag.textContent = flat?"flat well":"sharp well";
+    tag.textContent = flat?L("flat well","넓은 골"):L("sharp well","좁은 골");
     tag.className="basin-tag "+(flat?"flat":"sharp");
 
     const wl=document.getElementById("wcLine");
     if(S.samOn){
       const ws=worstCase(P.muS,S.rho), wf=worstCase(P.muF,S.rho);
-      wl.innerHTML=`worst-case W — sharp <b style="color:${C.sharp}">${ws.toFixed(2)}</b> · flat <b>${wf.toFixed(2)}</b> → prefers flat`;
+      wl.innerHTML=`${L("worst-case W","최악의 W")} — ${L("sharp","좁은 골")} <b style="color:${C.sharp}">${ws.toFixed(2)}</b> · ${L("flat","넓은 골")} <b>${wf.toFixed(2)}</b> → ${L("prefers flat","넓은 골 선호")}`;
     } else { wl.textContent=""; }
   }
 
   function drawAll(){ drawLandscape(); drawBoltzmann(); updateReadouts(); }
   window.__onTheme=t=>{ C=PAL[t==='light'?'light':'dark']; drawAll(); };
+  window.__onLang=()=>{ drawAll(); };
 
   // ---------- animation loop ----------
   let raf=null;
@@ -648,7 +659,7 @@
   }
   function setRunning(on){
     S.running=on;
-    document.getElementById("run").textContent = on ? "❚❚ Pause" : "▶ Run";
+    document.getElementById("run").textContent = on ? L("❚❚ Pause","❚❚ 일시정지") : L("▶ Run","▶ 실행");
     if(on && !raf) raf=requestAnimationFrame(loop);
   }
 
@@ -671,7 +682,7 @@
   document.getElementById("run").onclick=()=>setRunning(!S.running);
   document.getElementById("reset").onclick=()=>{
     S.theta=-1.4; S.steps=0; S.trail=[]; setRunning(false); drawAll();
-    document.getElementById("batchLine").textContent="The ball is placed in the narrow well. Raise T to see thermal escape.";
+    document.getElementById("batchLine").textContent=L("The ball is placed in the narrow well. Raise T to see thermal escape.","공을 좁은 골에 놓았다. T를 높여 열적 탈출을 관찰하라.");
   };
   document.getElementById("rand").onclick=()=>{
     S.theta = XMIN+0.5 + Math.random()*(XMAX-XMIN-1); S.trail=[]; setRunning(true);
@@ -685,7 +696,8 @@
       last=t0;
     }
     document.getElementById("batchLine").innerHTML =
-      `wide-well landings <b>${flat} / ${n}</b> (${Math.round(flat/n*100)}%) — the wide well has a larger basin, so it is found more easily`;
+      L(`wide-well landings <b>${flat} / ${n}</b> (${Math.round(flat/n*100)}%) — the wide well has a larger basin, so it is found more easily`,
+        `넓은 골 안착 <b>${flat} / ${n}</b> (${Math.round(flat/n*100)}%) — 넓은 골이 더 큰 유역을 가져 더 쉽게 발견된다`);
     S.theta=last; S.trail=[]; setRunning(true);
   };
 

@@ -6,7 +6,7 @@ sitemap: false
 permalink: /allnews.html
 ---
 
-# News
+# <span class="i18n-en">News</span><span class="i18n-ko">뉴스</span>
 
 {% for article in site.data.news %}
 <div class="news-item" style="text-align: justify; margin-bottom: 20px;">
@@ -16,7 +16,7 @@ permalink: /allnews.html
   </span>
   <br>
   
-  {{ article.headline | markdownify | remove: '<p>' | remove: '</p>' }}
+  <span class="i18n-en">{{ article.headline | markdownify | remove: '<p>' | remove: '</p>' }}</span><span class="i18n-ko">{{ article.headline_ko | markdownify | remove: '<p>' | remove: '</p>' }}</span>
   
 </div>
 {% endfor %}

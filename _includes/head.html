@@ -18,6 +18,15 @@
     })();
   </script>
 
+  <!-- Apply the saved language before paint (default: English) -->
+  <script>
+    (function () {
+      try {
+        document.documentElement.setAttribute('data-lang', localStorage.getItem('lang') || 'en');
+      } catch (e) { document.documentElement.setAttribute('data-lang', 'en'); }
+    })();
+  </script>
+
   <title>{% if page.title %}{{ page.title | escape }}{% else %}{{ site.title | escape }}{% endif %}</title>
   <meta name="description" content="{% if page.excerpt %}{{ page.excerpt | strip_html | strip_newlines | truncate: 160 }}{% else %}{{ site.description }}{% endif %}">
   <link rel="stylesheet" href="{{ "/css/main.css" | prepend: site.baseurl | prepend: site.url}}">
@@ -32,7 +41,7 @@
   <!-- Unified typography (shared with the Playground) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet">
 
 {% if jekyll.environment == 'production' %}
 {% include analytics.html %}

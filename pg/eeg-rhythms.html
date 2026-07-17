@@ -7,13 +7,14 @@
 (function(){
   function cur(){ try{ return localStorage.getItem('theme') || (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark':'light'); }catch(e){ return 'dark'; } }
   var t=cur(); window.__theme=t; document.documentElement.setAttribute('data-theme', t);
-  window.addEventListener('storage', function(e){ if(e.key==='theme'){ var n=e.newValue||'dark'; window.__theme=n; document.documentElement.setAttribute('data-theme', n); if(window.__onTheme) window.__onTheme(n); } });
+  try{ document.documentElement.setAttribute('data-lang', (localStorage.getItem('lang')||'en')); }catch(e){ document.documentElement.setAttribute('data-lang','en'); }
+  window.addEventListener('storage', function(e){ if(e.key==='theme'){ var n=e.newValue||'dark'; window.__theme=n; document.documentElement.setAttribute('data-theme', n); if(window.__onTheme) window.__onTheme(n); } if(e.key==='lang'){ document.documentElement.setAttribute('data-lang', e.newValue||'en'); if(window.__onLang) window.__onLang(); } });
 })();
 </script>
 <title>EEG Rhythm Explorer — PRISM Lab</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet" />
 <style>
   :root{
     --void:#15181e; --panel:#1d212a; --panel-2:#171b22; --line:#2e343f;
@@ -108,52 +109,58 @@
   }
   html[data-theme="light"] body{ background: var(--void); }
   html[data-theme="light"] .btn:hover{ border-color:#b9c4da; background:#e9eef7; }
+
+  html[data-lang="en"] .i18n-ko{ display:none !important; }
+  html[data-lang="ko"] .i18n-en{ display:none !important; }
+  .i18n-ko{ font-family:'Nanum Gothic','Inter',sans-serif; word-break:keep-all; }
 </style>
 </head>
 <body>
 <div class="wrap">
 
-  <div class="topbar"><a class="back" href="index.html">← Playground</a></div>
-  <p class="eyebrow">PRISM · Statistical-Mechanics Playground</p>
-  <h1 class="title">EEG Rhythm Explorer<br><span class="thin">Delta to gamma, in time and frequency at once</span></h1>
+  <div class="topbar"><a class="back" href="index.html"><span class="i18n-en">← Playground</span><span class="i18n-ko">← 놀이터</span></a></div>
+  <p class="eyebrow"><span class="i18n-en">PRISM · Statistical-Mechanics Playground</span><span class="i18n-ko">PRISM · 통계역학 놀이터</span></p>
+  <h1 class="title"><span class="i18n-en">EEG Rhythm Explorer</span><span class="i18n-ko">EEG 리듬 탐색기</span><br><span class="thin"><span class="i18n-en">Delta to gamma, in time and frequency at once</span><span class="i18n-ko">델타부터 감마까지 주파수 대역과 위상 — 시간과 주파수에서 동시에 보는 뇌 리듬</span></span></h1>
   <p class="subtitle">
-    Brain signals are a mixture of rhythms: <b>δ</b> (slow) up to <b>γ</b> (fast). Dial each band's amplitude to
+    <span class="i18n-en">Brain signals are a mixture of rhythms: <b>δ</b> (slow) up to <b>γ</b> (fast). Dial each band's amplitude to
     shape the waveform, then read it back out with the <b>Fourier transform</b> — a power spectrum and a
-    <b>spectrogram</b> that shows which rhythms are present over time. Add noise to see how peaks get buried.
+    <b>spectrogram</b> that shows which rhythms are present over time. Add noise to see how peaks get buried.</span><span class="i18n-ko">뇌 신호는 여러 리듬이 섞인 것입니다: <b>δ</b>(느림)부터 <b>γ</b>(빠름)까지 있죠. 각 대역의 진폭을 조절해
+    파형을 빚어낸 뒤, <b>푸리에 변환</b>으로 다시 읽어냅니다 — 파워 스펙트럼과, 시간에 따라 어떤 리듬이 나타나는지
+    보여주는 <b>스펙트로그램</b>으로요. 노이즈를 더해 피크가 어떻게 묻히는지도 살펴보세요.</span>
   </p>
 
   <div class="grid">
     <div>
       <div class="card stage">
-        <div class="card-h">Signal <span class="hint">4 s · fs = 256 Hz</span></div>
+        <div class="card-h"><span class="i18n-en">Signal</span><span class="i18n-ko">신호</span> <span class="hint">4 s · fs = 256 Hz</span></div>
         <div class="canvas-hold"><canvas id="wave"></canvas></div>
-        <div class="axis-cap"><span>t = 0 s</span><span>time</span><span>t = 4 s</span></div>
+        <div class="axis-cap"><span>t = 0 s</span><span><span class="i18n-en">time</span><span class="i18n-ko">시간</span></span><span>t = 4 s</span></div>
       </div>
       <div class="card stage">
-        <div class="card-h">Spectrogram <span class="hint">time × frequency · STFT power</span></div>
+        <div class="card-h"><span class="i18n-en">Spectrogram</span><span class="i18n-ko">스펙트로그램</span> <span class="hint"><span class="i18n-en">time × frequency · STFT power</span><span class="i18n-ko">시간 × 주파수 · STFT 파워</span></span></div>
         <div class="canvas-hold"><canvas id="spectro"></canvas></div>
-        <div class="axis-cap"><span>0 Hz</span><span>time →</span><span>50 Hz</span></div>
+        <div class="axis-cap"><span>0 Hz</span><span><span class="i18n-en">time →</span><span class="i18n-ko">시간 →</span></span><span>50 Hz</span></div>
       </div>
     </div>
 
     <div>
       <div class="card">
-        <div class="card-h">Band amplitudes <span class="hint" id="domTag">dominant: —</span></div>
+        <div class="card-h"><span class="i18n-en">Band amplitudes</span><span class="i18n-ko">대역 진폭</span> <span class="hint" id="domTag"><span class="i18n-en">dominant: —</span><span class="i18n-ko">우세: —</span></span></div>
         <div id="bands"></div>
         <div class="divider"></div>
         <div class="band-ctl">
-          <div class="bl"><i style="background:var(--muted)"></i><span>Noise</span></div>
+          <div class="bl"><i style="background:var(--muted)"></i><span><span class="i18n-en">Noise</span><span class="i18n-ko">노이즈</span></span></div>
           <input type="range" id="noise" min="0" max="1" step="0.01" value="0.25" aria-label="Noise" />
           <span class="bv" id="noiseV">0.25</span>
         </div>
-        <button class="btn btn-primary" id="regen" style="margin-top:6px">↻ New random phases</button>
-        <div class="noteline" id="eegNote">Turn up one band and watch a single peak rise in the spectrum.</div>
+        <button class="btn btn-primary" id="regen" style="margin-top:6px"><span class="i18n-en">↻ New random phases</span><span class="i18n-ko">↻ 새 무작위 위상</span></button>
+        <div class="noteline" id="eegNote"><span class="i18n-en">Turn up one band and watch a single peak rise in the spectrum.</span><span class="i18n-ko">한 대역을 올리면 스펙트럼에서 피크 하나가 솟아오르는 것을 볼 수 있습니다.</span></div>
       </div>
 
       <div class="card stage">
-        <div class="card-h">Power spectrum <span class="hint">|FFT|² · bands shaded</span></div>
+        <div class="card-h"><span class="i18n-en">Power spectrum</span><span class="i18n-ko">파워 스펙트럼</span> <span class="hint"><span class="i18n-en">|FFT|² · bands shaded</span><span class="i18n-ko">|FFT|² · 대역 음영</span></span></div>
         <div class="canvas-hold"><canvas id="spectrum"></canvas></div>
-        <div class="axis-cap"><span>0 Hz</span><span>frequency</span><span>50 Hz</span></div>
+        <div class="axis-cap"><span>0 Hz</span><span><span class="i18n-en">frequency</span><span class="i18n-ko">주파수</span></span><span>50 Hz</span></div>
         <div class="powbars" id="powbars"></div>
       </div>
     </div>
@@ -161,25 +168,26 @@
 
   <div class="explain">
     <div class="ex a">
-      <h4>Rhythms as oscillations</h4>
-      <p>Delta (&lt;4 Hz) tracks deep sleep, alpha (8–13 Hz) idle occipital rhythm, beta/gamma (&gt;13 Hz) active processing. Each shows up as power in its frequency band — the signal is their superposition plus noise.</p>
+      <h4><span class="i18n-en">Rhythms as oscillations</span><span class="i18n-ko">진동으로서의 리듬</span></h4>
+      <p><span class="i18n-en">Delta (&lt;4 Hz) tracks deep sleep, alpha (8–13 Hz) idle occipital rhythm, beta/gamma (&gt;13 Hz) active processing. Each shows up as power in its frequency band — the signal is their superposition plus noise.</span><span class="i18n-ko">델타(&lt;4 Hz)는 깊은 수면, 알파(8–13 Hz)는 후두엽의 유휴 리듬, 베타/감마(&gt;13 Hz)는 활발한 처리 상태를 반영합니다. 각각은 자신의 주파수 대역에서 파워로 나타나며 — 신호는 이들의 중첩에 노이즈를 더한 것입니다.</span></p>
     </div>
     <div class="ex b">
-      <h4>Time <em>and</em> frequency</h4>
-      <p>The FFT gives frequency but loses time. The <code>spectrogram</code> is a short-time FFT over a sliding window — a trade-off (uncertainty principle) that shows <em>when</em> each rhythm is active, essential for non-stationary brain signals.</p>
+      <h4><span class="i18n-en">Time <em>and</em> frequency</span><span class="i18n-ko">시간 <em>과</em> 주파수</span></h4>
+      <p><span class="i18n-en">The FFT gives frequency but loses time. The <code>spectrogram</code> is a short-time FFT over a sliding window — a trade-off (uncertainty principle) that shows <em>when</em> each rhythm is active, essential for non-stationary brain signals.</span><span class="i18n-ko">FFT는 주파수를 주지만 시간 정보를 잃습니다. <code>spectrogram</code>은 슬라이딩 윈도우 위에서 계산한 단시간 FFT로 — 불확정성 원리라는 트레이드오프를 감수하면서 각 리듬이 <em>언제</em> 활성인지 보여주며, 비정상(non-stationary) 뇌 신호에 필수적입니다.</span></p>
     </div>
     <div class="ex c">
-      <h4>Why noise matters</h4>
-      <p>Real EEG is buried in noise and artifacts. As you raise noise, band peaks sink toward the floor — the same detection problem PRISM tackles with representation learning on biosignals.</p>
+      <h4><span class="i18n-en">Why noise matters</span><span class="i18n-ko">노이즈가 중요한 이유</span></h4>
+      <p><span class="i18n-en">Real EEG is buried in noise and artifacts. As you raise noise, band peaks sink toward the floor — the same detection problem PRISM tackles with representation learning on biosignals.</span><span class="i18n-ko">실제 EEG는 노이즈와 아티팩트에 파묻혀 있습니다. 노이즈를 높이면 대역 피크가 바닥 쪽으로 가라앉는데 — 이는 PRISM이 생체신호 표현 학습으로 다루는 바로 그 검출 문제입니다.</span></p>
     </div>
   </div>
 
-  <footer>PRISM Lab · prototype · <a href="https://sswu-prism-lab.github.io" target="_blank" rel="noopener">sswu-prism-lab.github.io</a></footer>
+  <footer><span class="i18n-en">PRISM Lab · prototype · </span><span class="i18n-ko">PRISM Lab · 프로토타입 · </span><a href="https://sswu-prism-lab.github.io" target="_blank" rel="noopener">sswu-prism-lab.github.io</a></footer>
 </div>
 
 <script>
 (() => {
   "use strict";
+  function L(en,ko){ return document.documentElement.getAttribute('data-lang')==='ko' ? ko : en; }
   const clamp=(x,a,b)=> x<a?a : x>b?b : x;
   const PAL={
     dark:{ ink:"#e7ecff", muted:"#8493b8", grid:a=>`rgba(38,49,79,${a})`, cool:"#5eead4", sharp:"#ff6b5a", warmA:"#ffc24b", test:"#a78bff", blue:"#6ea8ff", specLo:"#0d1526" },
@@ -312,7 +320,7 @@
       const el=document.createElement("div"); el.className="pb";
       el.innerHTML=`<div class="track"><div class="fill" style="height:${(pw[i]/mx*100).toFixed(0)}%;background:${col}"></div></div><div class="lab">${b.name.split(" ")[0]}</div>`;
       bars.appendChild(el); });
-    document.getElementById("domTag").textContent="dominant: "+BANDS[domI].name.split(" ")[1];
+    document.getElementById("domTag").textContent=L("dominant: ","우세: ")+BANDS[domI].name.split(" ")[1];
   }
 
   // ---------- band sliders ----------
@@ -327,14 +335,17 @@
     bandsWrap.appendChild(row);
   });
   const nEl=document.getElementById("noise"), nV=document.getElementById("noiseV");
-  nEl.addEventListener("input",()=>{ noise=parseFloat(nEl.value); nV.textContent=noise.toFixed(2); recompute();
-    document.getElementById("eegNote").innerHTML = noise>0.7 ? `High noise — band peaks are sinking into the floor.` : `Turn up one band and watch a single peak rise in the spectrum.`; });
+  function setNote(){ document.getElementById("eegNote").textContent = noise>0.7
+    ? L("High noise — band peaks are sinking into the floor.","높은 노이즈 — 대역 피크가 바닥으로 가라앉고 있습니다.")
+    : L("Turn up one band and watch a single peak rise in the spectrum.","한 대역을 올리면 스펙트럼에서 피크 하나가 솟아오르는 것을 볼 수 있습니다."); }
+  nEl.addEventListener("input",()=>{ noise=parseFloat(nEl.value); nV.textContent=noise.toFixed(2); recompute(); setNote(); });
   document.getElementById("regen").onclick=()=>{ reroll(); recompute(); };
 
   window.__onTheme=t=>{ C=PAL[t==='light'?'light':'dark'];
     // rebuild slider swatches for new theme accent
     document.querySelectorAll("#bands .band-ctl").forEach((row,i)=>{ const sw=row.querySelector(".bl i"); if(sw) sw.style.background=bandColor(BANDS[i]); });
     drawAll(); updatePow(); };
+  window.__onLang=function(){ drawAll(); updatePow(); setNote(); };
   window.addEventListener("resize",()=>{ clearTimeout(window.__rt); window.__rt=setTimeout(()=>{drawAll();},90); });
 
   recompute();

@@ -6,11 +6,11 @@ sitemap: false
 permalink: /publications/
 ---
 
-# Publications
+# <span class="i18n-en">Publications</span><span class="i18n-ko">논문</span>
 
-## Highlights
+## <span class="i18n-en">Highlights</span><span class="i18n-ko">주요 논문</span>
 
-**At the end of this page, you can find the [full list of publications, proceedings, and patents](#publications-and-proceedings).**
+**<span class="i18n-en">At the end of this page, you can find the [full list of publications, proceedings, and patents](#publications-and-proceedings).</span><span class="i18n-ko">이 페이지 하단에서 [논문·학술대회 논문·특허 전체 목록](#publications-and-proceedings)을 확인할 수 있습니다.</span>**
 
 {% assign number_printed = 0 %}
 {% for publi in site.data.publist %}
@@ -26,7 +26,7 @@ permalink: /publications/
  <div class="well" style="text-align: justify;">
   <pubtit>{{ publi.title }}</pubtit>
   <img src="{{ site.url }}{{ site.baseurl }}/images/pubpic/{{ publi.image }}" class="img-responsive" width="33%" style="float: left; margin-right: 10px;" />
-  <p>{{ publi.description }}</p>
+  <p><span class="i18n-en">{{ publi.description }}</span><span class="i18n-ko">{{ publi.description_ko }}</span></p>
   <p><em>{{ publi.authors }}</em></p>
   <p><strong><a href="{{ publi.link.url }}">{{ publi.link.display }}</a></strong></p>
   <p class="text-danger"><strong> {{ publi.news1 }}</strong></p>
@@ -50,7 +50,7 @@ permalink: /publications/
 
 <p> &nbsp; </p>
 
-## Publications and Proceedings
+## <span class="i18n-en">Publications and Proceedings</span><span class="i18n-ko">논문 및 학술대회 논문</span>
 
 {% for publi in site.data.publist %}
 
@@ -62,7 +62,7 @@ permalink: /publications/
 
 {% endfor %}
 
-## Patents
+## <span class="i18n-en">Patents</span><span class="i18n-ko">특허</span>
 
 <div style="text-align: justify; margin-bottom: 15px;">
   <em>강종구, 이채린, 황은서, 고원준</em><br />

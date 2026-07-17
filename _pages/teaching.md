@@ -6,34 +6,34 @@ sitemap: false
 permalink: /teaching/
 ---
 
-### Advanced Machine Learning (LH002800 @ Spring 2025)
-- <a href="https://sswu-prism-lab.github.io/slides/advanced-machine-learning-2027/" target="_blank">Slides</a>
-- <a href="https://sswu-prism-lab.github.io/slides/notes/advanced-machine-learning-2027/" target="_blank">Notes & Exams</a>
+### <span class="i18n-en">Advanced Machine Learning</span><span class="i18n-ko">고급기계학습</span> (LH002800 @ <span class="i18n-en">Spring 2025</span><span class="i18n-ko">2025년 봄</span>)
+- <a href="https://sswu-prism-lab.github.io/slides/advanced-machine-learning-2027/" target="_blank"><span class="i18n-en">Slides</span><span class="i18n-ko">강의 슬라이드</span></a>
+- <a href="https://sswu-prism-lab.github.io/slides/notes/advanced-machine-learning-2027/" target="_blank"><span class="i18n-en">Notes & Exams</span><span class="i18n-ko">강의노트 및 시험</span></a>
 
-### Introduction to AI Convergence (LH000100 @ Spring 2025, Fall 2024)
-- This course was formerly titled *Introduction to Brain and Cognitive Science*.
-- Slides: TBA
-- Exams: TBA
+### <span class="i18n-en">Introduction to AI Convergence</span><span class="i18n-ko">AI융합개론</span> (LH000100 @ <span class="i18n-en">Spring 2025, Fall 2024</span><span class="i18n-ko">2025년 봄, 2024년 가을</span>)
+- <span class="i18n-en">Slides: TBA</span><span class="i18n-ko">강의 슬라이드: 미정</span>
+- <span class="i18n-en">Exams: TBA</span><span class="i18n-ko">시험: 미정</span>
+- <span class="i18n-en">This course was formerly titled *Introduction to Brain and Cognitive Science* (Fall 2024).</span><span class="i18n-ko">이 과목은 이전에 *Introduction to Brain and Cognitive Science*(뇌·인지과학개론)라는 이름이었습니다 (2024년 가을).</span>
 
-### Mathematics for Artificial Intelligence (LH002500 @ Fall 2024)
-- <a href="https://sswu-prism-lab.github.io/slides/mathematics-for-artificial-intelligence-2027/" target="_blank">Slides</a>
-- <a href="https://sswu-prism-lab.github.io/slides/notes/mathematics-for-artificial-intelligence-2027/" target="_blank">Notes & Exams</a>
+### <span class="i18n-en">Mathematics for Artificial Intelligence</span><span class="i18n-ko">인공지능수학</span> (LH002500 @ <span class="i18n-en">Fall 2024</span><span class="i18n-ko">2024년 가을</span>)
+- <a href="https://sswu-prism-lab.github.io/slides/mathematics-for-artificial-intelligence-2027/" target="_blank"><span class="i18n-en">Slides</span><span class="i18n-ko">강의 슬라이드</span></a>
+- <a href="https://sswu-prism-lab.github.io/slides/notes/mathematics-for-artificial-intelligence-2027/" target="_blank"><span class="i18n-en">Notes & Exams</span><span class="i18n-ko">강의노트 및 시험</span></a>
 
-### Artificial Intelligence (LZ001600 @ Fall 2024, Spring 2024)
-- Slides: TBA
-- Exams: TBA
+### <span class="i18n-en">Artificial Intelligence</span><span class="i18n-ko">인공지능</span> (LZ001600 @ <span class="i18n-en">Fall 2024, Spring 2024</span><span class="i18n-ko">2024년 가을, 2024년 봄</span>)
+- <span class="i18n-en">Slides: TBA</span><span class="i18n-ko">강의 슬라이드: 미정</span>
+- <span class="i18n-en">Exams: TBA</span><span class="i18n-ko">시험: 미정</span>
 
-### Data Structures (LZ000500 @ Spring 2024)
-- <a href="https://sswu-prism-lab.github.io/slides/data-structure-2027/" target="_blank">Slides</a>
-- <a href="https://sswu-prism-lab.github.io/slides/notes/data-structure-2027/" target="_blank">Notes & Exams</a>
+### <span class="i18n-en">Data Structures</span><span class="i18n-ko">자료구조</span> (LZ000500 @ <span class="i18n-en">Spring 2024</span><span class="i18n-ko">2024년 봄</span>)
+- <a href="https://sswu-prism-lab.github.io/slides/data-structure-2027/" target="_blank"><span class="i18n-en">Slides</span><span class="i18n-ko">강의 슬라이드</span></a>
+- <a href="https://sswu-prism-lab.github.io/slides/notes/data-structure-2027/" target="_blank"><span class="i18n-en">Notes & Exams</span><span class="i18n-ko">강의노트 및 시험</span></a>
 
-### Data Structures and Applications (LH000500 @ Fall 2023)
-- Slides: TBA
-- Notes & Exams: TBA
+### <span class="i18n-en">Data Structures and Applications</span><span class="i18n-ko">자료구조실습</span> (LH000500 @ <span class="i18n-en">Fall 2023</span><span class="i18n-ko">2023년 가을</span>)
+- <span class="i18n-en">Slides: TBA</span><span class="i18n-ko">강의 슬라이드: 미정</span>
+- <span class="i18n-en">Notes & Exams: TBA</span><span class="i18n-ko">강의노트 및 시험: 미정</span>
 
-### C++ Programming (LZ000500 @ Fall 2023)
-- <a href="https://sswu-prism-lab.github.io/slides/cpp-programming-2027/" target="_blank">Slides</a>
-- <a href="https://sswu-prism-lab.github.io/slides/notes/cpp-programming-2027/" target="_blank">Exams</a>
+### <span class="i18n-en">C++ Programming</span><span class="i18n-ko">C++ 프로그래밍</span> (LZ000500 @ <span class="i18n-en">Fall 2023</span><span class="i18n-ko">2023년 가을</span>)
+- <span class="i18n-en">Slides: TBA</span><span class="i18n-ko">강의 슬라이드: 미정</span>
+- <span class="i18n-en">Notes & Exams: TBA</span><span class="i18n-ko">강의노트 및 시험: 미정</span>
 
 <!---
 # 2025 Summer

@@ -7,13 +7,14 @@
 (function(){
   function cur(){ try{ return localStorage.getItem('theme') || (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark':'light'); }catch(e){ return 'dark'; } }
   var t=cur(); window.__theme=t; document.documentElement.setAttribute('data-theme', t);
-  window.addEventListener('storage', function(e){ if(e.key==='theme'){ var n=e.newValue||'dark'; window.__theme=n; document.documentElement.setAttribute('data-theme', n); if(window.__onTheme) window.__onTheme(n); } });
+  try{ document.documentElement.setAttribute('data-lang', (localStorage.getItem('lang')||'en')); }catch(e){ document.documentElement.setAttribute('data-lang','en'); }
+  window.addEventListener('storage', function(e){ if(e.key==='theme'){ var n=e.newValue||'dark'; window.__theme=n; document.documentElement.setAttribute('data-theme', n); if(window.__onTheme) window.__onTheme(n); } if(e.key==='lang'){ document.documentElement.setAttribute('data-lang', e.newValue||'en'); if(window.__onLang) window.__onLang(); } });
 })();
 </script>
 <title>Ising · Inverse-Ising — PRISM Lab</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet" />
 <style>
   :root{
     --void:#15181e; --panel:#1d212a; --panel-2:#171b22; --line:#2e343f;
@@ -127,105 +128,113 @@
   }
   html[data-theme="light"] body{ background: var(--void); }
   html[data-theme="light"] .btn:hover{ border-color:#b9c4da; background:#e9eef7; }
+
+  /* ---------- i18n (language sync with site) ---------- */
+  html[data-lang="en"] .i18n-ko{ display:none !important; }
+  html[data-lang="ko"] .i18n-en{ display:none !important; }
+  .i18n-ko{ font-family:'Nanum Gothic','Inter',sans-serif; word-break:keep-all; }
 </style>
 </head>
 <body>
 <div class="wrap">
 
-  <div class="topbar"><a class="back" href="index.html">← Playground</a></div>
-  <p class="eyebrow">PRISM · Statistical-Mechanics Playground</p>
-  <h1 class="title">Ising · Inverse-Ising<br><span class="thin">A phase transition, and reading couplings back from data</span></h1>
+  <div class="topbar"><a class="back" href="index.html"><span class="i18n-en">← Playground</span><span class="i18n-ko">← 놀이터</span></a></div>
+  <p class="eyebrow"><span class="i18n-en">PRISM · Statistical-Mechanics Playground</span><span class="i18n-ko">PRISM · 통계역학 놀이터</span></p>
+  <h1 class="title"><span class="i18n-en">Ising · Inverse-Ising</span><span class="i18n-ko">이징 · 역이징 모델</span><br><span class="thin"><span class="i18n-en">A phase transition, and reading couplings back from data</span><span class="i18n-ko">상전이, 그리고 데이터로부터 결합 상수를 역으로 읽어내기</span></span></h1>
   <p class="subtitle">
-    <b>Left:</b> a 2D Ising lattice. Sweep the temperature <b>T</b> and coupling <b>J</b> to watch order emerge,
+    <span class="i18n-en"><b>Left:</b> a 2D Ising lattice. Sweep the temperature <b>T</b> and coupling <b>J</b> to watch order emerge,
     with the susceptibility <b>χ</b> peaking at the critical point <b>T<sub>c</sub> = 2J / ln(1+√2)</b>.
     <b>Right:</b> the inverse problem — fit a pairwise maximum-entropy (Ising) model to binarized multi-channel
-    toy signals and recover the coupling network as a brain-connectivity graph. This is exactly the inverse-Ising task.
+    toy signals and recover the coupling network as a brain-connectivity graph. This is exactly the inverse-Ising task.</span><span class="i18n-ko"><b>왼쪽:</b> 2D 이징 격자입니다. 온도 <b>T</b>와 결합 상수 <b>J</b>를 조절하며 질서가 나타나는 과정을 관찰하세요.
+    이때 감수율 <b>χ</b>는 임계점 <b>T<sub>c</sub> = 2J / ln(1+√2)</b>에서 최대가 됩니다.
+    <b>오른쪽:</b> 역문제입니다 — 이진화된 다채널 신호에 pairwise 최대엔트로피(이징) 모델을 적합해
+    결합 네트워크를 뇌 연결성 그래프로 복원합니다. 이것이 바로 역이징(inverse-Ising) 과제입니다.</span>
   </p>
 
   <div class="grid">
     <!-- ================= FORWARD ================= -->
     <div>
-      <div class="col-h"><span class="dot fwd"></span>Forward — 2D Ising phase transition</div>
+      <div class="col-h"><span class="dot fwd"></span><span class="i18n-en">Forward — 2D Ising phase transition</span><span class="i18n-ko">정방향 — 2D 이징 상전이</span></div>
 
       <div class="card stage">
-        <div class="card-h">Spin lattice <span class="hint" id="latHint">64 × 64 · Metropolis</span></div>
+        <div class="card-h"><span class="i18n-en">Spin lattice</span><span class="i18n-ko">스핀 격자</span> <span class="hint" id="latHint">64 × 64 · Metropolis</span></div>
         <div class="canvas-hold"><canvas id="lattice"></canvas></div>
         <div class="legend">
-          <span class="sw"><i id="swUp"></i> spin +1</span>
-          <span class="sw"><i id="swDn"></i> spin −1</span>
+          <span class="sw"><i id="swUp"></i> <span class="i18n-en">spin +1</span><span class="i18n-ko">스핀 +1</span></span>
+          <span class="sw"><i id="swDn"></i> <span class="i18n-en">spin −1</span><span class="i18n-ko">스핀 −1</span></span>
           <span style="margin-left:auto" id="latState">—</span>
         </div>
       </div>
 
       <div class="card">
-        <div class="card-h">Controls <span class="phase-tag disordered" id="phaseTag">disordered</span></div>
+        <div class="card-h"><span class="i18n-en">Controls</span><span class="i18n-ko">제어</span> <span class="phase-tag disordered" id="phaseTag">disordered</span></div>
         <div class="ctl">
-          <div class="ctl-top"><span class="ctl-name">Temperature T <span class="sub">thermal noise</span></span><span class="ctl-val" id="tV">2.60</span></div>
+          <div class="ctl-top"><span class="ctl-name"><span class="i18n-en">Temperature T</span><span class="i18n-ko">온도 T</span> <span class="sub"><span class="i18n-en">thermal noise</span><span class="i18n-ko">열적 요동</span></span></span><span class="ctl-val" id="tV">2.60</span></div>
           <input type="range" id="temp" min="0.4" max="4.2" step="0.02" value="2.6" aria-label="Temperature T" />
         </div>
         <div class="ctl">
-          <div class="ctl-top"><span class="ctl-name">Coupling J <span class="sub">Tc = 2.269·J</span></span><span class="ctl-val" id="jV">1.00</span></div>
+          <div class="ctl-top"><span class="ctl-name"><span class="i18n-en">Coupling J</span><span class="i18n-ko">결합 상수 J</span> <span class="sub">Tc = 2.269·J</span></span><span class="ctl-val" id="jV">1.00</span></div>
           <input type="range" id="coupling" min="0.4" max="1.6" step="0.01" value="1.0" aria-label="Coupling J" />
         </div>
         <div class="ro-grid" style="margin-bottom:12px">
-          <div class="ro"><div class="k">magnetization |M|</div><div class="v big" id="roM">–</div></div>
-          <div class="ro"><div class="k">susceptibility χ</div><div class="v" id="roChi">–</div></div>
-          <div class="ro"><div class="k">energy / site</div><div class="v" id="roE">–</div></div>
-          <div class="ro"><div class="k">Tc / current T</div><div class="v" id="roTc">–</div></div>
+          <div class="ro"><div class="k"><span class="i18n-en">magnetization |M|</span><span class="i18n-ko">자화 |M|</span></div><div class="v big" id="roM">–</div></div>
+          <div class="ro"><div class="k"><span class="i18n-en">susceptibility χ</span><span class="i18n-ko">감수율 χ</span></div><div class="v" id="roChi">–</div></div>
+          <div class="ro"><div class="k"><span class="i18n-en">energy / site</span><span class="i18n-ko">사이트당 에너지</span></div><div class="v" id="roE">–</div></div>
+          <div class="ro"><div class="k"><span class="i18n-en">Tc / current T</span><span class="i18n-ko">Tc / 현재 T</span></div><div class="v" id="roTc">–</div></div>
         </div>
         <div class="btnrow">
           <button class="btn btn-primary" id="run">❚❚ Pause</button>
-          <button class="btn" id="quench">Cool (T→1.4)</button>
-          <button class="btn wide" id="sweep">Sweep T · draw M(T) &amp; χ(T)</button>
+          <button class="btn" id="quench"><span class="i18n-en">Cool (T→1.4)</span><span class="i18n-ko">냉각 (T→1.4)</span></button>
+          <button class="btn wide" id="sweep"><span class="i18n-en">Sweep T · draw M(T) &amp; χ(T)</span><span class="i18n-ko">T 스윕 · M(T) &amp; χ(T) 그리기</span></button>
         </div>
-        <div class="noteline" id="fwdNote">χ peaks and correlations diverge right at Tc — the critical point.</div>
+        <div class="noteline" id="fwdNote"><span class="i18n-en">χ peaks and correlations diverge right at Tc — the critical point.</span><span class="i18n-ko">χ가 최댓값을 갖고 상관관계가 발산하는 지점이 바로 Tc, 즉 임계점입니다.</span></div>
       </div>
 
       <div class="card stage">
-        <div class="card-h">Magnetization &amp; susceptibility <span class="hint">|M| solid · χ dashed</span></div>
+        <div class="card-h"><span class="i18n-en">Magnetization &amp; susceptibility</span><span class="i18n-ko">자화 &amp; 감수율</span> <span class="hint"><span class="i18n-en">|M| solid · χ dashed</span><span class="i18n-ko">|M| 실선 · χ 점선</span></span></div>
         <div class="canvas-hold"><canvas id="mchi"></canvas></div>
-        <div class="axis-cap"><span>T = 1.0</span><span>temperature T</span><span>T = 4.2</span></div>
+        <div class="axis-cap"><span>T = 1.0</span><span><span class="i18n-en">temperature T</span><span class="i18n-ko">온도 T</span></span><span>T = 4.2</span></div>
       </div>
     </div>
 
     <!-- ================= INVERSE ================= -->
     <div>
-      <div class="col-h"><span class="dot inv"></span>Inverse — recover couplings from data</div>
+      <div class="col-h"><span class="dot inv"></span><span class="i18n-en">Inverse — recover couplings from data</span><span class="i18n-ko">역방향 — 데이터에서 결합 상수 복원</span></div>
 
       <div class="card stage">
-        <div class="card-h">Connectivity graph
-          <span class="hint"><button class="btn" id="toggleTruth" style="padding:4px 9px;font-size:11px">Show ground truth</button></span>
+        <div class="card-h"><span class="i18n-en">Connectivity graph</span><span class="i18n-ko">연결성 그래프</span>
+          <span class="hint"><button class="btn" id="toggleTruth" style="padding:4px 9px;font-size:11px"><span class="i18n-en">Show ground truth</span><span class="i18n-ko">실제값 보기</span></button></span>
         </div>
         <div class="canvas-hold"><canvas id="graph"></canvas></div>
         <div class="legend">
-          <span class="sw"><i style="background:var(--sharp)"></i> excitatory J&gt;0</span>
-          <span class="sw"><i style="background:var(--blue)"></i> inhibitory J&lt;0</span>
+          <span class="sw"><i style="background:var(--sharp)"></i> <span class="i18n-en">excitatory J&gt;0</span><span class="i18n-ko">흥분성 J&gt;0</span></span>
+          <span class="sw"><i style="background:var(--blue)"></i> <span class="i18n-en">inhibitory J&lt;0</span><span class="i18n-ko">억제성 J&lt;0</span></span>
           <span style="margin-left:auto" id="graphMode">inferred Ĵ</span>
         </div>
       </div>
 
       <div class="card">
-        <div class="card-h">Inverse controls <span class="hint" id="recovTag">recovery —</span></div>
+        <div class="card-h"><span class="i18n-en">Inverse controls</span><span class="i18n-ko">역문제 제어</span> <span class="hint" id="recovTag">recovery —</span></div>
         <div class="ctl">
-          <div class="ctl-top"><span class="ctl-name">Data length <span class="sub">binarized samples</span></span><span class="ctl-val" id="mV">4000</span></div>
+          <div class="ctl-top"><span class="ctl-name"><span class="i18n-en">Data length</span><span class="i18n-ko">데이터 길이</span> <span class="sub"><span class="i18n-en">binarized samples</span><span class="i18n-ko">이진화된 샘플 수</span></span></span><span class="ctl-val" id="mV">4000</span></div>
           <input type="range" id="datalen" min="150" max="30000" step="50" value="4000" aria-label="Data length" />
         </div>
         <div class="ctl">
-          <div class="ctl-top"><span class="ctl-name">Coupling scale β <span class="sub">how ordered the data is</span></span><span class="ctl-val" id="bV">0.70</span></div>
+          <div class="ctl-top"><span class="ctl-name"><span class="i18n-en">Coupling scale β</span><span class="i18n-ko">결합 세기 β</span> <span class="sub"><span class="i18n-en">how ordered the data is</span><span class="i18n-ko">데이터의 질서도</span></span></span><span class="ctl-val" id="bV">0.70</span></div>
           <input type="range" id="beta" min="0.2" max="1.2" step="0.01" value="0.70" aria-label="Coupling scale beta" />
         </div>
         <div class="ro-grid" style="margin-bottom:12px">
-          <div class="ro"><div class="k">recovery r (Ĵ vs J)</div><div class="v big" id="roR">–</div></div>
-          <div class="ro"><div class="k">nodes / edges</div><div class="v" id="roNE">–</div></div>
+          <div class="ro"><div class="k"><span class="i18n-en">recovery r (Ĵ vs J)</span><span class="i18n-ko">복원도 r (Ĵ vs J)</span></div><div class="v big" id="roR">–</div></div>
+          <div class="ro"><div class="k"><span class="i18n-en">nodes / edges</span><span class="i18n-ko">노드 / 엣지</span></div><div class="v" id="roNE">–</div></div>
         </div>
         <div class="btnrow">
-          <button class="btn btn-primary wide" id="regen">↻ Regenerate data &amp; refit</button>
+          <button class="btn btn-primary wide" id="regen"><span class="i18n-en">↻ Regenerate data &amp; refit</span><span class="i18n-ko">↻ 데이터 재생성 &amp; 재적합</span></button>
         </div>
-        <div class="noteline" id="invNote">More samples → less noise in the correlations → cleaner recovered graph.</div>
+        <div class="noteline" id="invNote"><span class="i18n-en">More samples → less noise in the correlations → cleaner recovered graph.</span><span class="i18n-ko">샘플이 많을수록 → 상관관계의 잡음이 줄어들고 → 복원된 그래프가 더 깨끗해집니다.</span></div>
       </div>
 
       <div class="card stage">
-        <div class="card-h">Recovery scatter <span class="hint">true J vs inferred Ĵ (off-diagonal)</span></div>
+        <div class="card-h"><span class="i18n-en">Recovery scatter</span><span class="i18n-ko">복원 산점도</span> <span class="hint"><span class="i18n-en">true J vs inferred Ĵ (off-diagonal)</span><span class="i18n-ko">실제 J vs 추론된 Ĵ (비대각 성분)</span></span></div>
         <div class="canvas-hold"><canvas id="scatter"></canvas></div>
       </div>
     </div>
@@ -234,25 +243,26 @@
   <!-- ================= explainer ================= -->
   <div class="explain">
     <div class="ex a">
-      <h4>The critical point Tc</h4>
-      <p>In the 2D Ising model, spins order below <code>Tc = 2J/ln(1+√2) ≈ 2.269 J</code>. There the magnetization rises and the susceptibility <code>χ = N(⟨M²⟩−⟨M⟩²)/T</code> diverges — long-range correlations at the transition.</p>
+      <h4><span class="i18n-en">The critical point Tc</span><span class="i18n-ko">임계점 Tc</span></h4>
+      <p><span class="i18n-en">In the 2D Ising model, spins order below <code>Tc = 2J/ln(1+√2) ≈ 2.269 J</code>. There the magnetization rises and the susceptibility <code>χ = N(⟨M²⟩−⟨M⟩²)/T</code> diverges — long-range correlations at the transition.</span><span class="i18n-ko">2D 이징 모델에서 스핀은 <code>Tc = 2J/ln(1+√2) ≈ 2.269 J</code> 아래에서 정렬됩니다. 이 지점에서 자화가 커지고 감수율 <code>χ = N(⟨M²⟩−⟨M⟩²)/T</code>이 발산하며, 상전이에서 장거리 상관관계가 나타납니다.</span></p>
     </div>
     <div class="ex b">
-      <h4>Inverse Ising = max-entropy</h4>
-      <p>The least-structured distribution matching the measured means <code>⟨sᵢ⟩</code> and correlations <code>⟨sᵢsⱼ⟩</code> is a pairwise Ising model <code>p(s) ∝ e^{Σ hᵢsᵢ + Σ Jᵢⱼsᵢsⱼ}</code>. Here we invert it with the mean-field estimate <code>Ĵ = −C⁻¹</code>.</p>
+      <h4><span class="i18n-en">Inverse Ising = max-entropy</span><span class="i18n-ko">역이징 = 최대엔트로피</span></h4>
+      <p><span class="i18n-en">The least-structured distribution matching the measured means <code>⟨sᵢ⟩</code> and correlations <code>⟨sᵢsⱼ⟩</code> is a pairwise Ising model <code>p(s) ∝ e^{Σ hᵢsᵢ + Σ Jᵢⱼsᵢsⱼ}</code>. Here we invert it with the mean-field estimate <code>Ĵ = −C⁻¹</code>.</span><span class="i18n-ko">측정된 평균 <code>⟨sᵢ⟩</code>과 상관관계 <code>⟨sᵢsⱼ⟩</code>에 부합하면서 가장 구조가 적은 분포가 바로 pairwise 이징 모델 <code>p(s) ∝ e^{Σ hᵢsᵢ + Σ Jᵢⱼsᵢsⱼ}</code>입니다. 여기서는 평균장 추정 <code>Ĵ = −C⁻¹</code>으로 이를 역으로 풉니다.</span></p>
     </div>
     <div class="ex c">
-      <h4>Reading brain connectivity</h4>
-      <p>Binarized neural signals (spikes, thresholded LFP/BOLD) are exactly such multi-channel binary data. Inverse-Ising / max-entropy recovers functional couplings between regions — a PRISM interest in network modeling from data.</p>
+      <h4><span class="i18n-en">Reading brain connectivity</span><span class="i18n-ko">뇌 연결성 읽어내기</span></h4>
+      <p><span class="i18n-en">Binarized neural signals (spikes, thresholded LFP/BOLD) are exactly such multi-channel binary data. Inverse-Ising / max-entropy recovers functional couplings between regions — a PRISM interest in network modeling from data.</span><span class="i18n-ko">이진화된 신경 신호(스파이크, 임계값 처리된 LFP/BOLD)가 바로 이러한 다채널 이진 데이터입니다. 역이징 / 최대엔트로피는 영역 간 기능적 결합을 복원합니다 — 데이터로부터의 네트워크 모델링에 대한 PRISM의 관심사입니다.</span></p>
     </div>
   </div>
 
-  <footer>PRISM Lab · prototype · <a href="https://sswu-prism-lab.github.io" target="_blank" rel="noopener">sswu-prism-lab.github.io</a></footer>
+  <footer><span class="i18n-en">PRISM Lab · prototype ·</span><span class="i18n-ko">PRISM Lab · 프로토타입 ·</span> <a href="https://sswu-prism-lab.github.io" target="_blank" rel="noopener">sswu-prism-lab.github.io</a></footer>
 </div>
 
 <script>
 (() => {
   "use strict";
+  function LT(en,ko){ return document.documentElement.getAttribute('data-lang')==='ko' ? ko : en; }
   const clamp=(x,a,b)=> x<a?a : x>b?b : x;
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -325,7 +335,7 @@
     let chiMax=0; for(const p of pts) if(p.chi>chiMax) chiMax=p.chi;
     F.sweep={pts, chiMax};
     drawMchi();
-    document.getElementById("fwdNote").innerHTML=`Swept at J=${F.J.toFixed(2)} — χ peaks near <b>Tc=${(2.2692*F.J).toFixed(2)}</b>.`;
+    document.getElementById("fwdNote").innerHTML=LT(`Swept at J=${F.J.toFixed(2)} — χ peaks near <b>Tc=${(2.2692*F.J).toFixed(2)}</b>.`,`J=${F.J.toFixed(2)}에서 스윕 — χ가 <b>Tc=${(2.2692*F.J).toFixed(2)}</b> 부근에서 최대가 됩니다.`);
   }
   function sweepOnce(s,SL,SN,id,T,J){
     for(let k=0;k<SN;k++){
@@ -387,7 +397,7 @@
       cxM.stroke();
     } else {
       cxM.fillStyle=C.muted; cxM.textAlign="center"; cxM.textBaseline="middle"; cxM.font='11px "Inter",sans-serif';
-      cxM.fillText("press “Sweep T” to draw the curves", w/2, h/2);
+      cxM.fillText(LT("press “Sweep T” to draw the curves","“T 스윕” 버튼을 눌러 곡선을 그리세요"), w/2, h/2);
     }
     // live operating point
     const lx=X(clamp(F.T,1.0,4.2));
@@ -509,7 +519,7 @@
     cxS.strokeStyle=C.grid(.7); cxS.lineWidth=1;
     cxS.beginPath(); cxS.moveTo(X(0),pt); cxS.lineTo(X(0),h-pb); cxS.moveTo(pl,Y(0)); cxS.lineTo(w-pr,Y(0)); cxS.stroke();
     cxS.fillStyle=C.muted; cxS.font='9px "JetBrains Mono",monospace'; cxS.textAlign="center"; cxS.textBaseline="top";
-    cxS.fillText("true J", (pl+w-pr)/2, h-pb+4);
+    cxS.fillText(LT("true J","실제 J"), (pl+w-pr)/2, h-pb+4);
     // points
     for(let i=0;i<N;i++) for(let j=i+1;j<N;j++){
       const t=Jtrue[i][j], v=INV.Jinf[i][j];
@@ -525,8 +535,8 @@
     rEl.style.color = INV.r>0.85?"var(--cool)" : INV.r>0.6?"var(--warm-a)":"var(--sharp)";
     document.getElementById("roNE").textContent=N+" / "+INV.edges;
     const rt=document.getElementById("recovTag");
-    rt.textContent = "recovery "+(INV.r>0.85?"strong":INV.r>0.6?"partial":"noisy");
-    document.getElementById("graphMode").textContent = INV.showTruth ? "ground truth J" : "inferred Ĵ";
+    rt.textContent = LT("recovery ","복원 ")+(INV.r>0.85?LT("strong","강함"):INV.r>0.6?LT("partial","부분적"):LT("noisy","잡음"));
+    document.getElementById("graphMode").textContent = INV.showTruth ? LT("ground truth J","실제값 J") : LT("inferred Ĵ","추론된 Ĵ");
   }
 
   // =================================================================
@@ -543,9 +553,9 @@
     document.getElementById("roTc").textContent=Tc.toFixed(2)+" / "+F.T.toFixed(2);
     const tag=document.getElementById("phaseTag");
     const rel=F.T/Tc;
-    if(rel<0.92){ tag.textContent="ordered"; tag.className="phase-tag ordered"; }
-    else if(rel<1.08){ tag.textContent="critical"; tag.className="phase-tag critical"; }
-    else { tag.textContent="disordered"; tag.className="phase-tag disordered"; }
+    if(rel<0.92){ tag.textContent=LT("ordered","질서상"); tag.className="phase-tag ordered"; }
+    else if(rel<1.08){ tag.textContent=LT("critical","임계"); tag.className="phase-tag critical"; }
+    else { tag.textContent=LT("disordered","무질서상"); tag.className="phase-tag disordered"; }
     document.getElementById("latState").textContent = "|M| = "+F.m.toFixed(2);
     document.getElementById("swUp").style.background=C.up;
     document.getElementById("swDn").style.background=C.dn;
@@ -561,7 +571,7 @@
   }
   function setRunning(on){
     F.running=on;
-    document.getElementById("run").textContent = on ? "❚❚ Pause" : "▶ Run";
+    document.getElementById("run").textContent = on ? LT("❚❚ Pause","❚❚ 일시정지") : LT("▶ Run","▶ 실행");
     document.getElementById("run").className = "btn "+(on?"":"btn-primary");
     if(on && !raf) raf=requestAnimationFrame(loop); else if(!on) drawForward();
   }
@@ -575,7 +585,7 @@
   document.getElementById("coupling").addEventListener("change",()=>{ if(F.sweep) runSweep(); });
   document.getElementById("run").onclick=()=>setRunning(!F.running);
   document.getElementById("quench").onclick=()=>{ F.spin.fill(1); F.mHist=[]; document.getElementById("temp").value=1.4; document.getElementById("tV").textContent="1.40"; F.T=1.4; if(!F.running) setRunning(true); else { measureF(); drawForward(); } };
-  document.getElementById("sweep").onclick=()=>{ const n=document.getElementById("fwdNote"); n.textContent="sweeping…"; setTimeout(runSweep,20); };
+  document.getElementById("sweep").onclick=()=>{ const n=document.getElementById("fwdNote"); n.textContent=LT("sweeping…","스윕 중…"); setTimeout(runSweep,20); };
 
   bind("datalen","mV",v=>String(v|0),v=>{ INV.M=v|0; });
   document.getElementById("datalen").addEventListener("change",()=>{ refit(); });
@@ -583,15 +593,20 @@
   document.getElementById("beta").addEventListener("change",()=>{ refit(); });
   document.getElementById("regen").onclick=()=>refit();
   document.getElementById("toggleTruth").onclick=(e)=>{
-    INV.showTruth=!INV.showTruth; e.target.textContent=INV.showTruth?"Show inferred":"Show ground truth";
+    INV.showTruth=!INV.showTruth; e.target.textContent=INV.showTruth?LT("Show inferred","추론값 보기"):LT("Show ground truth","실제값 보기");
     e.target.className="btn"+(INV.showTruth?" on":""); drawGraph(); updateInvReadouts();
   };
-  function refit(){ const n=document.getElementById("invNote"); n.textContent="fitting…";
+  function refit(){ const n=document.getElementById("invNote"); n.textContent=LT("fitting…","적합 중…");
     setTimeout(()=>{ fitInverse();
-      document.getElementById("invNote").innerHTML=`Fit ${INV.M.toLocaleString()} samples · <b>recovery r=${INV.r.toFixed(2)}</b>. More data → cleaner Ĵ.`; },20); }
+      document.getElementById("invNote").innerHTML=LT(`Fit ${INV.M.toLocaleString()} samples · <b>recovery r=${INV.r.toFixed(2)}</b>. More data → cleaner Ĵ.`,`${INV.M.toLocaleString()}개 샘플 적합 · <b>복원도 r=${INV.r.toFixed(2)}</b>. 데이터가 많을수록 → Ĵ가 더 깨끗해집니다.`); },20); }
 
-  // ---------- theme hook + resize ----------
+  // ---------- theme + language hooks + resize ----------
   window.__onTheme=t=>{ C=PAL[t==='light'?'light':'dark']; drawForward(); drawGraph(); drawScatter(); };
+  window.__onLang=function(){
+    document.getElementById("run").textContent = F.running ? LT("❚❚ Pause","❚❚ 일시정지") : LT("▶ Run","▶ 실행");
+    document.getElementById("toggleTruth").textContent = INV.showTruth ? LT("Show inferred","추론값 보기") : LT("Show ground truth","실제값 보기");
+    drawForward(); drawGraph(); drawScatter(); updateInvReadouts();
+  };
   window.addEventListener("resize",()=>{ clearTimeout(window.__rt); window.__rt=setTimeout(()=>{ drawForward(); drawGraph(); drawScatter(); },90); });
 
   // ---------- init ----------

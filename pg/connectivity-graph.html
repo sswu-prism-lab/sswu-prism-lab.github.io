@@ -7,13 +7,14 @@
 (function(){
   function cur(){ try{ return localStorage.getItem('theme') || (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark':'light'); }catch(e){ return 'dark'; } }
   var t=cur(); window.__theme=t; document.documentElement.setAttribute('data-theme', t);
-  window.addEventListener('storage', function(e){ if(e.key==='theme'){ var n=e.newValue||'dark'; window.__theme=n; document.documentElement.setAttribute('data-theme', n); if(window.__onTheme) window.__onTheme(n); } });
+  try{ document.documentElement.setAttribute('data-lang', (localStorage.getItem('lang')||'en')); }catch(e){ document.documentElement.setAttribute('data-lang','en'); }
+  window.addEventListener('storage', function(e){ if(e.key==='theme'){ var n=e.newValue||'dark'; window.__theme=n; document.documentElement.setAttribute('data-theme', n); if(window.__onTheme) window.__onTheme(n); } if(e.key==='lang'){ document.documentElement.setAttribute('data-lang', e.newValue||'en'); if(window.__onLang) window.__onLang(); } });
 })();
 </script>
 <title>Connectivity → Graph — PRISM Lab</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet" />
 <style>
   :root{
     --void:#15181e; --panel:#1d212a; --panel-2:#171b22; --line:#2e343f;
@@ -103,70 +104,76 @@
     --cool:#12a08d; --cool-dim:#2f8c80; --sharp:#e04a37; --warm-a:#c98a12; --test:#6d4fe0; --blue:#2f6fd6; --conn:#2aa377; --focus:#2f6fd6;
   }
   html[data-theme="light"] .btn:hover{ border-color:#b9c4da; background:#e9eef7; }
+  html[data-lang="en"] .i18n-ko{ display:none !important; }
+  html[data-lang="ko"] .i18n-en{ display:none !important; }
+  .i18n-ko{ font-family:'Nanum Gothic','Inter',sans-serif; word-break:keep-all; }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="topbar"><a class="back" href="index.html">← Playground</a></div>
-  <p class="eyebrow">PRISM · Statistical-Mechanics Playground</p>
-  <h1 class="title">Connectivity → Graph<br><span class="thin">From signals to a network — and the threshold that shapes it</span></h1>
+  <div class="topbar"><a class="back" href="index.html"><span class="i18n-en">← Playground</span><span class="i18n-ko">← 놀이터</span></a></div>
+  <p class="eyebrow"><span class="i18n-en">PRISM · Statistical-Mechanics Playground</span><span class="i18n-ko">PRISM · 통계역학 놀이터</span></p>
+  <h1 class="title"><span class="i18n-en">Connectivity → Graph</span><span class="i18n-ko">연결성 → 그래프</span><br><span class="thin"><span class="i18n-en">From signals to a network — and the threshold that shapes it</span><span class="i18n-ko">다채널 신호에서 상관 행렬을 계산·thresholding하고, 임계값에 따라 뇌 그래프 지표가 어떻게 달라지는지 — 신호에서 그래프 학습으로 넘어가는 다리</span></span></h1>
   <p class="subtitle">
-    Give me many channels of activity and I'll measure how they co-vary — a <b>correlation matrix</b>.
+    <span class="i18n-en">Give me many channels of activity and I'll measure how they co-vary — a <b>correlation matrix</b>.
     Keep only links above a <b>threshold</b> and you have a <b>brain graph</b>. But the threshold is a choice:
     slide it and watch density, clustering, and the giant component swing — a <b>percolation transition</b>.
-    This is the bridge from raw signals to graph learning.
+    This is the bridge from raw signals to graph learning.</span><span class="i18n-ko">여러 채널의 활동 신호를 주면 채널들이 얼마나 함께 변하는지를 측정합니다 — 바로 <b>상관 행렬(correlation matrix)</b>입니다.
+    <b>임계값(threshold)</b>보다 큰 연결만 남기면 <b>뇌 그래프(brain graph)</b>가 됩니다. 하지만 임계값은 하나의 선택입니다:
+    슬라이더를 움직이면 밀도, 군집도, 거대 성분(giant component)이 크게 흔들립니다 — 이것이 <b>퍼콜레이션 전이(percolation transition)</b>입니다.
+    이것이 원신호에서 그래프 학습으로 넘어가는 다리입니다.</span>
   </p>
 
   <div class="grid">
     <div>
       <div class="card stage">
-        <div class="card-h">Correlation matrix <span class="hint">|r| ≥ threshold kept</span></div>
+        <div class="card-h"><span class="i18n-en">Correlation matrix</span><span class="i18n-ko">상관 행렬</span> <span class="hint"><span class="i18n-en">|r| ≥ threshold kept</span><span class="i18n-ko">|r| ≥ 임계값만 유지</span></span></div>
         <div class="canvas-hold"><canvas id="matrix"></canvas></div>
         <div class="legend">
-          <span class="sw"><i style="background:var(--conn)"></i> positive r</span>
-          <span class="sw"><i style="background:var(--sharp)"></i> negative r</span>
-          <span class="sw"><i style="background:var(--line)"></i> below threshold</span>
+          <span class="sw"><i style="background:var(--conn)"></i> <span class="i18n-en">positive r</span><span class="i18n-ko">양의 r</span></span>
+          <span class="sw"><i style="background:var(--sharp)"></i> <span class="i18n-en">negative r</span><span class="i18n-ko">음의 r</span></span>
+          <span class="sw"><i style="background:var(--line)"></i> <span class="i18n-en">below threshold</span><span class="i18n-ko">임계값 이하</span></span>
         </div>
       </div>
       <div class="card stage">
-        <div class="card-h">Thresholded graph <span class="hint" id="graphHint">nodes colored by module</span></div>
+        <div class="card-h"><span class="i18n-en">Thresholded graph</span><span class="i18n-ko">임계화된 그래프</span> <span class="hint" id="graphHint"><span class="i18n-en">nodes colored by module</span><span class="i18n-ko">모듈별로 색을 입힌 노드</span></span></div>
         <div class="canvas-hold"><canvas id="graph"></canvas></div>
       </div>
     </div>
 
     <div>
       <div class="card">
-        <div class="card-h">Controls</div>
+        <div class="card-h"><span class="i18n-en">Controls</span><span class="i18n-ko">컨트롤</span></div>
         <div class="ctl">
-          <div class="ctl-top"><span class="ctl-name">Threshold |r| <span class="sub">edge cutoff</span></span><span class="ctl-val" id="tV">0.30</span></div>
+          <div class="ctl-top"><span class="ctl-name"><span class="i18n-en">Threshold |r|</span><span class="i18n-ko">임계값 |r|</span> <span class="sub"><span class="i18n-en">edge cutoff</span><span class="i18n-ko">엣지 컷오프</span></span></span><span class="ctl-val" id="tV">0.30</span></div>
           <input type="range" id="thresh" min="0" max="0.95" step="0.01" value="0.30" aria-label="Threshold" />
         </div>
         <div class="ctl">
-          <div class="ctl-top"><span class="ctl-name">Coupling strength <span class="sub">within modules</span></span><span class="ctl-val" id="cV">0.60</span></div>
+          <div class="ctl-top"><span class="ctl-name"><span class="i18n-en">Coupling strength</span><span class="i18n-ko">결합 강도</span> <span class="sub"><span class="i18n-en">within modules</span><span class="i18n-ko">모듈 내부</span></span></span><span class="ctl-val" id="cV">0.60</span></div>
           <input type="range" id="coupling" min="0.2" max="0.95" step="0.01" value="0.60" aria-label="Coupling" />
         </div>
         <div class="ctl">
-          <div class="ctl-top"><span class="ctl-name">Signal length T <span class="sub">samples → estimation noise</span></span><span class="ctl-val" id="lV">400</span></div>
+          <div class="ctl-top"><span class="ctl-name"><span class="i18n-en">Signal length T</span><span class="i18n-ko">신호 길이 T</span> <span class="sub"><span class="i18n-en">samples → estimation noise</span><span class="i18n-ko">표본 수 → 추정 잡음</span></span></span><span class="ctl-val" id="lV">400</span></div>
           <input type="range" id="length" min="40" max="2000" step="20" value="400" aria-label="Signal length" />
         </div>
-        <div class="btnrow"><button class="btn" id="regen">↻ Resample signals</button></div>
+        <div class="btnrow"><button class="btn" id="regen"><span class="i18n-en">↻ Resample signals</span><span class="i18n-ko">↻ 신호 재추출</span></button></div>
         <div class="ro-grid">
-          <div class="ro"><div class="k">edge density</div><div class="v big" id="roD">–</div></div>
-          <div class="ro"><div class="k">components</div><div class="v" id="roComp">–</div></div>
-          <div class="ro"><div class="k">giant comp.</div><div class="v" id="roLCC">–</div></div>
-          <div class="ro"><div class="k">mean clustering</div><div class="v" id="roClu">–</div></div>
+          <div class="ro"><div class="k"><span class="i18n-en">edge density</span><span class="i18n-ko">엣지 밀도</span></div><div class="v big" id="roD">–</div></div>
+          <div class="ro"><div class="k"><span class="i18n-en">components</span><span class="i18n-ko">연결 성분 수</span></div><div class="v" id="roComp">–</div></div>
+          <div class="ro"><div class="k"><span class="i18n-en">giant comp.</span><span class="i18n-ko">거대 성분</span></div><div class="v" id="roLCC">–</div></div>
+          <div class="ro"><div class="k"><span class="i18n-en">mean clustering</span><span class="i18n-ko">평균 군집도</span></div><div class="v" id="roClu">–</div></div>
         </div>
-        <div class="noteline" id="note">Low threshold links everything; raise it and the network fragments into modules.</div>
+        <div class="noteline" id="note"><span class="i18n-en">Low threshold links everything; raise it and the network fragments into modules.</span><span class="i18n-ko">임계값이 낮으면 모든 것이 연결되고, 높이면 네트워크가 모듈로 쪼개집니다.</span></div>
       </div>
 
       <div class="card stage">
-        <div class="card-h">Graph metrics vs threshold <span class="hint">the percolation view</span></div>
+        <div class="card-h"><span class="i18n-en">Graph metrics vs threshold</span><span class="i18n-ko">임계값에 따른 그래프 지표</span> <span class="hint"><span class="i18n-en">the percolation view</span><span class="i18n-ko">퍼콜레이션 관점</span></span></div>
         <div class="canvas-hold"><canvas id="metrics"></canvas></div>
-        <div class="axis-cap"><span>|r| = 0</span><span>threshold</span><span>|r| = 0.95</span></div>
+        <div class="axis-cap"><span>|r| = 0</span><span><span class="i18n-en">threshold</span><span class="i18n-ko">임계값</span></span><span>|r| = 0.95</span></div>
         <div class="legend">
-          <span class="sw"><i style="background:var(--conn)"></i> density</span>
-          <span class="sw"><i style="background:var(--warm-a)"></i> giant-component fraction</span>
-          <span class="sw"><i style="background:var(--test)"></i> current threshold</span>
+          <span class="sw"><i style="background:var(--conn)"></i> <span class="i18n-en">density</span><span class="i18n-ko">밀도</span></span>
+          <span class="sw"><i style="background:var(--warm-a)"></i> <span class="i18n-en">giant-component fraction</span><span class="i18n-ko">거대 성분 비율</span></span>
+          <span class="sw"><i style="background:var(--test)"></i> <span class="i18n-en">current threshold</span><span class="i18n-ko">현재 임계값</span></span>
         </div>
       </div>
     </div>
@@ -174,25 +181,26 @@
 
   <div class="explain">
     <div class="ex a">
-      <h4>Signals → matrix</h4>
-      <p>Functional connectivity starts from pairwise statistics — here Pearson correlation <code>rᵢⱼ</code> across time. Channels driven by a shared source co-vary, so modules light up as blocks on the diagonal of the matrix.</p>
+      <h4><span class="i18n-en">Signals → matrix</span><span class="i18n-ko">신호 → 행렬</span></h4>
+      <p><span class="i18n-en">Functional connectivity starts from pairwise statistics — here Pearson correlation <code>rᵢⱼ</code> across time. Channels driven by a shared source co-vary, so modules light up as blocks on the diagonal of the matrix.</span><span class="i18n-ko">기능적 연결성은 쌍별 통계량에서 출발합니다 — 여기서는 시간에 걸친 Pearson 상관계수 <code>rᵢⱼ</code>입니다. 공통된 원천에 의해 구동되는 채널들은 함께 변하므로, 모듈이 행렬 대각선 위에서 블록으로 나타납니다.</span></p>
     </div>
     <div class="ex b">
-      <h4>The threshold is a model choice</h4>
-      <p>There is no single “true” graph: thresholding trades false edges (too low) against lost real ones (too high). Sweeping it traces a percolation curve — the giant component shatters at a critical <code>|r|</code>, and every graph metric depends on where you cut.</p>
+      <h4><span class="i18n-en">The threshold is a model choice</span><span class="i18n-ko">임계값은 모델링의 선택</span></h4>
+      <p><span class="i18n-en">There is no single “true” graph: thresholding trades false edges (too low) against lost real ones (too high). Sweeping it traces a percolation curve — the giant component shatters at a critical <code>|r|</code>, and every graph metric depends on where you cut.</span><span class="i18n-ko">단 하나의 “참” 그래프란 없습니다: 임계화는 (너무 낮으면) 가짜 엣지와 (너무 높으면) 놓친 진짜 엣지를 맞바꿉니다. 임계값을 훑으면 퍼콜레이션 곡선이 그려집니다 — 임계 <code>|r|</code>에서 거대 성분이 산산이 부서지고, 모든 그래프 지표가 어디서 자르는지에 좌우됩니다.</span></p>
     </div>
     <div class="ex c">
-      <h4>Toward graph learning</h4>
-      <p>Because thresholding is arbitrary and noisy, the field moves to <em>learning</em> graphs directly from signals (graph signal processing, GNNs, structure inference) — a PRISM interest in going from biosignals to networks.</p>
+      <h4><span class="i18n-en">Toward graph learning</span><span class="i18n-ko">그래프 학습을 향하여</span></h4>
+      <p><span class="i18n-en">Because thresholding is arbitrary and noisy, the field moves to <em>learning</em> graphs directly from signals (graph signal processing, GNNs, structure inference) — a PRISM interest in going from biosignals to networks.</span><span class="i18n-ko">임계화가 임의적이고 잡음에 취약하기 때문에, 이 분야는 신호로부터 그래프를 직접 <em>학습</em>하는 방향으로 나아갑니다 (graph signal processing, GNNs, structure inference) — 생체신호에서 네트워크로 나아가려는 PRISM의 관심사입니다.</span></p>
     </div>
   </div>
 
-  <footer>PRISM Lab · prototype · <a href="https://sswu-prism-lab.github.io" target="_blank" rel="noopener">sswu-prism-lab.github.io</a></footer>
+  <footer><span class="i18n-en">PRISM Lab · prototype</span><span class="i18n-ko">PRISM Lab · 프로토타입</span> · <a href="https://sswu-prism-lab.github.io" target="_blank" rel="noopener">sswu-prism-lab.github.io</a></footer>
 </div>
 
 <script>
 (() => {
   "use strict";
+  function L(en,ko){ return document.documentElement.getAttribute('data-lang')==='ko' ? ko : en; }
   const clamp=(x,a,b)=> x<a?a : x>b?b : x;
   const PAL={
     dark:{ ink:"#e6edf3", muted:"#8b949e", grid:a=>`rgba(80,90,110,${a})`, cool:"#5eead4", sharp:"#ff6b5a", warmA:"#ffc24b", test:"#a78bff", blue:"#6ea8ff", conn:"#4fd1a0", cellOff:"#242a34" },
@@ -318,14 +326,18 @@
   }
   function draw(){ drawMatrix(); drawGraph(); drawMetrics(); }
 
-  function recompute(){ computeR(); const g=graphAt(S.thresh);
+  function updateNote(){ const g=S.lastG; if(!g) return;
+    document.getElementById("note").innerHTML = g.ncomp>=3
+      ? L(`Fragmented into <b>${g.ncomp}</b> components — the modules have separated.`, `<b>${g.ncomp}</b>개의 성분으로 쪼개졌습니다 — 모듈들이 분리되었습니다.`)
+      : (g.lcc>0.95 ? L(`One giant component links <b>${Math.round(g.lcc*100)}%</b> of nodes.`, `하나의 거대 성분이 노드의 <b>${Math.round(g.lcc*100)}%</b>를 연결합니다.`)
+        : L(`Threshold near the percolation point — the graph is breaking up.`, `임계값이 퍼콜레이션 임계점 부근입니다 — 그래프가 부서지고 있습니다.`));
+  }
+  function recompute(){ computeR(); const g=graphAt(S.thresh); S.lastG=g;
     document.getElementById("roD").textContent=g.density.toFixed(2);
     document.getElementById("roComp").textContent=g.ncomp;
     document.getElementById("roLCC").textContent=Math.round(g.lcc*100)+"%";
     document.getElementById("roClu").textContent=g.clu.toFixed(2);
-    document.getElementById("note").innerHTML = g.ncomp>=3
-      ? `Fragmented into <b>${g.ncomp}</b> components — the modules have separated.`
-      : (g.lcc>0.95 ? `One giant component links <b>${Math.round(g.lcc*100)}%</b> of nodes.` : `Threshold near the percolation point — the graph is breaking up.`);
+    updateNote();
     draw();
   }
 
@@ -338,6 +350,7 @@
   document.getElementById("regen").onclick=recompute;
 
   window.__onTheme=t=>{ C=PAL[t==='light'?'light':'dark']; draw(); };
+  window.__onLang=()=>{ updateNote(); draw(); };
   window.addEventListener("resize",()=>{ clearTimeout(window.__rt); window.__rt=setTimeout(draw,90); });
 
   computeR(); recompute();

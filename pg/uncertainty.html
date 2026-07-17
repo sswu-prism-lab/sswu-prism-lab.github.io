@@ -7,14 +7,15 @@
 (function(){
   function cur(){ try{ return localStorage.getItem('theme') || (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark':'light'); }catch(e){ return 'dark'; } }
   var t=cur(); window.__theme=t; document.documentElement.setAttribute('data-theme', t);
-  window.addEventListener('storage', function(e){ if(e.key==='theme'){ var n=e.newValue||'dark'; window.__theme=n; document.documentElement.setAttribute('data-theme', n); if(window.__onTheme) window.__onTheme(n); } });
+  try{ document.documentElement.setAttribute('data-lang', (localStorage.getItem('lang')||'en')); }catch(e){ document.documentElement.setAttribute('data-lang','en'); }
+  window.addEventListener('storage', function(e){ if(e.key==='theme'){ var n=e.newValue||'dark'; window.__theme=n; document.documentElement.setAttribute('data-theme', n); if(window.__onTheme) window.__onTheme(n); } if(e.key==='lang'){ document.documentElement.setAttribute('data-lang', e.newValue||'en'); if(window.__onLang) window.__onLang(); } });
 })();
 </script>
 
 <title>Uncertainty: Aleatoric vs Epistemic — PRISM Lab</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet" />
 <style>
   :root{
     --void:#ffffff; --panel:#f7f9fc; --panel-2:#eef2f8; --line:#e2e7ee;
@@ -27,6 +28,9 @@
     --ink:#e6edf3; --muted:#8b949e;
   }
   *{box-sizing:border-box}
+  html[data-lang="en"] .i18n-ko{ display:none !important; }
+  html[data-lang="ko"] .i18n-en{ display:none !important; }
+  .i18n-ko{ font-family:'Nanum Gothic','Inter',sans-serif; word-break:keep-all; }
   html,body{margin:0;padding:0}
   body{
     background:var(--void);
@@ -133,45 +137,52 @@
 <body>
 <div class="wrap">
 
-  <div class="topbar"><a class="back" href="index.html">← Playground</a></div>
-  <p class="eyebrow">PRISM · Machine Learning Playground</p>
-  <h1 class="title">Uncertainty: Aleatoric vs Epistemic<br><span class="thin">What the model doesn't know — and what it can never know</span></h1>
+  <div class="topbar"><a class="back" href="index.html"><span class="i18n-en">← Playground</span><span class="i18n-ko">← 놀이터</span></a></div>
+  <p class="eyebrow"><span class="i18n-en">PRISM · Machine Learning Playground</span><span class="i18n-ko">PRISM · 머신러닝 놀이터</span></p>
+  <h1 class="title"><span class="i18n-en">Uncertainty: Aleatoric vs Epistemic</span><span class="i18n-ko">불확실성: Aleatoric vs Epistemic</span><br><span class="thin"><span class="i18n-en">What the model doesn't know — and what it can never know</span><span class="i18n-ko">모델이 모르는 것 — 그리고 결코 알 수 없는 것</span></span></h1>
   <p class="subtitle">
+    <span class="i18n-en">
     Regress with a Gaussian process (GP) and split uncertainty in two.
     <b>epistemic</b> (teal) is <b>reducible</b> model uncertainty that shrinks as data grows and swells in empty regions and extrapolation;
     <b>aleatoric</b> (amber) is the <b>irreducible</b> observation noise that remains no matter how much data you gather.
     Click the canvas to place your own data points.
+    </span><span class="i18n-ko">
+    가우시안 과정(GP)으로 회귀하며 불확실성을 둘로 나눕니다.
+    <b>epistemic</b>(teal)은 데이터가 늘면 줄고 빈 구간·외삽에서 커지는 <b>환원 가능한</b> 모델 불확실성,
+    <b>aleatoric</b>(amber)은 데이터를 아무리 모아도 남는 <b>환원 불가능한</b> 관측 잡음입니다.
+    캔버스를 클릭해 데이터를 직접 찍어 보세요.
+    </span>
   </p>
 
   <div class="grid">
     <!-- ===== LEFT ===== -->
     <div>
       <div class="card stage">
-        <div class="card-h">GP regression · predictive band <span class="hint" id="regHint">Click to add data · move mouse to move the probe</span></div>
+        <div class="card-h"><span class="i18n-en">GP regression · predictive band</span><span class="i18n-ko">GP 회귀 · 예측 밴드</span> <span class="hint" id="regHint"><span class="i18n-en">Click to add data · move mouse to move the probe</span><span class="i18n-ko">클릭으로 데이터 추가 · 마우스로 탐침 이동</span></span></div>
         <div class="canvas-hold"><canvas id="reg"></canvas></div>
         <div class="blegend">
           <span><i style="background:rgba(94,234,212,.5)"></i>epistemic</span>
           <span><i style="background:rgba(255,194,75,.5)"></i>aleatoric</span>
-          <span><span class="ln"></span>mean μ</span>
-          <span><span class="ln ds"></span>true function</span>
+          <span><span class="ln"></span><span class="i18n-en">mean μ</span><span class="i18n-ko">평균 μ</span></span>
+          <span><span class="ln ds"></span><span class="i18n-en">true function</span><span class="i18n-ko">실제 함수</span></span>
         </div>
       </div>
 
       <div class="card stage">
-        <div class="card-h">Variance decomposition <span class="hint">Var_tot = Var_epi + Var_ale (variances add)</span></div>
+        <div class="card-h"><span class="i18n-en">Variance decomposition</span><span class="i18n-ko">분산 분해</span> <span class="hint">Var_tot = Var_epi + Var_ale <span class="i18n-en">(variances add)</span><span class="i18n-ko">(분산은 더해진다)</span></span></div>
         <div class="canvas-hold"><canvas id="decomp"></canvas></div>
-        <div class="axis-cap"><span>x = −5</span><span>input x</span><span>x = +5</span></div>
+        <div class="axis-cap"><span>x = −5</span><span><span class="i18n-en">input x</span><span class="i18n-ko">입력 x</span></span><span>x = +5</span></div>
       </div>
     </div>
 
     <!-- ===== RIGHT ===== -->
     <div>
       <div class="card">
-        <div class="card-h">Controls</div>
+        <div class="card-h"><span class="i18n-en">Controls</span><span class="i18n-ko">제어</span></div>
 
         <div class="ctl">
           <div class="ctl-top">
-            <span class="ctl-name">Data count N <span class="sub">add observations to shrink epistemic</span></span>
+            <span class="ctl-name"><span class="i18n-en">Data count N</span><span class="i18n-ko">데이터 수 N</span> <span class="sub"><span class="i18n-en">add observations to shrink epistemic</span><span class="i18n-ko">관측을 늘려 epistemic 축소</span></span></span>
             <span class="ctl-val" id="nV">0</span>
           </div>
           <input type="range" id="ndata" min="0" max="40" step="1" value="0" aria-label="Data count N" />
@@ -179,7 +190,7 @@
 
         <div class="ctl">
           <div class="ctl-top">
-            <span class="ctl-name">Noise σ <span class="sub">aleatoric · irreducible</span></span>
+            <span class="ctl-name"><span class="i18n-en">Noise σ</span><span class="i18n-ko">잡음 σ</span> <span class="sub"><span class="i18n-en">aleatoric · irreducible</span><span class="i18n-ko">aleatoric · 환원 불가</span></span></span>
             <span class="ctl-val" id="noiseV">0.15</span>
           </div>
           <input type="range" id="noise" min="0.02" max="0.8" step="0.01" value="0.15" aria-label="Noise sigma" />
@@ -187,44 +198,51 @@
 
         <div class="ctl">
           <div class="ctl-top">
-            <span class="ctl-name">Kernel width ℓ <span class="sub">lengthscale · reach of knowledge</span></span>
+            <span class="ctl-name"><span class="i18n-en">Kernel width ℓ</span><span class="i18n-ko">커널 폭 ℓ</span> <span class="sub"><span class="i18n-en">lengthscale · reach of knowledge</span><span class="i18n-ko">lengthscale · 지식의 도달거리</span></span></span>
             <span class="ctl-val" id="ellV">1.00</span>
           </div>
           <input type="range" id="ell" min="0.2" max="2.5" step="0.01" value="1.0" aria-label="lengthscale" />
         </div>
 
-        <div class="opt-row"><input type="checkbox" id="hetero" /><label for="hetero">heteroscedastic noise σ(x) — grows toward the right</label></div>
-        <div class="opt-row"><input type="checkbox" id="showSamp" checked /><label for="showSamp">show posterior function samples (plausible functions)</label></div>
-        <div class="opt-row"><input type="checkbox" id="showTrue" /><label for="showTrue">show true function</label></div>
+        <div class="opt-row"><input type="checkbox" id="hetero" /><label for="hetero"><span class="i18n-en">heteroscedastic noise σ(x) — grows toward the right</span><span class="i18n-ko">heteroscedastic 잡음 σ(x) — 오른쪽일수록 커짐</span></label></div>
+        <div class="opt-row"><input type="checkbox" id="showSamp" checked /><label for="showSamp"><span class="i18n-en">show posterior function samples (plausible functions)</span><span class="i18n-ko">사후 함수 샘플 표시 (그럴듯한 함수들)</span></label></div>
+        <div class="opt-row"><input type="checkbox" id="showTrue" /><label for="showTrue"><span class="i18n-en">show true function</span><span class="i18n-ko">실제 함수 표시</span></label></div>
 
         <div class="btnrow">
-          <button class="btn btn-primary wide" id="active">Next observation point → (active learning)</button>
-          <button class="btn" id="clear">Clear</button>
-          <button class="btn" id="reseed">Resample data</button>
+          <button class="btn btn-primary wide" id="active"><span class="i18n-en">Next observation point → (active learning)</span><span class="i18n-ko">다음 관측 지점 → (능동학습)</span></button>
+          <button class="btn" id="clear"><span class="i18n-en">Clear</span><span class="i18n-ko">지우기</span></button>
+          <button class="btn" id="reseed"><span class="i18n-en">Resample data</span><span class="i18n-ko">데이터 재생성</span></button>
         </div>
-        <div class="noteline" id="noteLine">Raise N from 0 and epistemic melts away near the data.</div>
+        <div class="noteline" id="noteLine"><span class="i18n-en">Raise N from 0 and epistemic melts away near the data.</span><span class="i18n-ko">N을 0에서 올리면 데이터 근처 epistemic이 녹아내립니다.</span></div>
       </div>
 
       <div class="card">
-        <div class="card-h">Probe <span id="probeX" style="color:#3f7f76;font-family:'JetBrains Mono',monospace;text-transform:none;letter-spacing:0">x = 2.00</span> <span id="uTag" class="u-tag epi">mostly epistemic</span></div>
+        <div class="card-h"><span class="i18n-en">Probe</span><span class="i18n-ko">탐침</span> <span id="probeX" style="color:#3f7f76;font-family:'JetBrains Mono',monospace;text-transform:none;letter-spacing:0">x = 2.00</span> <span id="uTag" class="u-tag epi"><span class="i18n-en">mostly epistemic</span><span class="i18n-ko">대부분 epistemic</span></span></div>
         <div class="ro-grid">
-          <div class="ro"><div class="k">mean μ(x)</div><div class="v" id="roMean">–</div></div>
-          <div class="ro"><div class="k">data count N</div><div class="v" id="roN">0</div></div>
+          <div class="ro"><div class="k"><span class="i18n-en">mean μ(x)</span><span class="i18n-ko">평균 μ(x)</span></div><div class="v" id="roMean">–</div></div>
+          <div class="ro"><div class="k"><span class="i18n-en">data count N</span><span class="i18n-ko">데이터 수 N</span></div><div class="v" id="roN">0</div></div>
           <div class="ro"><div class="k">epistemic σ</div><div class="v epi" id="roEpi">–</div></div>
           <div class="ro"><div class="k">aleatoric σ</div><div class="v ale" id="roAle">–</div></div>
-          <div class="ro"><div class="k">total σ (predictive)</div><div class="v" id="roTot">–</div></div>
-          <div class="ro"><div class="k">reducible fraction</div><div class="v" id="roRatio">–</div></div>
+          <div class="ro"><div class="k"><span class="i18n-en">total σ (predictive)</span><span class="i18n-ko">전체 σ (예측)</span></div><div class="v" id="roTot">–</div></div>
+          <div class="ro"><div class="k"><span class="i18n-en">reducible fraction</span><span class="i18n-ko">환원가능 비율</span></div><div class="v" id="roRatio">–</div></div>
         </div>
       </div>
 
       <div class="card try">
-        <div class="card-h">Try it</div>
-        <ol>
+        <div class="card-h"><span class="i18n-en">Try it</span><span class="i18n-ko">실험해 보기</span></div>
+        <ol class="i18n-en">
           <li><b>Shrink:</b> raise <span class="kbd">N</span> and the teal (epistemic) near the data disappears, leaving only amber below.</li>
           <li><b>Empty regions:</b> the center [1,3] and both ends (extrapolation) keep high teal even as data grows — where the model doesn't know.</li>
           <li><b>Irreducible:</b> raise <span class="kbd">σ</span> and amber thickens, but raising <span class="kbd">N</span> never removes that floor.</li>
           <li><b>Active learning:</b> <span class="kbd">Next observation point</span> places a point where epistemic is largest and collapses that peak.</li>
           <li><b>Input dependent:</b> turn on <span class="kbd">heteroscedastic</span> and aleatoric grows toward the right.</li>
+        </ol>
+        <ol class="i18n-ko">
+          <li><b>축소:</b> <span class="kbd">N</span>을 올리면 데이터 근처 teal(epistemic)이 사라지고, 아래에서 amber만 남습니다.</li>
+          <li><b>빈 구간:</b> 가운데 [1,3]과 양 끝(외삽)은 데이터를 늘려도 teal이 높습니다 — 모델이 모르는 곳.</li>
+          <li><b>환원 불가:</b> <span class="kbd">σ</span>를 키우면 amber가 두꺼워지지만, <span class="kbd">N</span>을 늘려도 그 바닥은 안 사라집니다.</li>
+          <li><b>능동학습:</b> <span class="kbd">다음 관측 지점</span>은 epistemic이 가장 큰 곳에 점을 찍어 그 봉우리를 꺼뜨립니다.</li>
+          <li><b>입력 의존:</b> <span class="kbd">heteroscedastic</span>을 켜면 오른쪽으로 갈수록 aleatoric이 커집니다.</li>
         </ol>
       </div>
     </div>
@@ -232,25 +250,26 @@
 
   <div class="explain">
     <div class="ex a">
-      <h4>Two kinds of uncertainty</h4>
-      <p><code>aleatoric</code> is the noise <code>σ(x)</code> of the data-generating process — it remains even with infinite data. <code>epistemic</code> is uncertainty about the function/parameters and shrinks as data grows. Variances add: <code>Var_tot = Var_epi + Var_ale</code>.</p>
+      <h4><span class="i18n-en">Two kinds of uncertainty</span><span class="i18n-ko">두 종류의 불확실성</span></h4>
+      <p><span class="i18n-en"><code>aleatoric</code> is the noise <code>σ(x)</code> of the data-generating process — it remains even with infinite data. <code>epistemic</code> is uncertainty about the function/parameters and shrinks as data grows. Variances add: <code>Var_tot = Var_epi + Var_ale</code>.</span><span class="i18n-ko"><code>aleatoric</code>는 데이터 생성 과정의 잡음 <code>σ(x)</code> — 무한히 모아도 남는다. <code>epistemic</code>은 함수/파라미터에 대한 불확실로 데이터가 늘면 준다. 분산은 더해진다: <code>Var_tot = Var_epi + Var_ale</code>.</span></p>
     </div>
     <div class="ex b">
-      <h4>GP posterior</h4>
-      <p>The kernel encodes "nearby inputs give similar outputs". Near observations the posterior function variance shrinks; far away it returns to the prior and grows up to <code>s²</code>. <code>ℓ</code> sets that reach, and the fan of function samples shows the epistemic part.</p>
+      <h4><span class="i18n-en">GP posterior</span><span class="i18n-ko">GP 사후분포</span></h4>
+      <p><span class="i18n-en">The kernel encodes "nearby inputs give similar outputs". Near observations the posterior function variance shrinks; far away it returns to the prior and grows up to <code>s²</code>. <code>ℓ</code> sets that reach, and the fan of function samples shows the epistemic part.</span><span class="i18n-ko">커널이 "가까운 입력은 비슷한 출력"을 인코딩한다. 관측 근처에선 사후 함수 분산이 작아지고, 멀어지면 prior로 돌아가 <code>s²</code>까지 커진다. <code>ℓ</code>이 그 도달거리를, 함수 샘플들의 부채꼴이 epistemic을 보여준다.</span></p>
     </div>
     <div class="ex c">
-      <h4>Why it matters (clinical)</h4>
-      <p><code>epistemic ↑</code> = OOD / data scarcity → flag it as "don't know" and use active learning to decide where to gather more. <code>aleatoric</code> is irreducible, like label disagreement between raters — directly tied to Bayesian uncertainty on small clinical datasets.</p>
+      <h4><span class="i18n-en">Why it matters (clinical)</span><span class="i18n-ko">왜 중요한가 (임상)</span></h4>
+      <p><span class="i18n-en"><code>epistemic ↑</code> = OOD / data scarcity → flag it as "don't know" and use active learning to decide where to gather more. <code>aleatoric</code> is irreducible, like label disagreement between raters — directly tied to Bayesian uncertainty on small clinical datasets.</span><span class="i18n-ko"><code>epistemic ↑</code> = OOD·데이터 부족 → "모른다"고 플래깅하고 능동학습으로 어디를 더 모을지 정한다. <code>aleatoric</code>는 rater 간 라벨 불일치처럼 환원 불가 — 소량 임상 데이터의 Bayesian uncertainty와 직결된다.</span></p>
     </div>
   </div>
 
-  <footer>PRISM Lab · prototype · <a href="https://sswu-prism-lab.github.io" target="_blank" rel="noopener">sswu-prism-lab.github.io</a></footer>
+  <footer>PRISM Lab · <span class="i18n-en">prototype</span><span class="i18n-ko">프로토타입</span> · <a href="https://sswu-prism-lab.github.io" target="_blank" rel="noopener">sswu-prism-lab.github.io</a></footer>
 </div>
 
 <script>
 (() => {
   "use strict";
+  function L(en,ko){ return document.documentElement.getAttribute('data-lang')==='ko' ? ko : en; }
   const C = { ink:"#e7ecff", muted:"#8493b8", line:"#26314f", cool:"#5eead4",
     sharp:"#ff6b5a", warmA:"#ffc24b", test:"#a78bff", panel:"#111a30" };
   function cssv(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim();}
@@ -519,9 +538,9 @@
     document.getElementById("roTot").textContent=Math.sqrt(vtot).toFixed(3);
     document.getElementById("roRatio").textContent=Math.round(ratio*100)+"%";
     const tag=document.getElementById("uTag");
-    if(ratio>0.7){ tag.textContent="mostly epistemic"; tag.className="u-tag epi"; }
-    else if(ratio>0.35){ tag.textContent="balanced"; tag.className="u-tag bal"; }
-    else { tag.textContent="mostly aleatoric"; tag.className="u-tag ale"; }
+    if(ratio>0.7){ tag.textContent=L("mostly epistemic","대부분 epistemic"); tag.className="u-tag epi"; }
+    else if(ratio>0.35){ tag.textContent=L("balanced","균형"); tag.className="u-tag bal"; }
+    else { tag.textContent=L("mostly aleatoric","대부분 aleatoric"); tag.className="u-tag ale"; }
   }
 
   function draw(){ refreshC(); drawReg(); drawDecomp(); updateReadouts(); }
@@ -538,7 +557,7 @@
     const x=clamp(p2X(e.clientX-r.left, cvR.clientWidth), XMIN, XMAX);
     const y=clamp(p2Y(e.clientY-r.top, cvR.clientHeight), YMIN, YMAX);
     S.extra.push({x,y}); update();
-    document.getElementById("noteLine").textContent="Observation added — epistemic nearby drops immediately.";
+    document.getElementById("noteLine").textContent=L("Observation added — epistemic nearby drops immediately.","관측 추가 — 그 근처 epistemic이 즉시 줄어듭니다.");
   });
 
   // ---------- controls ----------
@@ -559,19 +578,20 @@
     let bi=0,bv=-1; for(let i=0;i<S.gvepi.length;i++) if(S.gvepi[i]>bv){bv=S.gvepi[i];bi=i;}
     const x=S.gx[bi], y=fTrue(x)+sigAt(x)*gauss();
     S.extra.push({x,y}); update();
-    document.getElementById("noteLine").innerHTML=`Observation added at max-epistemic point <b>x=${x.toFixed(2)}</b> — the peak collapses.`;
+    document.getElementById("noteLine").innerHTML=L(`Observation added at max-epistemic point <b>x=${x.toFixed(2)}</b> — the peak collapses.`,`epistemic 최대 지점 <b>x=${x.toFixed(2)}</b> 에 관측 추가 — 봉우리가 꺼집니다.`);
   };
   document.getElementById("clear").onclick=()=>{
     S.extra=[]; S.N=0; document.getElementById("ndata").value=0; document.getElementById("nV").textContent="0";
-    update(); document.getElementById("noteLine").textContent="All data cleared (prior = uniform epistemic).";
+    update(); document.getElementById("noteLine").textContent=L("All data cleared (prior = uniform epistemic).","데이터를 모두 지웠습니다 (사전분포 = 균일한 epistemic).");
   };
   document.getElementById("reseed").onclick=()=>{ genPool(); update();
-    document.getElementById("noteLine").textContent="Data resampled with a fresh noise realization."; };
+    document.getElementById("noteLine").textContent=L("Data resampled with a fresh noise realization.","새로운 잡음 실현으로 데이터를 다시 뽑았습니다."); };
 
   window.addEventListener("resize",()=>{ clearTimeout(window.__rt); window.__rt=setTimeout(draw,80); });
 
   // ---------- init ----------
   window.__onTheme = function(){ draw(); };
+  window.__onLang = function(){ draw(); };
   genPool();
   update();
 })();

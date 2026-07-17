@@ -7,17 +7,21 @@
 (function(){
   function cur(){ try{ return localStorage.getItem('theme') || (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark':'light'); }catch(e){ return 'dark'; } }
   var t=cur(); window.__theme=t; document.documentElement.setAttribute('data-theme', t);
-  window.addEventListener('storage', function(e){ if(e.key==='theme'){ var n=e.newValue||'dark'; window.__theme=n; document.documentElement.setAttribute('data-theme', n); if(window.__onTheme) window.__onTheme(n); } });
+  try{ document.documentElement.setAttribute('data-lang', (localStorage.getItem('lang')||'en')); }catch(e){ document.documentElement.setAttribute('data-lang','en'); }
+  window.addEventListener('storage', function(e){ if(e.key==='theme'){ var n=e.newValue||'dark'; window.__theme=n; document.documentElement.setAttribute('data-theme', n); if(window.__onTheme) window.__onTheme(n); } if(e.key==='lang'){ document.documentElement.setAttribute('data-lang', e.newValue||'en'); if(window.__onLang) window.__onLang(); } });
 })();
 </script>
 
 <title>Principal Component Analysis — PRISM Lab</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <style>
 * { box-sizing: border-box; }
+html[data-lang="en"] .i18n-ko{ display:none !important; }
+html[data-lang="ko"] .i18n-en{ display:none !important; }
+.i18n-ko{ font-family:'Nanum Gothic','Inter',sans-serif; word-break:keep-all; }
 :root {
   color-scheme: light;
   --bg:#ffffff; --panel:#f7f9fc; --panel-2:#eef2f8; --ink:#141b33; --muted:#5a6488;
@@ -129,99 +133,99 @@ canvas { display:block; width:100%; }
 </head>
 <body>
 <div class="wrap">
-  <div class="topbar"><a class="back" href="index.html">← Playground</a></div>
-  <p class="eyebrow">PRISM · Machine Learning Playground</p>
-  <h1 class="title">Principal Component Analysis<br><span class="thin">Find the direction of maximum variance — unsupervised dimensionality reduction</span></h1>
+  <div class="topbar"><a class="back" href="index.html"><span class="i18n-en">← Playground</span><span class="i18n-ko">← 놀이터</span></a></div>
+  <p class="eyebrow"><span class="i18n-en">PRISM · Machine Learning Playground</span><span class="i18n-ko">PRISM · 머신러닝 놀이터</span></p>
+  <h1 class="title"><span class="i18n-en">Principal Component Analysis</span><span class="i18n-ko">주성분 분석</span><br><span class="thin"><span class="i18n-en">Find the direction of maximum variance — unsupervised dimensionality reduction</span><span class="i18n-ko">분산이 최대가 되는 방향을 찾아라 — 비지도 차원 축소</span></span></h1>
 
 <main>
 <div class="layout">
   <aside class="panel side">
     <div class="grp">
-      <div class="grp-t">Data generation</div>
-      <label class="sl"><span>Sample size n <b id="pNV" class="val">60</b></span>
+      <div class="grp-t"><span class="i18n-en">Data generation</span><span class="i18n-ko">데이터 생성</span></div>
+      <label class="sl"><span><span class="i18n-en">Sample size n</span><span class="i18n-ko">표본 수 n</span> <b id="pNV" class="val">60</b></span>
         <input type="range" id="pN" min="10" max="200" step="5" value="60"></label>
-      <label class="sl"><span>Spread &sigma;&#8321; (major axis) <b id="pS1V" class="val">2.0</b></span>
+      <label class="sl"><span><span class="i18n-en">Spread &sigma;&#8321; (major axis)</span><span class="i18n-ko">퍼짐 &sigma;&#8321; (장축)</span> <b id="pS1V" class="val">2.0</b></span>
         <input type="range" id="pS1" min="0.3" max="3" step="0.1" value="2"></label>
-      <label class="sl"><span>Spread &sigma;&#8322; (minor axis) <b id="pS2V" class="val">0.6</b></span>
+      <label class="sl"><span><span class="i18n-en">Spread &sigma;&#8322; (minor axis)</span><span class="i18n-ko">퍼짐 &sigma;&#8322; (단축)</span> <b id="pS2V" class="val">0.6</b></span>
         <input type="range" id="pS2" min="0.1" max="3" step="0.1" value="0.6"></label>
-      <label class="sl"><span>Data rotation angle <b id="pRotV" class="val">25&deg;</b></span>
+      <label class="sl"><span><span class="i18n-en">Data rotation angle</span><span class="i18n-ko">데이터 회전각</span> <b id="pRotV" class="val">25&deg;</b></span>
         <input type="range" id="pRot" min="0" max="180" step="1" value="25"></label>
       <div class="btnrow">
-        <button id="pGen" class="btn">Regenerate</button>
-        <button id="pUndo" class="btn">&#8617; Undo point</button>
-        <button id="pClear" class="btn ghost">Clear all</button>
+        <button id="pGen" class="btn"><span class="i18n-en">Regenerate</span><span class="i18n-ko">재생성</span></button>
+        <button id="pUndo" class="btn">&#8617; <span class="i18n-en">Undo point</span><span class="i18n-ko">한 점 취소</span></button>
+        <button id="pClear" class="btn ghost"><span class="i18n-en">Clear all</span><span class="i18n-ko">모두 지우기</span></button>
       </div>
-      <p class="hint">Moving a generation slider regenerates the data &middot; Click the plot to add a point</p>
+      <p class="hint"><span class="i18n-en">Moving a generation slider regenerates the data &middot; Click the plot to add a point</span><span class="i18n-ko">생성 슬라이더를 움직이면 데이터가 다시 생성됩니다 &middot; 그래프 클릭 = 점 추가</span></p>
     </div>
     <div class="grp">
-      <div class="grp-t">Search direction w(&theta;)</div>
+      <div class="grp-t"><span class="i18n-en">Search direction w(&theta;)</span><span class="i18n-ko">탐색 방향 w(&theta;)</span></div>
       <label class="sl"><span>&theta; <b id="pThV" class="val">30&deg;</b></span>
         <input type="range" id="pTh" min="0" max="180" step="1" value="30"></label>
       <div class="btnrow">
-        <button id="pScan" class="btn accent">Scan &theta; &#9654;</button>
-        <button id="pSnap" class="btn">Snap to PC1</button>
+        <button id="pScan" class="btn accent"><span class="i18n-en">Scan &theta;</span><span class="i18n-ko">&theta; 스캔</span> &#9654;</button>
+        <button id="pSnap" class="btn"><span class="i18n-en">Snap to PC1</span><span class="i18n-ko">PC1로 스냅</span></button>
       </div>
-      <p class="hint">Click/drag the curve below to change &theta;</p>
+      <p class="hint"><span class="i18n-en">Click/drag the curve below to change &theta;</span><span class="i18n-ko">아래 곡선을 클릭/드래그해도 &theta;가 바뀝니다</span></p>
     </div>
     <div class="grp">
-      <div class="grp-t">Display</div>
-      <label class="ck"><input type="checkbox" id="pShowAxes" checked><i class="sw c-pc1"></i>Principal axes PC1 &middot; PC2</label>
-      <label class="ck"><input type="checkbox" id="pShowProj" checked><i class="dot c-w"></i>Projected points</label>
-      <label class="ck"><input type="checkbox" id="pShowResid" checked><i class="sw thin c-resid"></i>Residuals (reconstruction error)</label>
+      <div class="grp-t"><span class="i18n-en">Display</span><span class="i18n-ko">표시</span></div>
+      <label class="ck"><input type="checkbox" id="pShowAxes" checked><i class="sw c-pc1"></i><span class="i18n-en">Principal axes PC1 &middot; PC2</span><span class="i18n-ko">주성분 축 PC1 &middot; PC2</span></label>
+      <label class="ck"><input type="checkbox" id="pShowProj" checked><i class="dot c-w"></i><span class="i18n-en">Projected points</span><span class="i18n-ko">투영점</span></label>
+      <label class="ck"><input type="checkbox" id="pShowResid" checked><i class="sw thin c-resid"></i><span class="i18n-en">Residuals (reconstruction error)</span><span class="i18n-ko">잔차 (재구성 오차)</span></label>
     </div>
   </aside>
 
   <div class="stage">
     <div class="panel plot">
       <div class="plot-head">
-        <span>Total variance tr(&Sigma;) = projected + residual = <b id="pTr">&mdash;</b></span>
+        <span><span class="i18n-en">Total variance tr(&Sigma;) = projected + residual =</span><span class="i18n-ko">총 분산 tr(&Sigma;) = 투영 + 잔차 =</span> <b id="pTr">&mdash;</b></span>
       </div>
       <canvas id="pCv"></canvas>
       <div class="legend">
-        <span><i class="swp"></i>Data</span>
-        <span><i class="dot c-ink"></i>Mean x&#772;</span>
-        <span><i class="sw c-w"></i>Direction w(&theta;)</span>
-        <span><i class="dot c-w"></i>Projected point</span>
-        <span><i class="sw thin c-resid"></i>Residual</span>
+        <span><i class="swp"></i><span class="i18n-en">Data</span><span class="i18n-ko">데이터</span></span>
+        <span><i class="dot c-ink"></i><span class="i18n-en">Mean x&#772;</span><span class="i18n-ko">평균 x&#772;</span></span>
+        <span><i class="sw c-w"></i><span class="i18n-en">Direction w(&theta;)</span><span class="i18n-ko">방향 w(&theta;)</span></span>
+        <span><i class="dot c-w"></i><span class="i18n-en">Projected point</span><span class="i18n-ko">투영점</span></span>
+        <span><i class="sw thin c-resid"></i><span class="i18n-en">Residual</span><span class="i18n-ko">잔차</span></span>
         <span><i class="sw c-pc1"></i>PC1 (&plusmn;2&radic;&lambda;&#8321;)</span>
         <span><i class="sw c-pc2"></i>PC2 (&plusmn;2&radic;&lambda;&#8322;)</span>
       </div>
     </div>
 
     <div class="panel plot">
-      <div class="plot-cap">Projected variance w&#7488;&Sigma;w vs direction &theta; &mdash; the maximum is PC1(&lambda;&#8321;), the minimum is PC2(&lambda;&#8322;)</div>
+      <div class="plot-cap"><span class="i18n-en">Projected variance w&#7488;&Sigma;w vs direction &theta; &mdash; the maximum is PC1(&lambda;&#8321;), the minimum is PC2(&lambda;&#8322;)</span><span class="i18n-ko">투영 분산 w&#7488;&Sigma;w vs 방향 &theta; &mdash; 최대점이 PC1(&lambda;&#8321;), 최소점이 PC2(&lambda;&#8322;)</span></div>
       <canvas id="pLand"></canvas>
     </div>
 
     <div class="cards">
       <div class="card w">
         <div class="k">w(&theta;)</div>
-        <div class="nm">Direction being searched</div>
-        <div class="stat"><span>Projected variance w&#7488;&Sigma;w</span><b id="pProj">&mdash;</b></div>
-        <div class="stat"><span>Reconstruction error</span><b id="pResid">&mdash;</b></div>
-        <div class="stat"><span>Explained ratio</span><b id="pRatioW">&mdash;</b></div>
-        <p class="note">Variance decomposition when projecting onto an arbitrary direction</p>
+        <div class="nm"><span class="i18n-en">Direction being searched</span><span class="i18n-ko">탐색 중인 방향</span></div>
+        <div class="stat"><span><span class="i18n-en">Projected variance w&#7488;&Sigma;w</span><span class="i18n-ko">투영 분산 w&#7488;&Sigma;w</span></span><b id="pProj">&mdash;</b></div>
+        <div class="stat"><span><span class="i18n-en">Reconstruction error</span><span class="i18n-ko">재구성 오차</span></span><b id="pResid">&mdash;</b></div>
+        <div class="stat"><span><span class="i18n-en">Explained ratio</span><span class="i18n-ko">설명 비율</span></span><b id="pRatioW">&mdash;</b></div>
+        <p class="note"><span class="i18n-en">Variance decomposition when projecting onto an arbitrary direction</span><span class="i18n-ko">임의 방향에 투영했을 때의 분산 분해</span></p>
       </div>
       <div class="card pc1">
         <div class="k">PC1</div>
-        <div class="nm">First principal component</div>
+        <div class="nm"><span class="i18n-en">First principal component</span><span class="i18n-ko">첫 번째 주성분</span></div>
         <div class="stat"><span>&lambda;&#8321;</span><b id="pL1">&mdash;</b></div>
-        <div class="stat"><span>Direction angle &theta;&#8321;</span><b id="pTh1">&mdash;</b></div>
-        <div class="stat"><span>Explained ratio</span><b id="pR1">&mdash;</b></div>
-        <p class="note">Maximum of w&#7488;&Sigma;w &mdash; first eigenvector</p>
+        <div class="stat"><span><span class="i18n-en">Direction angle &theta;&#8321;</span><span class="i18n-ko">방향각 &theta;&#8321;</span></span><b id="pTh1">&mdash;</b></div>
+        <div class="stat"><span><span class="i18n-en">Explained ratio</span><span class="i18n-ko">설명 비율</span></span><b id="pR1">&mdash;</b></div>
+        <p class="note"><span class="i18n-en">Maximum of w&#7488;&Sigma;w &mdash; first eigenvector</span><span class="i18n-ko">w&#7488;&Sigma;w의 최대 &mdash; 첫 고유벡터</span></p>
       </div>
       <div class="card pc2">
         <div class="k">PC2</div>
-        <div class="nm">Second principal component</div>
+        <div class="nm"><span class="i18n-en">Second principal component</span><span class="i18n-ko">두 번째 주성분</span></div>
         <div class="stat"><span>&lambda;&#8322;</span><b id="pL2">&mdash;</b></div>
-        <div class="stat"><span>Direction angle</span><b id="pTh2">&mdash;</b></div>
-        <div class="stat"><span>Explained ratio</span><b id="pR2">&mdash;</b></div>
-        <p class="note">Orthogonal to PC1 &mdash; remaining variance</p>
+        <div class="stat"><span><span class="i18n-en">Direction angle</span><span class="i18n-ko">방향각</span></span><b id="pTh2">&mdash;</b></div>
+        <div class="stat"><span><span class="i18n-en">Explained ratio</span><span class="i18n-ko">설명 비율</span></span><b id="pR2">&mdash;</b></div>
+        <p class="note"><span class="i18n-en">Orthogonal to PC1 &mdash; remaining variance</span><span class="i18n-ko">PC1과 직교 &mdash; 남은 분산</span></p>
       </div>
     </div>
 
     <details class="panel fold">
-      <summary>Formulas</summary>
+      <summary><span class="i18n-en">Formulas</span><span class="i18n-ko">수식</span></summary>
       <div class="fold-body">
         $$\bar{\mathbf x}=\tfrac1n\textstyle\sum_i \mathbf x_i,\qquad \Sigma=\tfrac1n\textstyle\sum_i(\mathbf x_i-\bar{\mathbf x})(\mathbf x_i-\bar{\mathbf x})^\top$$
         $$\max_{\|\mathbf w\|=1}\ \mathbf w^\top\Sigma\,\mathbf w\ \Longrightarrow\ \Sigma\mathbf w=\lambda\mathbf w\quad(\text{Lagrange multiplier }\lambda)$$
@@ -231,21 +235,21 @@ canvas { display:block; width:100%; }
     </details>
 
     <details class="panel fold">
-      <summary>What to watch</summary>
+      <summary><span class="i18n-en">What to watch</span><span class="i18n-ko">수업 관찰 포인트</span></summary>
       <div class="fold-body">
         <ol>
-          <li>Press <b>Scan &theta;</b> and the projected variance traces a sinusoid &mdash; the direction of the maximum is PC1 and its value is &lambda;&#8321;, while the minimum 90&deg; away is PC2(&lambda;&#8322;). &ldquo;Finding&rdquo; the eigenvectors is exactly optimizing this curve.</li>
-          <li>At any &theta;, <b>projected variance + reconstruction error = tr(&Sigma;)</b> (Pythagoras). Maximizing variance and minimizing reconstruction error are two expressions of the same problem.</li>
-          <li>Raise &sigma;&#8322; close to &sigma;&#8321; (isotropy) and the curve flattens with the explained ratio near 50% &mdash; the principal direction becomes essentially meaningless, and adding just a few points swings the axes a lot.</li>
-          <li>Try clicking to add a single far-off outlier &mdash; being variance-based, the axes get pulled toward it sensitively (PCA's outlier sensitivity).</li>
-          <li>Note that there are no labels at all &mdash; PCA is <b>unsupervised</b> learning that only looks at the spread of the data.</li>
+          <li><span class="i18n-en">Press <b>Scan &theta;</b> and the projected variance traces a sinusoid &mdash; the direction of the maximum is PC1 and its value is &lambda;&#8321;, while the minimum 90&deg; away is PC2(&lambda;&#8322;). &ldquo;Finding&rdquo; the eigenvectors is exactly optimizing this curve.</span><span class="i18n-ko"><b>&theta; 스캔</b>을 누르면 투영 분산이 사인 곡선을 그린다 &mdash; 최대점의 방향이 PC1이고 그 값이 &lambda;&#8321;, 90&deg; 떨어진 최소점이 PC2(&lambda;&#8322;). 고유벡터를 &ldquo;찾는&rdquo; 일이 곧 이 곡선의 최적화다.</span></li>
+          <li><span class="i18n-en">At any &theta;, <b>projected variance + reconstruction error = tr(&Sigma;)</b> (Pythagoras). Maximizing variance and minimizing reconstruction error are two expressions of the same problem.</span><span class="i18n-ko">어느 &theta;에서든 <b>투영 분산 + 재구성 오차 = tr(&Sigma;)</b> (피타고라스). 분산 최대화와 재구성 오차 최소화는 같은 문제의 두 표현이다.</span></li>
+          <li><span class="i18n-en">Raise &sigma;&#8322; close to &sigma;&#8321; (isotropy) and the curve flattens with the explained ratio near 50% &mdash; the principal direction becomes essentially meaningless, and adding just a few points swings the axes a lot.</span><span class="i18n-ko">&sigma;&#8322;를 &sigma;&#8321;에 가깝게 올리면(등방성) 곡선이 평평해지고 설명 비율이 50%로 &mdash; 주성분 방향이 사실상 무의미해지고, 점 몇 개만 추가해도 축이 크게 돈다.</span></li>
+          <li><span class="i18n-en">Try clicking to add a single far-off outlier &mdash; being variance-based, the axes get pulled toward it sensitively (PCA's outlier sensitivity).</span><span class="i18n-ko">멀리 이상치 하나를 클릭해 추가해 보라 &mdash; 분산 기반이라 축이 민감하게 끌려간다 (PCA의 이상치 민감성).</span></li>
+          <li><span class="i18n-en">Note that there are no labels at all &mdash; PCA is <b>unsupervised</b> learning that only looks at the spread of the data.</span><span class="i18n-ko">라벨이 전혀 없다는 점에 주목 &mdash; PCA는 데이터의 퍼진 모양만 보는 <b>비지도</b> 학습이다.</span></li>
         </ol>
       </div>
     </details>
   </div>
 </div>
 </main>
-  <footer>PRISM Lab · prototype · <a href="https://sswu-prism-lab.github.io" target="_blank" rel="noopener">sswu-prism-lab.github.io</a></footer>
+  <footer>PRISM Lab · <span class="i18n-en">prototype</span><span class="i18n-ko">프로토타입</span> · <a href="https://sswu-prism-lab.github.io" target="_blank" rel="noopener">sswu-prism-lab.github.io</a></footer>
 </div>
 
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
@@ -253,6 +257,8 @@ canvas { display:block; width:100%; }
 <script>
 'use strict';
 /* PCA interactive playground — direction search, eigen axes, variance landscape */
+
+function L(en,ko){ return document.documentElement.getAttribute('data-lang')==='ko' ? ko : en; }
 
 /* ===MATH-BEGIN=== */
 function randn() {
@@ -495,7 +501,7 @@ function pcaDrawMain(st) {
     ctx.fillStyle = cssv('--muted');
     ctx.font = '13px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('Click the plot to add points', cx, cy);
+    ctx.fillText(L('Click the plot to add points', '그래프를 클릭해 점을 추가하세요'), cx, cy);
   }
   ctx.restore();
 }
@@ -681,6 +687,7 @@ window.addEventListener('load', tryMath);
 wire();
 pcaGen();
 window.__onTheme = function(){ pcaRender(); };
+window.__onLang = function(){ pcaRender(); };
 pcaRender();
 
 </script>

@@ -10,6 +10,7 @@
 - title: "A Novel Self-Supervised Deep Learning Framework for Pattern Recognition of Neurodegenerative Disease via Graph-based Phenotype–Genotype Relation Modeling"
   image: sac26.png
   description: "We designe a novel graph neural network architecture and data-oriented self-supervised learning strategy for imaging genetics."
+  description_ko: "이미징 유전체학(imaging genetics)을 위한 새로운 그래프 신경망(GNN) 구조와 데이터 지향 자기지도학습 전략을 설계했습니다."
   authors: C. Park* & M. Cho*, Y. Kim, W. Jung, W. Ko
   link:
     url: https://dl.acm.org/doi/10.1145/3748522.3779733
@@ -30,6 +31,7 @@
 - title: "EEG-Oriented Self-Supervised Learning with Triple Information Pathways Network"
   image: tcyb25.png
   description: "We designe a novel deep neural network architecture, adaptive layer normalization algorithm, and data-oriented self-supervised learning strategy for EEG analysis."
+  description_ko: "EEG 분석을 위한 새로운 심층 신경망 구조, 적응형 계층 정규화(adaptive layer normalization) 알고리즘, 그리고 데이터 지향 자기지도학습 전략을 설계했습니다."
   authors: W. Ko, S. Jeong, S.-K. Song, H.-I. Suk
   link:
     url: https://ieeexplore.ieee.org/abstract/document/10588965
@@ -67,6 +69,7 @@
 - title: "A Deep Generative-Discriminative Learning for Multi-modal Representation in Imaging Genetics"
   image: tmi22.png
   description: "We designe a deep generative-discriminative learning framework for modeling phenotype-genotype relations."
+  description_ko: "표현형–유전형 관계를 모델링하기 위한 심층 생성–판별 학습(generative–discriminative learning) 프레임워크를 설계했습니다."
   authors: W. Ko, W. Jung, E. Jeon, H.-I. Suk
   link:
     url: https://ieeexplore.ieee.org/document/9743914
@@ -113,6 +116,7 @@
 - title: "A Novel RL-assisted Deep Learning Framework for Task-informative Signals Selection and Classification for Spontaneous BCIs"
   image: tii22.png
   description: "We devise a reinforcement learning algorithm for representing spontaneously generated EEG signals."
+  description_ko: "자발적으로 생성되는 EEG 신호를 표현하기 위한 강화학습 알고리즘을 고안했습니다."
   authors: W. Ko, E. Jeon, H.-I. Suk
   link:
     url: https://ieeexplore.ieee.org/abstract/document/9293035
@@ -168,6 +172,7 @@
 - title: "A Unified Framework for Personalized Regions Selection and Functional Relation Modeling for Early MCI Identification"
   image: neuroimage21.png
   description: "We devise a reinforcement learning algorithm for automatically selecting important brain regions for neurodegenerative disease diagnosis."
+  description_ko: "신경퇴행성 질환 진단을 위해 중요한 뇌 영역을 자동으로 선택하는 강화학습 알고리즘을 고안했습니다."
   authors: J. Lee* & W. Ko*, E. Kang, H.-I. Suk
   link:
     url: https://www.sciencedirect.com/science/article/pii/S1053811921003256
@@ -178,6 +183,7 @@
 - title: "Multi-Scale Neural Network for EEG Representation Learning in BCI"
   image: cim21.png
   description: "We design a robust deep neural network architecture for various EEG paradigms."
+  description_ko: "다양한 EEG 패러다임에 강건한 심층 신경망 구조를 설계했습니다."
   authors: W. Ko, E. Jeon, S. Jeong, H.-I. Suk
   link:
     url: https://ieeexplore.ieee.org/abstract/document/9403717

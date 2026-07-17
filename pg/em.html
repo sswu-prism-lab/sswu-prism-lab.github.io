@@ -7,17 +7,21 @@
 (function(){
   function cur(){ try{ return localStorage.getItem('theme') || (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark':'light'); }catch(e){ return 'dark'; } }
   var t=cur(); window.__theme=t; document.documentElement.setAttribute('data-theme', t);
-  window.addEventListener('storage', function(e){ if(e.key==='theme'){ var n=e.newValue||'dark'; window.__theme=n; document.documentElement.setAttribute('data-theme', n); if(window.__onTheme) window.__onTheme(n); } });
+  try{ document.documentElement.setAttribute('data-lang', (localStorage.getItem('lang')||'en')); }catch(e){ document.documentElement.setAttribute('data-lang','en'); }
+  window.addEventListener('storage', function(e){ if(e.key==='theme'){ var n=e.newValue||'dark'; window.__theme=n; document.documentElement.setAttribute('data-theme', n); if(window.__onTheme) window.__onTheme(n); } if(e.key==='lang'){ document.documentElement.setAttribute('data-lang', e.newValue||'en'); if(window.__onLang) window.__onLang(); } });
 })();
 </script>
 
 <title>EM Algorithm · Gaussian Mixture — PRISM Lab</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <style>
 * { box-sizing: border-box; }
+html[data-lang="en"] .i18n-ko{ display:none !important; }
+html[data-lang="ko"] .i18n-en{ display:none !important; }
+.i18n-ko{ font-family:'Nanum Gothic','Inter',sans-serif; word-break:keep-all; }
 :root {
   color-scheme: light;
   --bg:#ffffff; --panel:#f7f9fc; --panel-2:#eef2f8; --ink:#141b33; --muted:#5a6488;
@@ -145,32 +149,32 @@ canvas { display:block; width:100%; }
 </head>
 <body>
 <div class="wrap">
-  <div class="topbar"><a class="back" href="index.html">← Playground</a></div>
-  <p class="eyebrow">PRISM · Machine Learning Playground</p>
-  <h1 class="title">EM Algorithm · Gaussian Mixture<br><span class="thin">Alternately raise the likelihood's lower bound — coordinate descent for latent-variable estimation</span></h1>
+  <div class="topbar"><a class="back" href="index.html"><span class="i18n-en">← Playground</span><span class="i18n-ko">← 놀이터</span></a></div>
+  <p class="eyebrow"><span class="i18n-en">PRISM · Machine Learning Playground</span><span class="i18n-ko">PRISM · 머신러닝 놀이터</span></p>
+  <h1 class="title"><span class="i18n-en">EM Algorithm · Gaussian Mixture</span><span class="i18n-ko">EM 알고리즘 · 가우시안 혼합</span><br><span class="thin"><span class="i18n-en">Alternately raise the likelihood's lower bound — coordinate descent for latent-variable estimation</span><span class="i18n-ko">우도의 하한을 번갈아 밀어 올려라 — 잠재변수 추정의 좌표 하강</span></span></h1>
 
 <main>
 <div class="layout">
   <aside class="panel side">
     <div class="grp">
-      <div class="grp-t">Data</div>
+      <div class="grp-t"><span class="i18n-en">Data</span><span class="i18n-ko">데이터</span></div>
       <div class="chips">
-        <button class="dchip active" data-d="sep">Separated 3 clusters</button>
-        <button class="dchip" data-d="overlap">Overlapping</button>
-        <button class="dchip" data-d="aniso">Elongated</button>
-        <button class="dchip" data-d="ring">Ring</button>
+        <button class="dchip active" data-d="sep"><span class="i18n-en">Separated 3 clusters</span><span class="i18n-ko">분리 3군집</span></button>
+        <button class="dchip" data-d="overlap"><span class="i18n-en">Overlapping</span><span class="i18n-ko">겹침</span></button>
+        <button class="dchip" data-d="aniso"><span class="i18n-en">Elongated</span><span class="i18n-ko">길쭉</span></button>
+        <button class="dchip" data-d="ring"><span class="i18n-en">Ring</span><span class="i18n-ko">고리</span></button>
       </div>
-      <label class="sl"><span>Sample size n <b id="eNV" class="val">150</b></span>
+      <label class="sl"><span><span class="i18n-en">Sample size n</span><span class="i18n-ko">표본 수 n</span> <b id="eNV" class="val">150</b></span>
         <input type="range" id="eN" min="30" max="300" step="10" value="150"></label>
       <div class="btnrow">
-        <button id="eGen" class="btn">Regenerate</button>
-        <button id="eUndo" class="btn">&#8617; Undo point</button>
-        <button id="eClear" class="btn ghost">Clear</button>
+        <button id="eGen" class="btn"><span class="i18n-en">Regenerate</span><span class="i18n-ko">재생성</span></button>
+        <button id="eUndo" class="btn">&#8617; <span class="i18n-en">Undo point</span><span class="i18n-ko">한 점 취소</span></button>
+        <button id="eClear" class="btn ghost"><span class="i18n-en">Clear</span><span class="i18n-ko">지우기</span></button>
       </div>
-      <p class="hint">Click the graph = add a point (no labels &mdash; unsupervised)</p>
+      <p class="hint"><span class="i18n-en">Click the graph = add a point (no labels &mdash; unsupervised)</span><span class="i18n-ko">그래프 클릭 = 점 추가 (라벨 없음 &mdash; 비지도)</span></p>
     </div>
     <div class="grp">
-      <div class="grp-t">Model &middot; mixture of Gaussians</div>
+      <div class="grp-t"><span class="i18n-en">Model &middot; mixture of Gaussians</span><span class="i18n-ko">모델 &middot; mixture of Gaussians</span></div>
       <div class="segs">
         <button class="seg kseg" data-k="2">K=2</button>
         <button class="seg kseg active" data-k="3">K=3</button>
@@ -178,40 +182,40 @@ canvas { display:block; width:100%; }
       </div>
       <div class="segs">
         <button class="seg vseg active" data-v="full">Full &Sigma;</button>
-        <button class="seg vseg" data-v="iso">Spherical &sigma;&sup2;I</button>
+        <button class="seg vseg" data-v="iso"><span class="i18n-en">Spherical &sigma;&sup2;I</span><span class="i18n-ko">구형 &sigma;&sup2;I</span></button>
       </div>
-      <label class="ck"><input type="checkbox" id="eHard"><span>Hard assignment (K-means-style &gamma;)</span></label>
+      <label class="ck"><input type="checkbox" id="eHard"><span><span class="i18n-en">Hard assignment (K-means-style &gamma;)</span><span class="i18n-ko">Hard assignment (K-means식 &gamma;)</span></span></label>
     </div>
     <div class="grp">
-      <div class="grp-t">Run</div>
+      <div class="grp-t"><span class="i18n-en">Run</span><span class="i18n-ko">실행</span></div>
       <div class="btnrow">
         <button id="bE" class="btn estep">E-step</button>
         <button id="bM" class="btn mstep">M-step</button>
       </div>
       <div class="btnrow">
-        <button id="bAuto" class="btn auto">&#9654; Auto run</button>
-        <button id="bInit" class="btn">Reinitialize</button>
+        <button id="bAuto" class="btn auto">&#9654; <span class="i18n-en">Auto run</span><span class="i18n-ko">자동 실행</span></button>
+        <button id="bInit" class="btn"><span class="i18n-en">Reinitialize</span><span class="i18n-ko">재초기화</span></button>
       </div>
-      <p class="hint">E changes only point colors (&gamma;), M changes only the ellipses (&theta;) &mdash; press them alternately</p>
+      <p class="hint"><span class="i18n-en">E changes only point colors (&gamma;), M changes only the ellipses (&theta;) &mdash; press them alternately</span><span class="i18n-ko">E는 점 색(&gamma;)만, M은 타원(&theta;)만 바꿉니다 &mdash; 번갈아 눌러보세요</span></p>
     </div>
   </aside>
 
   <div class="stage">
     <div class="panel plot">
       <div class="plot-head">
-        <span>iteration t = <b id="eIter">0</b> &middot; next: <b id="ePhase">E-step (&gamma;)</b></span>
+        <span>iteration t = <b id="eIter">0</b> &middot; <span class="i18n-en">next:</span><span class="i18n-ko">다음:</span> <b id="ePhase">E-step (&gamma;)</b></span>
         <span id="eConv"></span>
       </div>
       <canvas id="eCv"></canvas>
       <div class="legend">
-        <span><i class="dot c1"></i><i class="dot c2"></i><i class="dot c3"></i>point color = blend of responsibilities &gamma;</span>
-        <span><i class="xsw c1">&times;</i>mean &mu;&#8342;</span>
-        <span><i class="ringsw c2"></i>1&sigma;&middot;2&sigma; ellipses</span>
+        <span><i class="dot c1"></i><i class="dot c2"></i><i class="dot c3"></i><span class="i18n-en">point color = blend of responsibilities &gamma;</span><span class="i18n-ko">점 색 = 책임값 &gamma;의 혼합</span></span>
+        <span><i class="xsw c1">&times;</i><span class="i18n-en">mean &mu;&#8342;</span><span class="i18n-ko">평균 &mu;&#8342;</span></span>
+        <span><i class="ringsw c2"></i><span class="i18n-en">1&sigma;&middot;2&sigma; ellipses</span><span class="i18n-ko">1&sigma;&middot;2&sigma; 타원</span></span>
       </div>
     </div>
 
     <div class="panel plot">
-      <div class="plot-cap">Mean log-likelihood &#8467;/n (solid) vs ELBO &#8466;/n (dashed) &mdash; the red gap is KL(q&#8214;p): E closes it, M raises &#8467;</div>
+      <div class="plot-cap"><span class="i18n-en">Mean log-likelihood &#8467;/n (solid) vs ELBO &#8466;/n (dashed) &mdash; the red gap is KL(q&#8214;p): E closes it, M raises &#8467;</span><span class="i18n-ko">평균 로그우도 &#8467;/n (실선) vs ELBO &#8466;/n (파선) &mdash; 붉은 간격이 KL(q&#8214;p): E가 닫고, M이 &#8467;를 올린다</span></div>
       <canvas id="eLand"></canvas>
       <div class="legend">
         <span><i class="sw cll"></i>&#8467;/n = log p(X|&theta;)/n</span>
@@ -223,30 +227,30 @@ canvas { display:block; width:100%; }
     <div class="cards">
       <div class="card ll">
         <div class="k">LIKELIHOOD</div>
-        <div class="nm">Log-likelihood ascent</div>
+        <div class="nm"><span class="i18n-en">Log-likelihood ascent</span><span class="i18n-ko">로그우도 상승</span></div>
         <div class="stat"><span>&#8467;/n</span><b id="eLL">&mdash;</b></div>
         <div class="stat"><span>&Delta;&#8467;/n (M-step)</span><b id="eDLL">&mdash;</b></div>
-        <div class="stat"><span>Best &#8467;/n (this data)</span><b id="eBest">&mdash;</b></div>
-        <p class="note">In soft EM, &#8467; never decreases</p>
+        <div class="stat"><span><span class="i18n-en">Best &#8467;/n (this data)</span><span class="i18n-ko">최고 &#8467;/n (이 데이터)</span></span><b id="eBest">&mdash;</b></div>
+        <p class="note"><span class="i18n-en">In soft EM, &#8467; never decreases</span><span class="i18n-ko">soft EM에서 &#8467;는 절대 감소하지 않는다</span></p>
       </div>
       <div class="card est">
         <div class="k">E-STEP</div>
-        <div class="nm">Responsibilities &gamma; = p(z|x,&theta;)</div>
-        <div class="stat"><span>Mean max &gamma;</span><b id="eGmax">&mdash;</b></div>
-        <div class="stat"><span>Ambiguous points (max &gamma; &lt; 0.8)</span><b id="eSoft">&mdash;</b></div>
-        <p class="note">Set q = posterior &rArr; KL = 0, bound touches</p>
+        <div class="nm"><span class="i18n-en">Responsibilities &gamma; = p(z|x,&theta;)</span><span class="i18n-ko">책임값 &gamma; = p(z|x,&theta;)</span></div>
+        <div class="stat"><span><span class="i18n-en">Mean max &gamma;</span><span class="i18n-ko">평균 max &gamma;</span></span><b id="eGmax">&mdash;</b></div>
+        <div class="stat"><span><span class="i18n-en">Ambiguous points (max &gamma; &lt; 0.8)</span><span class="i18n-ko">애매한 점 (max &gamma; &lt; 0.8)</span></span><b id="eSoft">&mdash;</b></div>
+        <p class="note"><span class="i18n-en">Set q = posterior &rArr; KL = 0, bound touches</span><span class="i18n-ko">q = 사후분포로 두면 KL = 0, bound 접촉</span></p>
       </div>
       <div class="card mst">
         <div class="k">M-STEP</div>
-        <div class="nm">Parameter re-estimation</div>
-        <div class="stat"><span>Mixing weights &pi;&#8342;</span><b id="ePis">&mdash;</b></div>
-        <div class="stat"><span>Effective count N&#8342; = &Sigma;&gamma;</span><b id="eNks">&mdash;</b></div>
-        <p class="note">Re-solve the MLE with &gamma;-weighted samples</p>
+        <div class="nm"><span class="i18n-en">Parameter re-estimation</span><span class="i18n-ko">파라미터 재추정</span></div>
+        <div class="stat"><span><span class="i18n-en">Mixing weights &pi;&#8342;</span><span class="i18n-ko">혼합비 &pi;&#8342;</span></span><b id="ePis">&mdash;</b></div>
+        <div class="stat"><span><span class="i18n-en">Effective count N&#8342; = &Sigma;&gamma;</span><span class="i18n-ko">유효 표본 N&#8342; = &Sigma;&gamma;</span></span><b id="eNks">&mdash;</b></div>
+        <p class="note"><span class="i18n-en">Re-solve the MLE with &gamma;-weighted samples</span><span class="i18n-ko">&gamma;로 가중된 표본으로 MLE를 다시 푼다</span></p>
       </div>
     </div>
 
     <details class="panel fold">
-      <summary>Formulas</summary>
+      <summary><span class="i18n-en">Formulas</span><span class="i18n-ko">수식</span></summary>
       <div class="fold-body">
         $$\log p(X\mid\theta)=\sum_n\log\sum_k \pi_k\,\mathcal N(x_n\mid\mu_k,\Sigma_k)$$
         $$\mathcal L(q,\theta)=\sum_n\sum_k q_{nk}\log\frac{\pi_k\,\mathcal N(x_n\mid\mu_k,\Sigma_k)}{q_{nk}}=\log p(X\mid\theta)-\mathrm{KL}\big(q\,\big\|\,p(z\mid X,\theta)\big)$$
@@ -257,21 +261,21 @@ canvas { display:block; width:100%; }
     </details>
 
     <details class="panel fold">
-      <summary>What to watch</summary>
+      <summary><span class="i18n-en">What to watch</span><span class="i18n-ko">수업 관찰 포인트</span></summary>
       <div class="fold-body">
         <ol>
-          <li><b>Separation of E and M roles</b>: the E-step changes only point colors (&gamma;) and leaves the ellipses fixed; the M-step moves only the ellipses (&theta;). On the curve, E makes the dashed line (ELBO) touch the solid line (&#8467;) (KL=0), and M pushes the bound up &mdash; &#8467; never decreases.</li>
-          <li><b>Local optima</b>: repeated reinitialization converges to different solutions on the same data, with a different final &#8467;. Compare against the &ldquo;best &#8467;&rdquo; record &mdash; this is why multiple restarts are standard in practice.</li>
-          <li><b>Soft vs Hard</b>: on overlapping data, ambiguous points with &gamma;&asymp;0.5 line up along the boundary. Turning on Hard (K-means-style) keeps ELBO from touching &#8467;, and a &#10007; can appear on &Delta;&#8467; &mdash; the monotonic-increase guarantee belongs to the soft posterior.</li>
-          <li><b>Model assumptions</b>: elongated data + spherical &sigma;&sup2;I splits clusters apart &mdash; switching to Full &Sigma; fixes it. Using K=4 on 3 clusters makes one component starve (&pi;&rarr;0, component death then reseed) or split a cluster among components.</li>
-          <li><b>Model misspecification</b>: on ring data a GMM only speaks the language of ellipses &mdash; increasing K just approximates the arc in pieces. It is not that &ldquo;EM failed&rdquo; &mdash; the model is wrong.</li>
+          <li><span class="i18n-en"><b>Separation of E and M roles</b>: the E-step changes only point colors (&gamma;) and leaves the ellipses fixed; the M-step moves only the ellipses (&theta;). On the curve, E makes the dashed line (ELBO) touch the solid line (&#8467;) (KL=0), and M pushes the bound up &mdash; &#8467; never decreases.</span><span class="i18n-ko"><b>E와 M의 역할 분리</b>: E-step은 점 색(&gamma;)만 바꾸고 타원은 그대로, M-step은 타원(&theta;)만 움직인다. 곡선에서 E는 파선(ELBO)을 실선(&#8467;)에 접촉시키고(KL=0), M은 bound를 밀어 올린다 &mdash; &#8467;는 절대 감소하지 않는다.</span></li>
+          <li><span class="i18n-en"><b>Local optima</b>: repeated reinitialization converges to different solutions on the same data, with a different final &#8467;. Compare against the &ldquo;best &#8467;&rdquo; record &mdash; this is why multiple restarts are standard in practice.</span><span class="i18n-ko"><b>국소 최적</b>: 재초기화를 반복하면 같은 데이터에서 다른 해로 수렴하고 최종 &#8467;가 달라진다. &ldquo;최고 &#8467;&rdquo; 기록과 비교해 보라 &mdash; 실전에서 다중 재시작이 표준인 이유.</span></li>
+          <li><span class="i18n-en"><b>Soft vs Hard</b>: on overlapping data, ambiguous points with &gamma;&asymp;0.5 line up along the boundary. Turning on Hard (K-means-style) keeps ELBO from touching &#8467;, and a &#10007; can appear on &Delta;&#8467; &mdash; the monotonic-increase guarantee belongs to the soft posterior.</span><span class="i18n-ko"><b>Soft vs Hard</b>: 겹침 데이터에서 &gamma;&asymp;0.5인 애매한 점들이 경계에 늘어선다. Hard(K-means식)를 켜면 ELBO가 &#8467;에 접촉하지 못하고 &Delta;&#8467;에 &#10007;가 뜰 수 있다 &mdash; 단조 증가 보장은 soft posterior의 것이다.</span></li>
+          <li><span class="i18n-en"><b>Model assumptions</b>: elongated data + spherical &sigma;&sup2;I splits clusters apart &mdash; switching to Full &Sigma; fixes it. Using K=4 on 3 clusters makes one component starve (&pi;&rarr;0, component death then reseed) or split a cluster among components.</span><span class="i18n-ko"><b>모델 가정</b>: 길쭉 데이터 + 구형 &sigma;&sup2;I는 클러스터를 쪼갠다 &mdash; Full &Sigma;로 바꾸면 해결. K=4를 3군집에 쓰면 한 성분이 굶거나(&pi;&rarr;0, 성분 사멸 후 재시드) 군집을 나눠 갖는다.</span></li>
+          <li><span class="i18n-en"><b>Model misspecification</b>: on ring data a GMM only speaks the language of ellipses &mdash; increasing K just approximates the arc in pieces. It is not that &ldquo;EM failed&rdquo; &mdash; the model is wrong.</span><span class="i18n-ko"><b>모델 오지정</b>: 고리 데이터에서 GMM은 타원의 언어만 안다 &mdash; K를 늘려도 호(arc) 조각 근사일 뿐. &ldquo;EM이 실패&rdquo;한 게 아니라 모델이 틀린 것.</span></li>
         </ol>
       </div>
     </details>
   </div>
 </div>
 </main>
-  <footer>PRISM Lab · prototype · <a href="https://sswu-prism-lab.github.io" target="_blank" rel="noopener">sswu-prism-lab.github.io</a></footer>
+  <footer>PRISM Lab · <span class="i18n-en">prototype</span><span class="i18n-ko">프로토타입</span> · <a href="https://sswu-prism-lab.github.io" target="_blank" rel="noopener">sswu-prism-lab.github.io</a></footer>
 </div>
 
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
@@ -281,6 +285,8 @@ canvas { display:block; width:100%; }
 /* EM algorithm playground — 2D Gaussian Mixture
    E-step recolors points (gamma), M-step moves ellipses (theta),
    curve panel shows log-likelihood vs ELBO (gap = KL). */
+
+function L(en, ko){ return document.documentElement.getAttribute('data-lang') === 'ko' ? ko : en; }
 
 /* ===MATH-BEGIN=== */
 var RNG = Math.random;
@@ -559,7 +565,7 @@ function halfStep() {
 
 /* ---------- auto run ---------- */
 function setAutoBtn() {
-  $('bAuto').innerHTML = autoOn ? '&#9208; Stop' : '&#9654; Auto run';
+  $('bAuto').innerHTML = autoOn ? '&#9208; ' + L('Stop', '정지') : '&#9654; ' + L('Auto run', '자동 실행');
 }
 function autoLoop(ts) {
   if (!autoOn) return;
@@ -590,7 +596,7 @@ function render() {
 
   $('eIter').textContent = em.iter;
   $('ePhase').textContent = ok ? (em.phase === 'E' ? 'E-step (γ)' : 'M-step (θ)') : '—';
-  $('eConv').textContent = em.conv ? 'Converged ✓' : '';
+  $('eConv').textContent = em.conv ? L('Converged ✓', '수렴 ✓') : '';
 
   // cards
   $('eLL').textContent = ok && em.lastLL !== null ? fmt(em.lastLL / n) : '—';
@@ -743,8 +749,8 @@ function drawMain() {
     ctx.font = '13px sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText(em.pts.length
-      ? 'Fewer samples than K — regenerate'
-      : 'Add points or regenerate', cx, cy);
+      ? L('Fewer samples than K — regenerate', '표본이 K개보다 적습니다 — 재생성하세요')
+      : L('Add points or regenerate', '점을 추가하거나 재생성하세요'), cx, cy);
   }
   ctx.restore();
 }
@@ -945,6 +951,7 @@ window.addEventListener('load', tryMath);
 wire();
 newData();
 window.__onTheme = function(){ render(); };
+window.__onLang = function(){ setAutoBtn(); render(); };
 render();
 
 </script>

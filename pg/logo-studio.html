@@ -8,14 +8,18 @@
 (function(){
   function cur(){ try{ return localStorage.getItem('theme') || (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark':'light'); }catch(e){ return 'dark'; } }
   document.documentElement.setAttribute('data-theme', cur());
-  window.addEventListener('storage', function(e){ if(e.key==='theme'){ document.documentElement.setAttribute('data-theme', e.newValue||'dark'); } });
+  try{ document.documentElement.setAttribute('data-lang', (localStorage.getItem('lang')||'en')); }catch(e){ document.documentElement.setAttribute('data-lang','en'); }
+  window.addEventListener('storage', function(e){ if(e.key==='theme'){ document.documentElement.setAttribute('data-theme', e.newValue||'dark'); } if(e.key==='lang'){ document.documentElement.setAttribute('data-lang', e.newValue||'en'); if(window.__onLang) window.__onLang(); } });
 })();
 </script>
 <title>Logo Studio — PRISM Lab</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet">
 <style>
+  html[data-lang="en"] .i18n-ko{ display:none !important; }
+  html[data-lang="ko"] .i18n-en{ display:none !important; }
+  .i18n-ko{ font-family:'Nanum Gothic','Inter',sans-serif; word-break:keep-all; }
   :root{
     --bg:#15181e; --panel:#1d212a; --panel2:#252b36; --line:#2e343f;
     --txt:#e6edf3; --muted:#8b949e; --accent:#8b7cff;
@@ -159,18 +163,18 @@
 <body>
 
 <div class="studio-head">
-  <div class="topbar"><a class="back" href="index.html">← Playground</a></div>
-  <p class="eyebrow">PRISM · Playground</p>
-  <h1 class="title">Logo Studio</h1>
-  <p class="subtitle">Our lab's logo is an impossible object inspired by the <b>Penrose triangle</b>, rendered as a prism. Recolor the palette, light it, and export a version you like as an SVG or PNG file.</p>
+  <div class="topbar"><a class="back" href="index.html"><span class="i18n-en">← Playground</span><span class="i18n-ko">← 놀이터</span></a></div>
+  <p class="eyebrow"><span class="i18n-en">PRISM · Playground</span><span class="i18n-ko">PRISM · 놀이터</span></p>
+  <h1 class="title"><span class="i18n-en">Logo Studio</span><span class="i18n-ko">로고 스튜디오</span></h1>
+  <p class="subtitle"><span class="i18n-en">Our lab's logo is an impossible object inspired by the <b>Penrose triangle</b>, rendered as a prism. Recolor the palette, light it, and export a version you like as an SVG or PNG file.</span><span class="i18n-ko">우리 연구실 로고는 <b>펜로즈 삼각형</b>에서 영감을 받은 불가능한 도형을 프리즘으로 표현한 것입니다. 팔레트를 바꾸고 조명을 입혀, 마음에 드는 버전을 SVG 또는 PNG 파일로 내보내세요.</span></p>
 </div>
 
 <div class="studio-main">
 <div id="stage" class="light">
   <div class="bgbtns">
-    <button data-bg="light" class="on">Light</button>
-    <button data-bg="dark">Dark</button>
-    <button data-bg="check">Transparent</button>
+    <button data-bg="light" class="on"><span class="i18n-en">Light</span><span class="i18n-ko">밝게</span></button>
+    <button data-bg="dark"><span class="i18n-en">Dark</span><span class="i18n-ko">어둡게</span></button>
+    <button data-bg="check"><span class="i18n-en">Transparent</span><span class="i18n-ko">투명</span></button>
   </div>
 
   <!-- ============ LOGO SVG ============ -->
@@ -224,13 +228,13 @@
 <!-- ============ PNG PREVIEW MODAL ============ -->
 <div id="pngModal">
   <div class="card">
-    <h3>PNG preview</h3>
+    <h3><span class="i18n-en">PNG preview</span><span class="i18n-ko">PNG 미리보기</span></h3>
     <img id="pngPreview" alt="PNG preview">
     <div class="modalActions">
-      <a id="pngDl" class="btn primary" download="penrose_rainbow.png" style="flex:1">⬇ Download</a>
-      <button id="pngClose" class="btn ghost" style="flex:none;min-width:80px">Close</button>
+      <a id="pngDl" class="btn primary" download="penrose_rainbow.png" style="flex:1"><span class="i18n-en">⬇ Download</span><span class="i18n-ko">⬇ 다운로드</span></a>
+      <button id="pngClose" class="btn ghost" style="flex:none;min-width:80px"><span class="i18n-en">Close</span><span class="i18n-ko">닫기</span></button>
     </div>
-    <p>If “Download” doesn’t work, right-click the image above (long-press on mobile) and choose “Save image as…”.</p>
+    <p><span class="i18n-en">If “Download” doesn’t work, right-click the image above (long-press on mobile) and choose “Save image as…”.</span><span class="i18n-ko">“다운로드”가 작동하지 않으면 위 이미지를 마우스 오른쪽 버튼으로 클릭(모바일에서는 길게 누르기)한 뒤 “이미지를 다른 이름으로 저장”을 선택하세요.</span></p>
   </div>
 </div>
 
@@ -238,7 +242,7 @@
 <div id="panel">
 
   <div class="sec">
-    <h2>Rainbow Palette</h2>
+    <h2><span class="i18n-en">Rainbow Palette</span><span class="i18n-ko">무지개 팔레트</span></h2>
     <div class="swatches">
       <div class="sw"><input type="color" id="c_red"></div>
       <div class="sw"><input type="color" id="c_yellow"></div>
@@ -247,51 +251,51 @@
       <div class="sw"><input type="color" id="c_purple"></div>
     </div>
     <div class="swatches" style="margin-top:6px">
-      <div class="sw"><label>Red</label></div>
-      <div class="sw"><label>Yellow</label></div>
-      <div class="sw"><label>Green</label></div>
-      <div class="sw"><label>Blue</label></div>
-      <div class="sw"><label>Purple</label></div>
+      <div class="sw"><label><span class="i18n-en">Red</span><span class="i18n-ko">빨강</span></label></div>
+      <div class="sw"><label><span class="i18n-en">Yellow</span><span class="i18n-ko">노랑</span></label></div>
+      <div class="sw"><label><span class="i18n-en">Green</span><span class="i18n-ko">초록</span></label></div>
+      <div class="sw"><label><span class="i18n-en">Blue</span><span class="i18n-ko">파랑</span></label></div>
+      <div class="sw"><label><span class="i18n-en">Purple</span><span class="i18n-ko">보라</span></label></div>
     </div>
   </div>
 
   <div class="sec">
-    <h2>Presets</h2>
+    <h2><span class="i18n-en">Presets</span><span class="i18n-ko">프리셋</span></h2>
     <div class="presets" id="presets"></div>
     <div class="row" style="margin-top:14px">
-      <label>Flip gradient (in&nbsp;→&nbsp;out)</label>
+      <label><span class="i18n-en">Flip gradient (in&nbsp;→&nbsp;out)</span><span class="i18n-ko">그라디언트 뒤집기 (안&nbsp;→&nbsp;밖)</span></label>
       <div class="toggle"><input type="checkbox" id="flip"><span></span></div>
     </div>
     <div class="actions" style="padding:12px 0 0">
-      <button class="btn ghost" id="randomize">🎲 Randomize</button>
+      <button class="btn ghost" id="randomize"><span class="i18n-en">🎲 Randomize</span><span class="i18n-ko">🎲 무작위</span></button>
     </div>
   </div>
 
   <div class="sec">
-    <h2>Appearance</h2>
+    <h2><span class="i18n-en">Appearance</span><span class="i18n-ko">모양</span></h2>
     <div class="row">
-      <label>Fill opacity</label>
+      <label><span class="i18n-en">Fill opacity</span><span class="i18n-ko">채우기 불투명도</span></label>
       <input type="range" id="opacity" min="0" max="1" step="0.01" value="1">
       <span class="val" id="opacity_v">1.00</span>
     </div>
     <div class="row">
-      <label>Outline width</label>
+      <label><span class="i18n-en">Outline width</span><span class="i18n-ko">외곽선 두께</span></label>
       <input type="range" id="stroke" min="0" max="80" step="1" value="30">
       <span class="val" id="stroke_v">30</span>
     </div>
     <div class="row">
-      <label>Outline color</label>
+      <label><span class="i18n-en">Outline color</span><span class="i18n-ko">외곽선 색상</span></label>
       <input type="color" id="strokeColor" value="#111111" style="width:46px;height:30px;border:1px solid var(--line);border-radius:8px;padding:0;cursor:pointer">
     </div>
   </div>
 
   <div class="sec">
-    <h2>Center Glow <div class="toggle"><input type="checkbox" id="glowOn"><span></span></div></h2>
-    <div class="row"><label>Brightness</label><input type="range" id="glowInt" min="0" max="1" step="0.01" value="0.35" disabled><span class="val" id="glowInt_v">0.35</span></div>
-    <div class="row"><label>Spread radius</label><input type="range" id="glowR" min="800" max="4500" step="50" value="3000" disabled><span class="val" id="glowR_v">3000</span></div>
-    <div class="row"><label>Center X</label><input type="range" id="glowX" min="0" max="3696" step="10" value="1588" disabled><span class="val" id="glowX_v">1588</span></div>
-    <div class="row"><label>Center Y</label><input type="range" id="glowY" min="0" max="4272" step="10" value="2360" disabled><span class="val" id="glowY_v">2360</span></div>
-    <div class="row"><label>Blend mode</label>
+    <h2><span class="i18n-en">Center Glow</span><span class="i18n-ko">중앙 광채</span> <div class="toggle"><input type="checkbox" id="glowOn"><span></span></div></h2>
+    <div class="row"><label><span class="i18n-en">Brightness</span><span class="i18n-ko">밝기</span></label><input type="range" id="glowInt" min="0" max="1" step="0.01" value="0.35" disabled><span class="val" id="glowInt_v">0.35</span></div>
+    <div class="row"><label><span class="i18n-en">Spread radius</span><span class="i18n-ko">퍼짐 반경</span></label><input type="range" id="glowR" min="800" max="4500" step="50" value="3000" disabled><span class="val" id="glowR_v">3000</span></div>
+    <div class="row"><label><span class="i18n-en">Center X</span><span class="i18n-ko">중심 X</span></label><input type="range" id="glowX" min="0" max="3696" step="10" value="1588" disabled><span class="val" id="glowX_v">1588</span></div>
+    <div class="row"><label><span class="i18n-en">Center Y</span><span class="i18n-ko">중심 Y</span></label><input type="range" id="glowY" min="0" max="4272" step="10" value="2360" disabled><span class="val" id="glowY_v">2360</span></div>
+    <div class="row"><label><span class="i18n-en">Blend mode</span><span class="i18n-ko">블렌드 모드</span></label>
       <select id="glowBlend" style="background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:5px 8px;font-size:12px" disabled>
         <option value="overlay">overlay</option>
         <option value="screen">screen</option>
@@ -302,19 +306,19 @@
   </div>
 
   <div class="sec">
-    <h2>Specular Shine <div class="toggle"><input type="checkbox" id="specOn"><span></span></div></h2>
-    <div class="row"><label>Light strength (surface)</label><input type="range" id="spSurf" min="0" max="60" step="1" value="22" disabled><span class="val" id="spSurf_v">22</span></div>
-    <div class="row"><label>Highlight focus</label><input type="range" id="spExp" min="1" max="120" step="1" value="60" disabled><span class="val" id="spExp_v">60</span></div>
-    <div class="row"><label>Softness (blur)</label><input type="range" id="spBlur" min="0" max="140" step="1" value="63" disabled><span class="val" id="spBlur_v">63</span></div>
-    <div class="row"><label>Light X</label><input type="range" id="spX" min="0" max="3696" step="10" value="1588" disabled><span class="val" id="spX_v">1588</span></div>
-    <div class="row"><label>Light Y</label><input type="range" id="spY" min="0" max="4272" step="10" value="2360" disabled><span class="val" id="spY_v">2360</span></div>
-    <div class="row"><label>Light height (Z)</label><input type="range" id="spZ" min="200" max="4000" step="20" value="1660" disabled><span class="val" id="spZ_v">1660</span></div>
+    <h2><span class="i18n-en">Specular Shine</span><span class="i18n-ko">반사광 광택</span> <div class="toggle"><input type="checkbox" id="specOn"><span></span></div></h2>
+    <div class="row"><label><span class="i18n-en">Light strength (surface)</span><span class="i18n-ko">빛 강도 (표면)</span></label><input type="range" id="spSurf" min="0" max="60" step="1" value="22" disabled><span class="val" id="spSurf_v">22</span></div>
+    <div class="row"><label><span class="i18n-en">Highlight focus</span><span class="i18n-ko">하이라이트 집중도</span></label><input type="range" id="spExp" min="1" max="120" step="1" value="60" disabled><span class="val" id="spExp_v">60</span></div>
+    <div class="row"><label><span class="i18n-en">Softness (blur)</span><span class="i18n-ko">부드러움 (blur)</span></label><input type="range" id="spBlur" min="0" max="140" step="1" value="63" disabled><span class="val" id="spBlur_v">63</span></div>
+    <div class="row"><label><span class="i18n-en">Light X</span><span class="i18n-ko">빛 X</span></label><input type="range" id="spX" min="0" max="3696" step="10" value="1588" disabled><span class="val" id="spX_v">1588</span></div>
+    <div class="row"><label><span class="i18n-en">Light Y</span><span class="i18n-ko">빛 Y</span></label><input type="range" id="spY" min="0" max="4272" step="10" value="2360" disabled><span class="val" id="spY_v">2360</span></div>
+    <div class="row"><label><span class="i18n-en">Light height (Z)</span><span class="i18n-ko">빛 높이 (Z)</span></label><input type="range" id="spZ" min="200" max="4000" step="20" value="1660" disabled><span class="val" id="spZ_v">1660</span></div>
   </div>
 
   <div class="sec">
-    <h2>Export</h2>
+    <h2><span class="i18n-en">Export</span><span class="i18n-ko">내보내기</span></h2>
     <div class="row">
-      <label>PNG size (long side)</label>
+      <label><span class="i18n-en">PNG size (long side)</span><span class="i18n-ko">PNG 크기 (긴 변)</span></label>
       <select id="pngSize" style="background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:5px 8px;font-size:12px">
         <option value="256">256 px</option>
         <option value="512">512 px</option>
@@ -324,23 +328,23 @@
       </select>
     </div>
     <div class="row">
-      <label>Transparent background</label>
+      <label><span class="i18n-en">Transparent background</span><span class="i18n-ko">투명 배경</span></label>
       <div class="toggle"><input type="checkbox" id="pngTransparent" checked><span></span></div>
     </div>
     <div class="row" id="pngBgRow" style="opacity:.35">
-      <label>Background color</label>
+      <label><span class="i18n-en">Background color</span><span class="i18n-ko">배경 색상</span></label>
       <input type="color" id="pngBg" value="#efe7c4" style="width:46px;height:30px;border:1px solid var(--line);border-radius:8px;padding:0;cursor:pointer" disabled>
     </div>
     <div class="actions" style="padding:14px 0 0">
-      <button class="btn primary" id="dlPng">Save PNG</button>
-      <button class="btn ghost" id="dl">Save SVG</button>
+      <button class="btn primary" id="dlPng"><span class="i18n-en">Save PNG</span><span class="i18n-ko">PNG 저장</span></button>
+      <button class="btn ghost" id="dl"><span class="i18n-en">Save SVG</span><span class="i18n-ko">SVG 저장</span></button>
     </div>
   </div>
 
   <div class="actions">
-    <button class="btn ghost" id="reset" style="flex:1">Reset all</button>
+    <button class="btn ghost" id="reset" style="flex:1"><span class="i18n-en">Reset all</span><span class="i18n-ko">전체 초기화</span></button>
   </div>
-  <p class="hint">Exports capture the current on-screen state — colors, opacity, outline, and any effects that are turned on.</p>
+  <p class="hint"><span class="i18n-en">Exports capture the current on-screen state — colors, opacity, outline, and any effects that are turned on.</span><span class="i18n-ko">내보내기는 현재 화면 상태(색상, 불투명도, 외곽선, 켜져 있는 모든 효과)를 그대로 캡처합니다.</span></p>
 </div>
 
 </div><!-- /studio-main -->

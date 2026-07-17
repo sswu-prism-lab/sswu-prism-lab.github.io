@@ -7,13 +7,14 @@
 (function(){
   function cur(){ try{ return localStorage.getItem('theme') || (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark':'light'); }catch(e){ return 'dark'; } }
   var t=cur(); window.__theme=t; document.documentElement.setAttribute('data-theme', t);
-  window.addEventListener('storage', function(e){ if(e.key==='theme'){ var n=e.newValue||'dark'; window.__theme=n; document.documentElement.setAttribute('data-theme', n); if(window.__onTheme) window.__onTheme(n); } });
+  try{ document.documentElement.setAttribute('data-lang', (localStorage.getItem('lang')||'en')); }catch(e){ document.documentElement.setAttribute('data-lang','en'); }
+  window.addEventListener('storage', function(e){ if(e.key==='theme'){ var n=e.newValue||'dark'; window.__theme=n; document.documentElement.setAttribute('data-theme', n); if(window.__onTheme) window.__onTheme(n); } if(e.key==='lang'){ document.documentElement.setAttribute('data-lang', e.newValue||'en'); if(window.__onLang) window.__onLang(); } });
 })();
 </script>
-<title>Marchenko–Pastur — PRISM Lab</title>
+<title>Marchenko–Pastur · 마르첸코–파스투르 — PRISM Lab</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet" />
 <style>
   :root{
     --void:#15181e; --panel:#1d212a; --panel-2:#171b22; --line:#2e343f;
@@ -113,92 +114,99 @@
   }
   html[data-theme="light"] body{ background: var(--void); }
   html[data-theme="light"] .btn:hover{ border-color:#b9c4da; background:#e9eef7; }
+
+  html[data-lang="en"] .i18n-ko{ display:none !important; }
+  html[data-lang="ko"] .i18n-en{ display:none !important; }
+  .i18n-ko{ font-family:'Nanum Gothic','Inter',sans-serif; word-break:keep-all; }
 </style>
 </head>
 <body>
 <div class="wrap">
 
-  <div class="topbar"><a class="back" href="index.html">← Playground</a></div>
-  <p class="eyebrow">PRISM · Statistical-Mechanics Playground</p>
-  <h1 class="title">Marchenko–Pastur<br><span class="thin">The eigenvalue line between random noise and real signal</span></h1>
+  <div class="topbar"><a class="back" href="index.html"><span class="i18n-en">← Playground</span><span class="i18n-ko">← 놀이터</span></a></div>
+  <p class="eyebrow"><span class="i18n-en">PRISM · Statistical-Mechanics Playground</span><span class="i18n-ko">PRISM · 통계역학 놀이터</span></p>
+  <h1 class="title"><span class="i18n-en">Marchenko–Pastur</span><span class="i18n-ko">마르첸코–파스투르</span><br><span class="thin"><span class="i18n-en">The eigenvalue line between random noise and real signal</span><span class="i18n-ko">표본 공분산의 고윳값 스펙트럼 — 무작위 잡음과 실제 신호를 가르는 경계</span></span></h1>
   <p class="subtitle">
-    Take <b>N</b> variables and only <b>T</b> samples. Even with pure noise, the sample-covariance eigenvalues
+    <span class="i18n-en">Take <b>N</b> variables and only <b>T</b> samples. Even with pure noise, the sample-covariance eigenvalues
     are not all 1 — they spread into the <b>Marchenko–Pastur</b> bulk between
     <b>λ± = (1 ± √q)²</b>, where <b>q = N/T</b>. Plant a few real factors and their eigenvalues punch out
-    past <b>λ₊</b>: that edge is the line separating noise from signal.
+    past <b>λ₊</b>: that edge is the line separating noise from signal.</span><span class="i18n-ko"><b>N</b>개의 변수와 <b>T</b>개의 표본만으로 표본 공분산을 추정해 보자. 순수한 잡음만 있어도 표본 공분산의 고윳값은 모두 1이 되지 않는다 — <b>q = N/T</b>일 때 고윳값은
+    <b>λ± = (1 ± √q)²</b> 사이의 <b>마르첸코–파스투르</b> 벌크(bulk)로 퍼진다. 여기에 실제 인자(factor)를 몇 개 심으면 그 고윳값들이
+    <b>λ₊</b>를 뚫고 튀어나온다. 바로 그 경계가 잡음과 신호를 가르는 선이다.</span>
   </p>
 
   <div class="grid">
     <div>
       <div class="card stage">
-        <div class="card-h">Eigenvalue spectrum <span class="hint">histogram vs MP density ρ(λ)</span></div>
+        <div class="card-h"><span class="i18n-en">Eigenvalue spectrum</span><span class="i18n-ko">고윳값 스펙트럼</span> <span class="hint"><span class="i18n-en">histogram vs MP density ρ(λ)</span><span class="i18n-ko">히스토그램 vs MP 밀도 ρ(λ)</span></span></div>
         <div class="canvas-hold"><canvas id="spectrum"></canvas></div>
         <div class="legend">
-          <span class="sw"><i style="background:var(--blue)"></i> noise bulk</span>
-          <span class="sw"><i style="background:var(--warm-a)"></i> MP density ρ(λ)</span>
-          <span class="sw"><i style="background:var(--sharp)"></i> λ± edges · signal spikes</span>
+          <span class="sw"><i style="background:var(--blue)"></i> <span class="i18n-en">noise bulk</span><span class="i18n-ko">잡음 벌크</span></span>
+          <span class="sw"><i style="background:var(--warm-a)"></i> <span class="i18n-en">MP density ρ(λ)</span><span class="i18n-ko">MP 밀도 ρ(λ)</span></span>
+          <span class="sw"><i style="background:var(--sharp)"></i> <span class="i18n-en">λ± edges · signal spikes</span><span class="i18n-ko">λ± 경계 · 신호 스파이크</span></span>
         </div>
-        <div class="axis-cap"><span>λ = 0</span><span>eigenvalue λ</span><span id="lamMax">λ = —</span></div>
+        <div class="axis-cap"><span>λ = 0</span><span><span class="i18n-en">eigenvalue λ</span><span class="i18n-ko">고윳값 λ</span></span><span id="lamMax">λ = —</span></div>
       </div>
 
       <div class="card stage">
-        <div class="card-h">Sorted eigenvalues (scree) <span class="hint">signal sits above the λ₊ edge</span></div>
+        <div class="card-h"><span class="i18n-en">Sorted eigenvalues (scree)</span><span class="i18n-ko">정렬된 고윳값 (스크리)</span> <span class="hint"><span class="i18n-en">signal sits above the λ₊ edge</span><span class="i18n-ko">신호는 λ₊ 경계 위에 놓인다</span></span></div>
         <div class="canvas-hold"><canvas id="scree"></canvas></div>
       </div>
     </div>
 
     <div>
       <div class="card">
-        <div class="card-h">Controls</div>
+        <div class="card-h"><span class="i18n-en">Controls</span><span class="i18n-ko">제어</span></div>
         <div class="ctl">
-          <div class="ctl-top"><span class="ctl-name">Variables N</span><span class="ctl-val" id="nV">80</span></div>
+          <div class="ctl-top"><span class="ctl-name"><span class="i18n-en">Variables N</span><span class="i18n-ko">변수 N</span></span><span class="ctl-val" id="nV">80</span></div>
           <input type="range" id="nvar" min="20" max="120" step="2" value="80" aria-label="Variables N" />
         </div>
         <div class="ctl">
-          <div class="ctl-top"><span class="ctl-name">Samples T</span><span class="ctl-val" id="tV">200</span></div>
+          <div class="ctl-top"><span class="ctl-name"><span class="i18n-en">Samples T</span><span class="i18n-ko">표본 T</span></span><span class="ctl-val" id="tV">200</span></div>
           <input type="range" id="tsamp" min="40" max="600" step="10" value="200" aria-label="Samples T" />
         </div>
         <div class="ctl">
-          <div class="ctl-top"><span class="ctl-name">Signal factors K <span class="sub">planted structure</span></span><span class="ctl-val" id="kV">2</span></div>
+          <div class="ctl-top"><span class="ctl-name"><span class="i18n-en">Signal factors K</span><span class="i18n-ko">신호 인자 K</span> <span class="sub"><span class="i18n-en">planted structure</span><span class="i18n-ko">심어 넣은 구조</span></span></span><span class="ctl-val" id="kV">2</span></div>
           <input type="range" id="kfac" min="0" max="5" step="1" value="2" aria-label="Signal factors K" />
         </div>
         <div class="ctl">
-          <div class="ctl-top"><span class="ctl-name">Signal strength <span class="sub">factor variance</span></span><span class="ctl-val" id="sV">3.0</span></div>
+          <div class="ctl-top"><span class="ctl-name"><span class="i18n-en">Signal strength</span><span class="i18n-ko">신호 세기</span> <span class="sub"><span class="i18n-en">factor variance</span><span class="i18n-ko">인자 분산</span></span></span><span class="ctl-val" id="sV">3.0</span></div>
           <input type="range" id="signal" min="0" max="8" step="0.1" value="3.0" aria-label="Signal strength" />
         </div>
-        <div class="btnrow"><button class="btn btn-primary" id="regen">↻ Resample data</button></div>
+        <div class="btnrow"><button class="btn btn-primary" id="regen"><span class="i18n-en">↻ Resample data</span><span class="i18n-ko">↻ 데이터 재생성</span></button></div>
         <div class="ro-grid">
-          <div class="ro"><div class="k">aspect q = N/T</div><div class="v" id="roQ">–</div></div>
-          <div class="ro"><div class="k">signal eigenvalues &gt; λ₊</div><div class="v big" id="roOut">–</div></div>
-          <div class="ro"><div class="k">bulk edge λ₋</div><div class="v" id="roLm">–</div></div>
-          <div class="ro"><div class="k">bulk edge λ₊</div><div class="v" id="roLp">–</div></div>
+          <div class="ro"><div class="k"><span class="i18n-en">aspect q = N/T</span><span class="i18n-ko">종횡비 q = N/T</span></div><div class="v" id="roQ">–</div></div>
+          <div class="ro"><div class="k"><span class="i18n-en">signal eigenvalues &gt; λ₊</span><span class="i18n-ko">λ₊ 초과 신호 고윳값</span></div><div class="v big" id="roOut">–</div></div>
+          <div class="ro"><div class="k"><span class="i18n-en">bulk edge λ₋</span><span class="i18n-ko">벌크 경계 λ₋</span></div><div class="v" id="roLm">–</div></div>
+          <div class="ro"><div class="k"><span class="i18n-en">bulk edge λ₊</span><span class="i18n-ko">벌크 경계 λ₊</span></div><div class="v" id="roLp">–</div></div>
         </div>
-        <div class="noteline" id="mpNote">Pure noise fills the bulk; only eigenvalues beyond λ₊ are real signal.</div>
+        <div class="noteline" id="mpNote"><span class="i18n-en">Pure noise fills the bulk; only eigenvalues beyond λ₊ are real signal.</span><span class="i18n-ko">순수한 잡음은 벌크를 채운다. λ₊ 너머의 고윳값만이 실제 신호다.</span></div>
       </div>
     </div>
   </div>
 
   <div class="explain">
     <div class="ex a">
-      <h4>Why noise has structure</h4>
-      <p>With finite samples, the sample covariance <code>C = (1/T)XXᵀ</code> is a noisy estimate. Its eigenvalues follow the Marchenko–Pastur law with density <code>ρ(λ)=√((λ₊−λ)(λ−λ₋))/(2πqλ)</code> — a whole spread even when the truth is the identity.</p>
+      <h4><span class="i18n-en">Why noise has structure</span><span class="i18n-ko">잡음에 구조가 생기는 이유</span></h4>
+      <p><span class="i18n-en">With finite samples, the sample covariance <code>C = (1/T)XXᵀ</code> is a noisy estimate. Its eigenvalues follow the Marchenko–Pastur law with density <code>ρ(λ)=√((λ₊−λ)(λ−λ₋))/(2πqλ)</code> — a whole spread even when the truth is the identity.</span><span class="i18n-ko">표본이 유한하면 표본 공분산 <code>C = (1/T)XXᵀ</code>은 잡음이 섞인 추정치다. 그 고윳값들은 밀도 <code>ρ(λ)=√((λ₊−λ)(λ−λ₋))/(2πqλ)</code>를 갖는 마르첸코–파스투르 법칙을 따른다 — 참값이 항등행렬일 때조차 넓게 퍼진다.</span></p>
     </div>
     <div class="ex b">
-      <h4>The λ₊ detection edge</h4>
-      <p>A planted factor of strength <code>s</code> produces an outlier eigenvalue only if <code>s &gt; √q</code> (the BBP transition). Below that it hides inside the bulk; above it, it pops out past <code>λ₊</code> and becomes detectable.</p>
+      <h4><span class="i18n-en">The λ₊ detection edge</span><span class="i18n-ko">λ₊ 검출 경계</span></h4>
+      <p><span class="i18n-en">A planted factor of strength <code>s</code> produces an outlier eigenvalue only if <code>s &gt; √q</code> (the BBP transition). Below that it hides inside the bulk; above it, it pops out past <code>λ₊</code> and becomes detectable.</span><span class="i18n-ko">세기 <code>s</code>로 심은 인자는 <code>s &gt; √q</code>일 때에만 이상치 고윳값을 만든다 (BBP 전이). 그보다 작으면 벌크 안에 숨고, 그보다 크면 <code>λ₊</code>를 뚫고 튀어나와 검출된다.</span></p>
     </div>
     <div class="ex c">
-      <h4>Cleaning covariances</h4>
-      <p>In neuroimaging, finance, and genomics, RMT tells you which principal components are real and which are sampling noise — the basis for denoising connectivity and covariance matrices, a PRISM interest.</p>
+      <h4><span class="i18n-en">Cleaning covariances</span><span class="i18n-ko">공분산 정제</span></h4>
+      <p><span class="i18n-en">In neuroimaging, finance, and genomics, RMT tells you which principal components are real and which are sampling noise — the basis for denoising connectivity and covariance matrices, a PRISM interest.</span><span class="i18n-ko">신경영상, 금융, 유전체학에서 RMT는 어떤 주성분이 실제이고 어떤 것이 표집 잡음인지 알려준다 — 연결성 및 공분산 행렬의 잡음 제거의 토대이며, PRISM의 관심사다.</span></p>
     </div>
   </div>
 
-  <footer>PRISM Lab · prototype · <a href="https://sswu-prism-lab.github.io" target="_blank" rel="noopener">sswu-prism-lab.github.io</a></footer>
+  <footer><span class="i18n-en">PRISM Lab · prototype ·</span><span class="i18n-ko">PRISM Lab · 프로토타입 ·</span> <a href="https://sswu-prism-lab.github.io" target="_blank" rel="noopener">sswu-prism-lab.github.io</a></footer>
 </div>
 
 <script>
 (() => {
   "use strict";
+  function L(en,ko){ return document.documentElement.getAttribute('data-lang')==='ko' ? ko : en; }
   const clamp=(x,a,b)=> x<a?a : x>b?b : x;
   const PAL={
     dark:{ ink:"#e7ecff", muted:"#8493b8", grid:a=>`rgba(38,49,79,${a})`, cool:"#5eead4", sharp:"#ff6b5a", warmA:"#ffc24b", test:"#a78bff", blue:"#6ea8ff", barOff:"#2b3a63" },
@@ -259,8 +267,8 @@
     document.getElementById("roOut").textContent=S.nOut;
     const bbp=Math.sqrt(S.q);
     document.getElementById("mpNote").innerHTML = S.sig>bbp*bbp+1e-9
-      ? `Signal strength ${S.sig.toFixed(1)} &gt; √q·√q threshold — <b>${S.nOut}</b> eigenvalue(s) escaped the bulk.`
-      : `Signal hidden inside the bulk (need strength &gt; √q ≈ <b>${bbp.toFixed(2)}</b> to detect).`;
+      ? `<span class="i18n-en">Signal strength ${S.sig.toFixed(1)} &gt; √q·√q threshold — <b>${S.nOut}</b> eigenvalue(s) escaped the bulk.</span><span class="i18n-ko">신호 세기 ${S.sig.toFixed(1)} &gt; √q·√q 임계값 — 고윳값 <b>${S.nOut}</b>개가 벌크를 벗어났다.</span>`
+      : `<span class="i18n-en">Signal hidden inside the bulk (need strength &gt; √q ≈ <b>${bbp.toFixed(2)}</b> to detect).</span><span class="i18n-ko">신호가 벌크 안에 숨어 있다 (검출하려면 세기 &gt; √q ≈ <b>${bbp.toFixed(2)}</b> 필요).</span>`;
   }
 
   function mpDensity(l){ if(l<=S.lamM||l>=S.lamP||l<=0) return 0;
@@ -322,12 +330,12 @@
     const yE=Y(S.lamP); cxSc.strokeStyle=rgba(C.sharp,.6); cxSc.setLineDash([4,3]); cxSc.lineWidth=1.3;
     cxSc.beginPath(); cxSc.moveTo(pl,yE); cxSc.lineTo(w-pr,yE); cxSc.stroke(); cxSc.setLineDash([]);
     cxSc.fillStyle=C.sharp; cxSc.font='9px "JetBrains Mono",monospace'; cxSc.textAlign="left"; cxSc.textBaseline="bottom";
-    cxSc.fillText("λ₊ edge", pl+2, yE-1);
+    cxSc.fillText(L("λ₊ edge","λ₊ 경계"), pl+2, yE-1);
     // dots
     for(let i=0;i<n;i++){ const v=sorted[i]; cxSc.fillStyle = v>S.lamP*1.02?C.sharp:rgba(C.blue,.8);
       cxSc.beginPath(); cxSc.arc(X(i),Y(v), v>S.lamP*1.02?3:2, 0,7); cxSc.fill(); }
     cxSc.fillStyle=C.muted; cxSc.font='10px "JetBrains Mono",monospace'; cxSc.textAlign="center"; cxSc.textBaseline="top";
-    cxSc.fillText("eigenvalue rank (largest → smallest)", w/2, h-pb+3);
+    cxSc.fillText(L("eigenvalue rank (largest → smallest)","고윳값 순위 (큰 값 → 작은 값)"), w/2, h-pb+3);
   }
 
   const bind=(id,valId,fmt,fn,ev)=>{ const el=document.getElementById(id);
@@ -340,6 +348,7 @@
   document.getElementById("regen").onclick=generate;
 
   window.__onTheme=t=>{ C=PAL[t==='light'?'light':'dark']; draw(); };
+  window.__onLang=function(){ draw(); };
   window.addEventListener("resize",()=>{ clearTimeout(window.__rt); window.__rt=setTimeout(draw,90); });
 
   generate();

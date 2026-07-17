@@ -1,46 +1,62 @@
 - name: Chaeyoung Lee (이채영)
   photo: Chaeyoung.jpg
   info: Undergraduate Intern
+  info_ko: 학부 인턴
   email: 20231416@sungshin.ac.kr
   number_educ: 2
   education1: Major in Artificial Intelligence
+  education1_ko: 인공지능 전공
   education2: Neuroimaging analysis, computer vision
+  education2_ko: 신경영상 분석, 컴퓨터 비전
 
 - name: Yeonji Kim (김연지)
   photo: Yeonji.jpeg
   info: Undergraduate Intern
+  info_ko: 학부 인턴
   email: 20231333@sungshin.ac.kr
   number_educ: 2
   education1: Major in Artificial Intelligence
+  education1_ko: 인공지능 전공
   education2: Imaging genetics, self-supervised learning
+  education2_ko: 영상 유전체학, 자기지도 학습
 
 - name: Yoonkyeong Kang (강윤경)
   photo: Yoonkyeong.jpeg
   info: Undergraduate Intern
+  info_ko: 학부 인턴
   email: 20232632@sungshin.ac.kr
   number_educ: 2
   education1: Major in Artificial Intelligence
+  education1_ko: 인공지능 전공
   education2: Biosignal representation, topological deep learning
+  education2_ko: 생체신호 표현, 위상 심층 학습
 
 - name: Jiho Lee (이지호)
   photo: Jiho.png
   info: Undergraduate Intern
+  info_ko: 학부 인턴
   email: 20231414@sungshin.ac.kr
   number_educ: 2
   education1: Major in Artificial Intelligence
+  education1_ko: 인공지능 전공
   education2: Imaging genetics, graphical model
+  education2_ko: 영상 유전체학, 그래프 모델
 
 - name: Eunhye Jeong (정은혜)
   photo: Eunhye.jpeg
   info: Undergraduate Intern
+  info_ko: 학부 인턴
   email: 20231162@sungshin.ac.kr
   number_educ: 2
   education1: Major in Artificial Intelligence
+  education1_ko: 인공지능 전공
   education2: Neuroimaging analysis, graphical model
+  education2_ko: 신경영상 분석, 그래프 모델
 
 - name: "This could be you!"
   photo: sw-dragon.JPG
   info: Contact us:)
+  info_ko: 문의하세요:)
   email: tmp@tmp.tmp
   number_educ: 0
   education1:

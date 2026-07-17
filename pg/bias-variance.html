@@ -7,17 +7,21 @@
 (function(){
   function cur(){ try{ return localStorage.getItem('theme') || (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark':'light'); }catch(e){ return 'dark'; } }
   var t=cur(); window.__theme=t; document.documentElement.setAttribute('data-theme', t);
-  window.addEventListener('storage', function(e){ if(e.key==='theme'){ var n=e.newValue||'dark'; window.__theme=n; document.documentElement.setAttribute('data-theme', n); if(window.__onTheme) window.__onTheme(n); } });
+  try{ document.documentElement.setAttribute('data-lang', (localStorage.getItem('lang')||'en')); }catch(e){ document.documentElement.setAttribute('data-lang','en'); }
+  window.addEventListener('storage', function(e){ if(e.key==='theme'){ var n=e.newValue||'dark'; window.__theme=n; document.documentElement.setAttribute('data-theme', n); if(window.__onTheme) window.__onTheme(n); } if(e.key==='lang'){ document.documentElement.setAttribute('data-lang', e.newValue||'en'); if(window.__onLang) window.__onLang(); } });
 })();
 </script>
 
 <title>Bias–Variance Tradeoff — PRISM Lab</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <style>
 * { box-sizing: border-box; }
+html[data-lang="en"] .i18n-ko{ display:none !important; }
+html[data-lang="ko"] .i18n-en{ display:none !important; }
+.i18n-ko{ font-family:'Nanum Gothic','Inter',sans-serif; word-break:keep-all; }
 :root {
   color-scheme: light;
   --bg:#ffffff; --panel:#f7f9fc; --panel-2:#eef2f8; --ink:#141b33; --muted:#5a6488;
@@ -158,117 +162,117 @@ canvas { display:block; width:100%; }
 </head>
 <body>
 <div class="wrap">
-  <div class="topbar"><a class="back" href="index.html">← Playground</a></div>
-  <p class="eyebrow">PRISM · Machine Learning Playground</p>
-  <h1 class="title">Bias&ndash;Variance Tradeoff<br><span class="thin">Underfit vs. overfit — bias², variance, and the U-shaped test error</span></h1>
+  <div class="topbar"><a class="back" href="index.html"><span class="i18n-en">← Playground</span><span class="i18n-ko">← 놀이터</span></a></div>
+  <p class="eyebrow"><span class="i18n-en">PRISM · Machine Learning Playground</span><span class="i18n-ko">PRISM · 머신러닝 놀이터</span></p>
+  <h1 class="title"><span class="i18n-en">Bias&ndash;Variance Tradeoff</span><span class="i18n-ko">편향&ndash;분산 트레이드오프</span><br><span class="thin"><span class="i18n-en">Underfit vs. overfit — bias², variance, and the U-shaped test error</span><span class="i18n-ko">과소적합 vs 과대적합 — 편향², 분산, 그리고 U자형 테스트 오차</span></span></h1>
 
 <main>
 <section class="tab active">
   <aside class="panel side">
     <div class="grp">
-      <div class="grp-t">Model &middot; polynomial degree</div>
-      <label class="sl"><span>Degree M <b id="mV" class="val">3</b></span>
+      <div class="grp-t"><span class="i18n-en">Model &middot; polynomial degree</span><span class="i18n-ko">모델 &middot; 다항식 차수</span></div>
+      <label class="sl"><span><span class="i18n-en">Degree M</span><span class="i18n-ko">차수 M</span> <b id="mV" class="val">3</b></span>
         <input type="range" id="mSl" min="0" max="12" step="1" value="3"></label>
-      <p class="hint">Higher M = more flexible &rarr; lower bias, higher variance</p>
+      <p class="hint"><span class="i18n-en">Higher M = more flexible &rarr; lower bias, higher variance</span><span class="i18n-ko">M이 클수록 유연함 &rarr; 편향은 낮아지고 분산은 높아짐</span></p>
     </div>
     <div class="grp">
-      <div class="grp-t">Data &middot; true function + noise</div>
+      <div class="grp-t"><span class="i18n-en">Data &middot; true function + noise</span><span class="i18n-ko">데이터 &middot; 참 함수 + 잡음</span></div>
       <div class="chips">
-        <button class="preset active" data-f="sine">Sine</button>
-        <button class="preset" data-f="cubic">Cubic</button>
-        <button class="preset" data-f="steps">Steps</button>
+        <button class="preset active" data-f="sine"><span class="i18n-en">Sine</span><span class="i18n-ko">사인</span></button>
+        <button class="preset" data-f="cubic"><span class="i18n-en">Cubic</span><span class="i18n-ko">삼차</span></button>
+        <button class="preset" data-f="steps"><span class="i18n-en">Steps</span><span class="i18n-ko">계단</span></button>
       </div>
-      <label class="sl"><span>Noise &sigma; <b id="sigV" class="val">0.20</b></span>
+      <label class="sl"><span><span class="i18n-en">Noise &sigma;</span><span class="i18n-ko">잡음 &sigma;</span> <b id="sigV" class="val">0.20</b></span>
         <input type="range" id="sigSl" min="0.05" max="0.6" step="0.01" value="0.2"></label>
-      <label class="sl"><span>Training size N <b id="nV" class="val">15</b></span>
+      <label class="sl"><span><span class="i18n-en">Training size N</span><span class="i18n-ko">학습 데이터 수 N</span> <b id="nV" class="val">15</b></span>
         <input type="range" id="nSl" min="5" max="40" step="1" value="15"></label>
-      <button id="resample" class="btn small">Resample</button>
-      <p class="hint">New noise draw for the whole ensemble</p>
+      <button id="resample" class="btn small"><span class="i18n-en">Resample</span><span class="i18n-ko">재샘플링</span></button>
+      <p class="hint"><span class="i18n-en">New noise draw for the whole ensemble</span><span class="i18n-ko">앙상블 전체에 대해 잡음을 새로 뽑음</span></p>
     </div>
     <div class="grp">
-      <div class="grp-t">Display</div>
-      <label class="ck"><input type="checkbox" id="showGhosts" checked><i class="swv faint c-var"></i>show resampled fits (ghosts)</label>
-      <p class="hint">R = 40 resampled datasets drive the ghosts (variance) and the error curve.</p>
+      <div class="grp-t"><span class="i18n-en">Display</span><span class="i18n-ko">표시</span></div>
+      <label class="ck"><input type="checkbox" id="showGhosts" checked><i class="swv faint c-var"></i><span class="i18n-en">show resampled fits (ghosts)</span><span class="i18n-ko">재샘플링된 적합(고스트) 표시</span></label>
+      <p class="hint"><span class="i18n-en">R = 40 resampled datasets drive the ghosts (variance) and the error curve.</span><span class="i18n-ko">R = 40개의 재샘플링된 데이터셋이 고스트(분산)와 오차 곡선을 만듭니다.</span></p>
     </div>
   </aside>
 
   <div class="stage">
     <div class="panel plot">
-      <div class="plot-head"><span>degree M = <b id="hdM">3</b> &middot; fits over R = 40 datasets</span></div>
+      <div class="plot-head"><span><span class="i18n-en">degree M = </span><span class="i18n-ko">차수 M = </span><b id="hdM">3</b><span class="i18n-en"> &middot; fits over R = 40 datasets</span><span class="i18n-ko"> &middot; R = 40개 데이터셋에 대한 적합</span></span></div>
       <canvas id="stageCv"></canvas>
       <div class="legend">
-        <span><i class="sw dashed c-true"></i>true g(x)</span>
-        <span><i class="swp"></i>training data</span>
-        <span><i class="sw faint c-fit"></i>resampled fits (variance)</span>
-        <span><i class="sw c-fit"></i>current fit</span>
-        <span><i class="sw c-mean"></i>mean fit (its gap to g = bias)</span>
+        <span><i class="sw dashed c-true"></i><span class="i18n-en">true g(x)</span><span class="i18n-ko">참 함수 g(x)</span></span>
+        <span><i class="swp"></i><span class="i18n-en">training data</span><span class="i18n-ko">학습 데이터</span></span>
+        <span><i class="sw faint c-fit"></i><span class="i18n-en">resampled fits (variance)</span><span class="i18n-ko">재샘플링된 적합 (분산)</span></span>
+        <span><i class="sw c-fit"></i><span class="i18n-en">current fit</span><span class="i18n-ko">현재 적합</span></span>
+        <span><i class="sw c-mean"></i><span class="i18n-en">mean fit (its gap to g = bias)</span><span class="i18n-ko">평균 적합 (g와의 간격 = 편향)</span></span>
       </div>
     </div>
 
     <div class="panel plot">
-      <div class="plot-head"><span>error decomposition vs. complexity &middot; noise floor &sigma;&sup2; = <b id="hdS2">0.040</b></span></div>
+      <div class="plot-head"><span><span class="i18n-en">error decomposition vs. complexity &middot; noise floor &sigma;&sup2; = </span><span class="i18n-ko">복잡도에 따른 오차 분해 &middot; 잡음 하한 &sigma;&sup2; = </span><b id="hdS2">0.040</b></span></div>
       <canvas id="curveCv"></canvas>
       <div class="legend">
-        <span><i class="sw c-mean"></i>bias&sup2;</span>
-        <span><i class="sw c-var"></i>variance</span>
-        <span><i class="sw c-total"></i>total test error</span>
-        <span><i class="sw dashed c-true"></i>noise floor &sigma;&sup2;</span>
-        <span><i class="swv c-map"></i>current M</span>
+        <span><i class="sw c-mean"></i><span class="i18n-en">bias&sup2;</span><span class="i18n-ko">편향&sup2;</span></span>
+        <span><i class="sw c-var"></i><span class="i18n-en">variance</span><span class="i18n-ko">분산</span></span>
+        <span><i class="sw c-total"></i><span class="i18n-en">total test error</span><span class="i18n-ko">전체 테스트 오차</span></span>
+        <span><i class="sw dashed c-true"></i><span class="i18n-en">noise floor &sigma;&sup2;</span><span class="i18n-ko">잡음 하한 &sigma;&sup2;</span></span>
+        <span><i class="swv c-map"></i><span class="i18n-en">current M</span><span class="i18n-ko">현재 M</span></span>
       </div>
     </div>
 
     <div class="cards four">
       <div class="card bias">
-        <div class="k">BIAS&sup2;</div>
-        <div class="nm">average fit vs. truth</div>
-        <div class="stat"><span>at M = <b id="cbM">3</b></span><b id="cBias">&mdash;</b></div>
-        <p class="note">distance of the average fit from the truth</p>
+        <div class="k"><span class="i18n-en">BIAS&sup2;</span><span class="i18n-ko">편향&sup2;</span></div>
+        <div class="nm"><span class="i18n-en">average fit vs. truth</span><span class="i18n-ko">평균 적합 vs 참 함수</span></div>
+        <div class="stat"><span><span class="i18n-en">at M = </span><span class="i18n-ko">M = </span><b id="cbM">3</b></span><b id="cBias">&mdash;</b></div>
+        <p class="note"><span class="i18n-en">distance of the average fit from the truth</span><span class="i18n-ko">평균 적합이 참 함수에서 벗어난 정도</span></p>
       </div>
       <div class="card var">
-        <div class="k">VARIANCE</div>
-        <div class="nm">fit-to-fit spread</div>
-        <div class="stat"><span>at M</span><b id="cVar">&mdash;</b></div>
-        <p class="note">spread of fits across datasets</p>
+        <div class="k"><span class="i18n-en">VARIANCE</span><span class="i18n-ko">분산</span></div>
+        <div class="nm"><span class="i18n-en">fit-to-fit spread</span><span class="i18n-ko">적합 간 퍼짐</span></div>
+        <div class="stat"><span><span class="i18n-en">at M</span><span class="i18n-ko">M 에서</span></span><b id="cVar">&mdash;</b></div>
+        <p class="note"><span class="i18n-en">spread of fits across datasets</span><span class="i18n-ko">데이터셋에 따른 적합의 퍼짐</span></p>
       </div>
       <div class="card test">
-        <div class="k">TEST ERROR</div>
+        <div class="k"><span class="i18n-en">TEST ERROR</span><span class="i18n-ko">테스트 오차</span></div>
         <div class="nm">bias&sup2; + variance + &sigma;&sup2;</div>
-        <div class="stat"><span>at M</span><b id="cTest">&mdash;</b></div>
-        <p class="note">U-shaped in M &mdash; the minimum is the sweet spot</p>
+        <div class="stat"><span><span class="i18n-en">at M</span><span class="i18n-ko">M 에서</span></span><b id="cTest">&mdash;</b></div>
+        <p class="note"><span class="i18n-en">U-shaped in M &mdash; the minimum is the sweet spot</span><span class="i18n-ko">M에 대해 U자형 &mdash; 최솟값이 최적 지점</span></p>
       </div>
       <div class="card train">
-        <div class="k">TRAIN ERROR</div>
-        <div class="nm">MSE of current fit</div>
-        <div class="stat"><span>on its data</span><b id="cTrain">&mdash;</b></div>
-        <p class="note">keeps falling as M grows &mdash; a poor model selector</p>
+        <div class="k"><span class="i18n-en">TRAIN ERROR</span><span class="i18n-ko">학습 오차</span></div>
+        <div class="nm"><span class="i18n-en">MSE of current fit</span><span class="i18n-ko">현재 적합의 MSE</span></div>
+        <div class="stat"><span><span class="i18n-en">on its data</span><span class="i18n-ko">해당 데이터에서</span></span><b id="cTrain">&mdash;</b></div>
+        <p class="note"><span class="i18n-en">keeps falling as M grows &mdash; a poor model selector</span><span class="i18n-ko">M이 커질수록 계속 감소 &mdash; 모델 선택 기준으로는 부적절</span></p>
       </div>
     </div>
 
     <details class="panel fold">
-      <summary>Formulas</summary>
+      <summary><span class="i18n-en">Formulas</span><span class="i18n-ko">수식</span></summary>
       <div class="fold-body">
         $$\mathbb E\big[(y-\hat f(x))^2\big]=\underbrace{\big(\mathbb E[\hat f(x)]-g(x)\big)^2}_{\text{Bias}^2}+\underbrace{\mathbb E\big[(\hat f(x)-\mathbb E[\hat f(x)])^2\big]}_{\text{Variance}}+\underbrace{\sigma^2}_{\text{noise}}$$
         $$\mathrm{Bias}(x)=\mathbb E[\hat f(x)]-g(x),\qquad \mathrm{Var}(x)=\mathbb E\big[(\hat f(x)-\mathbb E[\hat f(x)])^2\big]$$
         $$\hat{\mathbf w}=(\Phi^\top\Phi)^{-1}\Phi^\top\mathbf y,\qquad \hat f(x)=\hat{\mathbf w}^\top\boldsymbol\phi(x),\qquad \boldsymbol\phi(x)=\big(1,\,x,\,x^2,\dots,x^M\big)$$
-        <p class="hint" style="margin-top:8px">Expectations are Monte-Carlo estimates over R resampled training sets, averaged across a dense test grid on [0,1].</p>
+        <p class="hint" style="margin-top:8px"><span class="i18n-en">Expectations are Monte-Carlo estimates over R resampled training sets, averaged across a dense test grid on [0,1].</span><span class="i18n-ko">기댓값은 R개의 재샘플링된 학습셋에 대한 Monte-Carlo 추정치이며, [0,1] 위의 촘촘한 테스트 격자에서 평균을 냅니다.</span></p>
       </div>
     </details>
 
     <details class="panel fold">
-      <summary>What to watch</summary>
+      <summary><span class="i18n-en">What to watch</span><span class="i18n-ko">관찰 포인트</span></summary>
       <div class="fold-body">
         <ol>
-          <li><b>Small M &rarr; high bias, low variance.</b> The fit sits far from g, but the ghosts are tight and almost identical &mdash; that is <b>underfitting</b>.</li>
-          <li><b>Large M &rarr; low bias, high variance.</b> The ghosts fan out wildly, each one chasing the noise in its own dataset &mdash; that is <b>overfitting</b>.</li>
-          <li>The <b>total test error is U-shaped</b> in M: it falls as bias drops, then rises as variance explodes. Its minimum is the <b>sweet spot</b>.</li>
-          <li>Raising <b>N</b> shrinks variance (ghosts tighten) and pushes the sweet spot to higher M; raising <b>&sigma;</b> lifts the whole noise floor &sigma;&sup2; and every error with it.</li>
+          <li><span class="i18n-en"><b>Small M &rarr; high bias, low variance.</b> The fit sits far from g, but the ghosts are tight and almost identical &mdash; that is <b>underfitting</b>.</span><span class="i18n-ko"><b>M이 작으면 &rarr; 편향은 크고 분산은 작음.</b> 적합은 g에서 멀리 떨어져 있지만, 고스트들은 촘촘하고 거의 동일합니다 &mdash; 이것이 <b>과소적합</b>입니다.</span></li>
+          <li><span class="i18n-en"><b>Large M &rarr; low bias, high variance.</b> The ghosts fan out wildly, each one chasing the noise in its own dataset &mdash; that is <b>overfitting</b>.</span><span class="i18n-ko"><b>M이 크면 &rarr; 편향은 작고 분산은 큼.</b> 고스트들이 크게 벌어지며, 각각이 자기 데이터셋의 잡음을 쫓아갑니다 &mdash; 이것이 <b>과대적합</b>입니다.</span></li>
+          <li><span class="i18n-en">The <b>total test error is U-shaped</b> in M: it falls as bias drops, then rises as variance explodes. Its minimum is the <b>sweet spot</b>.</span><span class="i18n-ko"><b>전체 테스트 오차는 M에 대해 U자형</b>입니다. 편향이 줄면서 감소하다가, 분산이 폭발하면서 다시 증가합니다. 그 최솟값이 <b>최적 지점</b>입니다.</span></li>
+          <li><span class="i18n-en">Raising <b>N</b> shrinks variance (ghosts tighten) and pushes the sweet spot to higher M; raising <b>&sigma;</b> lifts the whole noise floor &sigma;&sup2; and every error with it.</span><span class="i18n-ko"><b>N</b>을 늘리면 분산이 줄고(고스트가 좁아짐) 최적 지점이 더 높은 M으로 이동합니다. <b>&sigma;</b>를 늘리면 잡음 하한 &sigma;&sup2; 전체가 올라가고 모든 오차도 함께 올라갑니다.</span></li>
         </ol>
       </div>
     </details>
   </div>
 </section>
 </main>
-  <footer>PRISM Lab · prototype · <a href="https://sswu-prism-lab.github.io" target="_blank" rel="noopener">sswu-prism-lab.github.io</a></footer>
+  <footer><span class="i18n-en">PRISM Lab · prototype · </span><span class="i18n-ko">PRISM Lab · 프로토타입 · </span><a href="https://sswu-prism-lab.github.io" target="_blank" rel="noopener">sswu-prism-lab.github.io</a></footer>
 </div>
 
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
@@ -353,6 +357,7 @@ function dotW(w, phi) {
 /* ===MATH-END=== */
 
 /* ---------- DOM helpers (reused) ---------- */
+function L(en, ko) { return document.documentElement.getAttribute('data-lang') === 'ko' ? ko : en; }
 function $(id) { return document.getElementById(id); }
 function cssv(name) {
   return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
@@ -712,6 +717,7 @@ window.addEventListener('load', tryMath);
 wire();
 recomputeCurve();
 window.__onTheme = function () { render(); };
+window.__onLang = function () { render(); };
 render();
 </script>
 </body>

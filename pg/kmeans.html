@@ -7,17 +7,21 @@
 (function(){
   function cur(){ try{ return localStorage.getItem('theme') || (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark':'light'); }catch(e){ return 'dark'; } }
   var t=cur(); window.__theme=t; document.documentElement.setAttribute('data-theme', t);
-  window.addEventListener('storage', function(e){ if(e.key==='theme'){ var n=e.newValue||'dark'; window.__theme=n; document.documentElement.setAttribute('data-theme', n); if(window.__onTheme) window.__onTheme(n); } });
+  try{ document.documentElement.setAttribute('data-lang', (localStorage.getItem('lang')||'en')); }catch(e){ document.documentElement.setAttribute('data-lang','en'); }
+  window.addEventListener('storage', function(e){ if(e.key==='theme'){ var n=e.newValue||'dark'; window.__theme=n; document.documentElement.setAttribute('data-theme', n); if(window.__onTheme) window.__onTheme(n); } if(e.key==='lang'){ document.documentElement.setAttribute('data-lang', e.newValue||'en'); if(window.__onLang) window.__onLang(); } });
 })();
 </script>
 
 <title>K-means Clustering — PRISM Lab</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <style>
 * { box-sizing: border-box; }
+html[data-lang="en"] .i18n-ko{ display:none !important; }
+html[data-lang="ko"] .i18n-en{ display:none !important; }
+.i18n-ko{ font-family:'Nanum Gothic','Inter',sans-serif; word-break:keep-all; }
 :root {
   color-scheme: light;
   --bg:#ffffff; --panel:#f7f9fc; --panel-2:#eef2f8; --ink:#141b33; --muted:#5a6488;
@@ -145,32 +149,32 @@ canvas { display:block; width:100%; }
 </head>
 <body>
 <div class="wrap">
-  <div class="topbar"><a class="back" href="index.html">← Playground</a></div>
-  <p class="eyebrow">PRISM · Machine Learning Playground</p>
-  <h1 class="title">K-means Clustering<br><span class="thin">Nearest centroid, then the mean — coordinate descent on the distortion J</span></h1>
+  <div class="topbar"><a class="back" href="index.html"><span class="i18n-en">← Playground</span><span class="i18n-ko">← 놀이터</span></a></div>
+  <p class="eyebrow"><span class="i18n-en">PRISM · Machine Learning Playground</span><span class="i18n-ko">PRISM · 머신러닝 놀이터</span></p>
+  <h1 class="title"><span class="i18n-en">K-means Clustering</span><span class="i18n-ko">K-평균 군집화</span><br><span class="thin"><span class="i18n-en">Nearest centroid, then the mean — coordinate descent on the distortion J</span><span class="i18n-ko">가장 가까운 중심으로, 중심은 평균으로 — 왜곡 J를 낮추는 좌표 하강</span></span></h1>
 
 <main>
 <div class="layout">
   <aside class="panel side">
     <div class="grp">
-      <div class="grp-t">Data</div>
+      <div class="grp-t"><span class="i18n-en">Data</span><span class="i18n-ko">데이터</span></div>
       <div class="chips">
-        <button class="dchip active" data-d="sep">3 separated clusters</button>
-        <button class="dchip" data-d="aniso">Elongated</button>
-        <button class="dchip" data-d="sizes">Unequal sizes</button>
-        <button class="dchip" data-d="ring">Ring</button>
+        <button class="dchip active" data-d="sep"><span class="i18n-en">3 separated clusters</span><span class="i18n-ko">분리 3군집</span></button>
+        <button class="dchip" data-d="aniso"><span class="i18n-en">Elongated</span><span class="i18n-ko">길쭉</span></button>
+        <button class="dchip" data-d="sizes"><span class="i18n-en">Unequal sizes</span><span class="i18n-ko">크기 차이</span></button>
+        <button class="dchip" data-d="ring"><span class="i18n-en">Ring</span><span class="i18n-ko">고리</span></button>
       </div>
-      <label class="sl"><span>Sample size n <b id="kNV" class="val">150</b></span>
+      <label class="sl"><span><span class="i18n-en">Sample size n</span><span class="i18n-ko">표본 수 n</span> <b id="kNV" class="val">150</b></span>
         <input type="range" id="kN" min="30" max="300" step="10" value="150"></label>
       <div class="btnrow">
-        <button id="kGen" class="btn">Regenerate</button>
-        <button id="kUndo" class="btn">&#8617; Undo point</button>
-        <button id="kClear" class="btn ghost">Clear</button>
+        <button id="kGen" class="btn"><span class="i18n-en">Regenerate</span><span class="i18n-ko">재생성</span></button>
+        <button id="kUndo" class="btn">&#8617; <span class="i18n-en">Undo point</span><span class="i18n-ko">한 점 취소</span></button>
+        <button id="kClear" class="btn ghost"><span class="i18n-en">Clear</span><span class="i18n-ko">지우기</span></button>
       </div>
-      <p class="hint">Click = add point &middot; drag &times; = move centroid &middot; right-click = delete point</p>
+      <p class="hint"><span class="i18n-en">Click = add point &middot; drag &times; = move centroid &middot; right-click = delete point</span><span class="i18n-ko">클릭 = 점 추가 &middot; &times; 드래그 = 중심 이동 &middot; 우클릭 = 점 삭제</span></p>
     </div>
     <div class="grp">
-      <div class="grp-t">Model</div>
+      <div class="grp-t"><span class="i18n-en">Model</span><span class="i18n-ko">모델</span></div>
       <div class="segs">
         <button class="seg kseg" data-k="2">K=2</button>
         <button class="seg kseg active" data-k="3">K=3</button>
@@ -178,55 +182,55 @@ canvas { display:block; width:100%; }
         <button class="seg kseg" data-k="5">K=5</button>
       </div>
       <div class="segs">
-        <button class="seg iseg active" data-i="rand">Random init</button>
+        <button class="seg iseg active" data-i="rand"><span class="i18n-en">Random init</span><span class="i18n-ko">무작위 초기화</span></button>
         <button class="seg iseg" data-i="pp">k-means++</button>
       </div>
-      <p class="hint">Changing the init method takes effect on re-initialize</p>
+      <p class="hint"><span class="i18n-en">Changing the init method takes effect on re-initialize</span><span class="i18n-ko">초기화를 바꾸면 재초기화 시 적용됩니다</span></p>
     </div>
     <div class="grp">
-      <div class="grp-t">Run &middot; Lloyd</div>
+      <div class="grp-t"><span class="i18n-en">Run &middot; Lloyd</span><span class="i18n-ko">실행 &middot; Lloyd</span></div>
       <div class="btnrow">
-        <button id="bAssign" class="btn assign">Assign</button>
-        <button id="bUpdate" class="btn update">Update</button>
+        <button id="bAssign" class="btn assign"><span class="i18n-en">Assign</span><span class="i18n-ko">할당 (Assign)</span></button>
+        <button id="bUpdate" class="btn update"><span class="i18n-en">Update</span><span class="i18n-ko">갱신 (Update)</span></button>
       </div>
       <div class="btnrow">
-        <button id="bAuto" class="btn auto">&#9654; Auto run</button>
-        <button id="bInit" class="btn">Re-initialize</button>
+        <button id="bAuto" class="btn auto">&#9654; <span class="i18n-en">Auto run</span><span class="i18n-ko">자동 실행</span></button>
+        <button id="bInit" class="btn"><span class="i18n-en">Re-initialize</span><span class="i18n-ko">재초기화</span></button>
       </div>
-      <p class="hint">Assign changes only point colors (z), Update changes only &times;(&mu;) &mdash; both lower J</p>
+      <p class="hint"><span class="i18n-en">Assign changes only point colors (z), Update changes only &times;(&mu;) &mdash; both lower J</span><span class="i18n-ko">할당은 점 색(z)만, 갱신은 &times;(&mu;)만 바꿉니다 &mdash; 둘 다 J를 낮춥니다</span></p>
     </div>
   </aside>
 
   <div class="stage">
     <div class="panel plot">
       <div class="plot-head">
-        <span>iteration t = <b id="kIter">0</b> &middot; next: <b id="kPhase">Assign (z)</b></span>
+        <span>iteration t = <b id="kIter">0</b> &middot; <span class="i18n-en">next:</span><span class="i18n-ko">다음:</span> <b id="kPhase"><span class="i18n-en">Assign (z)</span><span class="i18n-ko">할당 (z)</span></b></span>
         <span id="kConv"></span>
       </div>
       <canvas id="kCv"></canvas>
       <div class="legend">
-        <span><i class="dot c1"></i><i class="dot c2"></i><i class="dot c3"></i>Point color = assigned cluster (hard)</span>
-        <span><i class="xsw c1">&times;</i>Centroid &mu;&#8342; (draggable)</span>
-        <span><i class="regsw cink"></i>Voronoi region</span>
-        <span><i class="sw dashed c2"></i>Centroid trail</span>
+        <span><i class="dot c1"></i><i class="dot c2"></i><i class="dot c3"></i><span class="i18n-en">Point color = assigned cluster (hard)</span><span class="i18n-ko">점 색 = 배정 군집 (하드)</span></span>
+        <span><i class="xsw c1">&times;</i><span class="i18n-en">Centroid &mu;&#8342; (draggable)</span><span class="i18n-ko">중심 &mu;&#8342; (드래그 가능)</span></span>
+        <span><i class="regsw cink"></i><span class="i18n-en">Voronoi region</span><span class="i18n-ko">Voronoi 영역</span></span>
+        <span><i class="sw dashed c2"></i><span class="i18n-en">Centroid trail</span><span class="i18n-ko">중심 궤적</span></span>
       </div>
     </div>
 
     <div class="panel plot">
-      <div class="plot-cap">Distortion J/n &mdash; <b>both half-steps (assign &middot; update)</b> step downward (manual moves may jump up)</div>
+      <div class="plot-cap"><span class="i18n-en">Distortion J/n &mdash; <b>both half-steps (assign &middot; update)</b> step downward (manual moves may jump up)</span><span class="i18n-ko">왜곡 J/n &mdash; <b>할당&middot;갱신 두 반스텝 모두</b> 계단으로 내려간다 (수동 이동은 튀어오를 수 있음)</span></div>
       <canvas id="kLand"></canvas>
       <div class="legend">
         <span><i class="sw cink"></i>J/n</span>
-        <span><i class="dot cas"></i>Assign step</span>
-        <span><i class="dot cup"></i>Update step</span>
-        <span><i class="dot cbad"></i>Manual move</span>
+        <span><i class="dot cas"></i><span class="i18n-en">Assign step</span><span class="i18n-ko">할당 스텝</span></span>
+        <span><i class="dot cup"></i><span class="i18n-en">Update step</span><span class="i18n-ko">갱신 스텝</span></span>
+        <span><i class="dot cbad"></i><span class="i18n-en">Manual move</span><span class="i18n-ko">수동 이동</span></span>
       </div>
     </div>
 
     <div class="panel plot">
       <div class="plot-cap caphead">
-        <span>Elbow method &mdash; lowest J per K (k-means++ &middot; 6 restarts); look for the <b>bend</b>, not the minimum</span>
-        <button id="bElbow" class="btn small">Scan K (1&ndash;8)</button>
+        <span><span class="i18n-en">Elbow method &mdash; lowest J per K (k-means++ &middot; 6 restarts); look for the <b>bend</b>, not the minimum</span><span class="i18n-ko">엘보 방법 &mdash; K별 최저 J (k-means++ &middot; 재시작 6회), 최소가 아니라 <b>꺾이는 지점</b>을 찾는다</span></span>
+        <button id="bElbow" class="btn small"><span class="i18n-en">Scan K (1&ndash;8)</span><span class="i18n-ko">K 스캔 (1&ndash;8)</span></button>
       </div>
       <canvas id="kElbow"></canvas>
     </div>
@@ -234,30 +238,30 @@ canvas { display:block; width:100%; }
     <div class="cards">
       <div class="card jc">
         <div class="k">DISTORTION</div>
-        <div class="nm">Distortion &middot; inertia</div>
+        <div class="nm"><span class="i18n-en">Distortion &middot; inertia</span><span class="i18n-ko">왜곡 &middot; inertia</span></div>
         <div class="stat"><span>J/n</span><b id="kJ">&mdash;</b></div>
-        <div class="stat"><span>&Delta;J/n (half-step)</span><b id="kDJ">&mdash;</b></div>
-        <div class="stat"><span>Lowest J/n (this data)</span><b id="kBest">&mdash;</b></div>
-        <p class="note">Finite number of partitions &rarr; must converge in a finite number of steps</p>
+        <div class="stat"><span>&Delta;J/n <span class="i18n-en">(half-step)</span><span class="i18n-ko">(반스텝)</span></span><b id="kDJ">&mdash;</b></div>
+        <div class="stat"><span><span class="i18n-en">Lowest J/n (this data)</span><span class="i18n-ko">최저 J/n (이 데이터)</span></span><b id="kBest">&mdash;</b></div>
+        <p class="note"><span class="i18n-en">Finite number of partitions &rarr; must converge in a finite number of steps</span><span class="i18n-ko">유한한 분할의 수 &rarr; 유한 스텝 안에 반드시 수렴</span></p>
       </div>
       <div class="card as">
         <div class="k">ASSIGN</div>
         <div class="nm">z&#8345; = argmin&#8342; &Vert;x&minus;&mu;&#8342;&Vert;&sup2;</div>
-        <div class="stat"><span>Reassigned points</span><b id="kChanged">&mdash;</b></div>
-        <div class="stat"><span>Cluster sizes N&#8342;</span><b id="kNks">&mdash;</b></div>
-        <p class="note">Nearest-centroid assignment = Voronoi partition &middot; 0 reassignments = converged</p>
+        <div class="stat"><span><span class="i18n-en">Reassigned points</span><span class="i18n-ko">재할당된 점</span></span><b id="kChanged">&mdash;</b></div>
+        <div class="stat"><span><span class="i18n-en">Cluster sizes N&#8342;</span><span class="i18n-ko">군집 크기 N&#8342;</span></span><b id="kNks">&mdash;</b></div>
+        <p class="note"><span class="i18n-en">Nearest-centroid assignment = Voronoi partition &middot; 0 reassignments = converged</span><span class="i18n-ko">최근접 중심 배정 = Voronoi 분할 &middot; 재할당 0 = 수렴</span></p>
       </div>
       <div class="card up">
         <div class="k">UPDATE</div>
-        <div class="nm">&mu;&#8342; = cluster mean</div>
-        <div class="stat"><span>Centroid movement &Sigma;&Vert;&Delta;&mu;&Vert;</span><b id="kMoved">&mdash;</b></div>
-        <div class="stat"><span>Empty-cluster reseeds (cumulative)</span><b id="kReseed">&mdash;</b></div>
-        <p class="note">The mean minimizes the sum of squared distances &mdash; guarantees J&darr;</p>
+        <div class="nm">&mu;&#8342; = <span class="i18n-en">cluster mean</span><span class="i18n-ko">군집 평균</span></div>
+        <div class="stat"><span><span class="i18n-en">Centroid movement</span><span class="i18n-ko">중심 이동</span> &Sigma;&Vert;&Delta;&mu;&Vert;</span><b id="kMoved">&mdash;</b></div>
+        <div class="stat"><span><span class="i18n-en">Empty-cluster reseeds (cumulative)</span><span class="i18n-ko">빈 군집 재시드 (누적)</span></span><b id="kReseed">&mdash;</b></div>
+        <p class="note"><span class="i18n-en">The mean minimizes the sum of squared distances &mdash; guarantees J&darr;</span><span class="i18n-ko">평균은 제곱거리 합의 최소자 &mdash; J&darr; 보장</span></p>
       </div>
     </div>
 
     <details class="panel fold">
-      <summary>Formulas</summary>
+      <summary><span class="i18n-en">Formulas</span><span class="i18n-ko">수식</span></summary>
       <div class="fold-body">
         $$J\big(\{z_n\},\{\mu_k\}\big)=\sum_{n}\big\|x_n-\mu_{z_n}\big\|^2=\sum_n\sum_k r_{nk}\,\|x_n-\mu_k\|^2,\qquad r_{nk}=\mathbb 1[z_n{=}k]$$
         $$\textbf{Assign: }\ z_n=\arg\min_k\|x_n-\mu_k\|^2\ \ (\text{each term minimized}\ \Rightarrow\ J\downarrow)$$
@@ -268,21 +272,21 @@ canvas { display:block; width:100%; }
     </details>
 
     <details class="panel fold">
-      <summary>What to watch</summary>
+      <summary><span class="i18n-en">What to watch</span><span class="i18n-ko">수업 관찰 포인트</span></summary>
       <div class="fold-body">
         <ol>
-          <li><b>Both half-steps lower J</b>: Assign minimizes each point's term individually; Update uses the mean, which is the minimizer of squared distance &mdash; the J curve steps down at every half-step (contrast with EM, where &#8467; rose only at the M-step). Since the number of partitions is finite, it converges in a finite number of steps &mdash; 0 reassignments is the stopping condition.</li>
-          <li><b>Initialization</b>: Repeatedly re-initializing with random init lands on different local optima (compare against the best-J record). Switching to k-means++ gives a lower J from the very first step and sharply cuts the chance of falling into a bad solution &mdash; because D&sup2;-proportional sampling picks seeds that are far apart.</li>
-          <li><b>Drag a centroid directly</b> &mdash; J jumps up (red dot), then the algorithm pulls it back down. Cramming two centroids into a single cluster also reproduces getting stuck in a local optimum where a cluster is split.</li>
-          <li><b>Model assumptions</b>: On elongated / unequal-size data the Voronoi boundaries are straight lines, so they cut through elongated clusters and carve up large ones &mdash; K-means is hard EM with a fixed &sigma;&sup2;I and &sigma;&rarr;0 (isotropic, equal-variance assumption). If you need a full &Sigma;, use a GMM.</li>
-          <li><b>Elbow</b>: J decreases monotonically in K &mdash; chasing the minimum just gives K=n. On separated data it drops sharply at K=3 then flattens (the bend); on ring data the elbow itself is ambiguous &mdash; if the model is wrong, choosing K is meaningless too.</li>
+          <li><span class="i18n-en"><b>Both half-steps lower J</b>: Assign minimizes each point's term individually; Update uses the mean, which is the minimizer of squared distance &mdash; the J curve steps down at every half-step (contrast with EM, where &#8467; rose only at the M-step). Since the number of partitions is finite, it converges in a finite number of steps &mdash; 0 reassignments is the stopping condition.</span><span class="i18n-ko"><b>두 반스텝 모두 J&darr;</b>: 할당은 각 점의 항을 개별 최소화, 갱신은 평균이 제곱거리의 최소자 &mdash; J 곡선이 매 반스텝 계단으로 내려간다 (EM에서 &#8467;는 M-step에서만 오르던 것과 대비). 분할의 가짓수가 유한하므로 유한 스텝 수렴 &mdash; 재할당 0이 종료 조건.</span></li>
+          <li><span class="i18n-en"><b>Initialization</b>: Repeatedly re-initializing with random init lands on different local optima (compare against the best-J record). Switching to k-means++ gives a lower J from the very first step and sharply cuts the chance of falling into a bad solution &mdash; because D&sup2;-proportional sampling picks seeds that are far apart.</span><span class="i18n-ko"><b>초기화</b>: 무작위 초기화로 재초기화를 반복하면 다른 국소 최적(최저 J 기록과 비교). k-means++로 바꾸면 첫 J부터 낮고 나쁜 해에 빠질 확률이 급감 &mdash; D&sup2; 비례 샘플링이 멀리 떨어진 씨앗을 고르기 때문.</span></li>
+          <li><span class="i18n-en"><b>Drag a centroid directly</b> &mdash; J jumps up (red dot), then the algorithm pulls it back down. Cramming two centroids into a single cluster also reproduces getting stuck in a local optimum where a cluster is split.</span><span class="i18n-ko"><b>중심을 직접 드래그</b>해 보라 &mdash; J가 튀어오른 뒤(붉은 점) 알고리즘이 다시 끌어내린다. 한 군집에 중심 두 개를 몰아넣으면 군집이 쪼개진 국소 최적에 갇히는 것도 재현된다.</span></li>
+          <li><span class="i18n-en"><b>Model assumptions</b>: On elongated / unequal-size data the Voronoi boundaries are straight lines, so they cut through elongated clusters and carve up large ones &mdash; K-means is hard EM with a fixed &sigma;&sup2;I and &sigma;&rarr;0 (isotropic, equal-variance assumption). If you need a full &Sigma;, use a GMM.</span><span class="i18n-ko"><b>모델 가정</b>: 길쭉/크기 차이 데이터에서 Voronoi 경계는 직선이라 길쭉한 군집을 자르고 큰 군집을 나눠 갖는다 &mdash; K-means는 &sigma;&sup2;I 고정, &sigma;&rarr;0의 hard EM(등방&middot;등분산 가정). Full &Sigma;가 필요하면 GMM으로.</span></li>
+          <li><span class="i18n-en"><b>Elbow</b>: J decreases monotonically in K &mdash; chasing the minimum just gives K=n. On separated data it drops sharply at K=3 then flattens (the bend); on ring data the elbow itself is ambiguous &mdash; if the model is wrong, choosing K is meaningless too.</span><span class="i18n-ko"><b>엘보</b>: J는 K에 대해 단조 감소 &mdash; 최소를 찾으면 K=n이 된다. 분리 데이터에선 K=3에서 급락 후 평평(꺾임), 고리 데이터에선 엘보 자체가 애매 &mdash; 모델이 틀리면 K 선택도 무의미하다.</span></li>
         </ol>
       </div>
     </details>
   </div>
 </div>
 </main>
-  <footer>PRISM Lab · prototype · <a href="https://sswu-prism-lab.github.io" target="_blank" rel="noopener">sswu-prism-lab.github.io</a></footer>
+  <footer><span class="i18n-en">PRISM Lab · prototype</span><span class="i18n-ko">PRISM Lab · 프로토타입</span> · <a href="https://sswu-prism-lab.github.io" target="_blank" rel="noopener">sswu-prism-lab.github.io</a></footer>
 </div>
 
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
@@ -292,6 +296,8 @@ canvas { display:block; width:100%; }
 /* K-means playground — Lloyd's algorithm as coordinate descent on distortion J
    Assign recolors points (Voronoi), Update moves centroids (means).
    Both half-steps decrease J. Draggable centroids, k-means++, elbow scan. */
+
+function L(en, ko){ return document.documentElement.getAttribute('data-lang') === 'ko' ? ko : en; }
 
 /* ===MATH-BEGIN=== */
 var RNG = Math.random;
@@ -564,7 +570,7 @@ function halfStep() {
 
 /* ---------- auto ---------- */
 function setAutoBtn() {
-  $('bAuto').innerHTML = autoOn ? '&#9208; Stop' : '&#9654; Auto run';
+  $('bAuto').innerHTML = autoOn ? L('&#9208; Stop', '&#9208; 정지') : L('&#9654; Auto run', '&#9654; 자동 실행');
 }
 function autoLoop(ts) {
   if (!autoOn) return;
@@ -592,8 +598,8 @@ function render() {
   $('bAuto').disabled = !ok;
 
   $('kIter').textContent = km.iter;
-  $('kPhase').textContent = ok ? (km.phase === 'assign' ? 'Assign (z)' : 'Update (μ)') : '—';
-  $('kConv').textContent = km.conv ? 'Converged ✓' : '';
+  $('kPhase').textContent = ok ? (km.phase === 'assign' ? L('Assign (z)', '할당 (z)') : L('Update (μ)', '갱신 (μ)')) : '—';
+  $('kConv').textContent = km.conv ? L('Converged ✓', '수렴 ✓') : '';
 
   var Jnow = ok && km.z ? Jof(km.pts, km.z, km.mu) : null;
   $('kJ').textContent = Jnow !== null && n ? fmt(Jnow / n) : '—';
@@ -790,8 +796,8 @@ function drawMain() {
     ctx.font = '13px sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText(km.pts.length
-      ? 'Fewer samples than K — regenerate'
-      : 'Add points or regenerate', cx, cy);
+      ? L('Fewer samples than K — regenerate', '표본이 K개보다 적습니다 — 재생성하세요')
+      : L('Add points or regenerate', '점을 추가하거나 재생성하세요'), cx, cy);
   }
   ctx.restore();
 }
@@ -877,7 +883,7 @@ function drawElbow() {
   if (!E || !n) {
     ctx.fillStyle = cssv('--muted');
     ctx.font = '12px sans-serif';
-    ctx.fillText('Press "Scan K" to compute the lowest J per K', Mg.l + pw / 2, Mg.t + ph / 2);
+    ctx.fillText(L('Press "Scan K" to compute the lowest J per K', '「K 스캔」을 누르면 K별 최저 J를 계산합니다'), Mg.l + pw / 2, Mg.t + ph / 2);
     return;
   }
   var vals = E.filter(function (v) { return v !== null; }).map(function (v) { return v / n; });
@@ -1114,6 +1120,7 @@ window.addEventListener('load', tryMath);
 wire();
 newData();
 window.__onTheme = function(){ render(); };
+window.__onLang = function(){ render(); };
 render();
 
 </script>

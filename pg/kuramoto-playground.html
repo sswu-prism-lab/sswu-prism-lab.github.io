@@ -7,14 +7,15 @@
 (function(){
   function cur(){ try{ return localStorage.getItem('theme') || (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark':'light'); }catch(e){ return 'dark'; } }
   var t=cur(); window.__theme=t; document.documentElement.setAttribute('data-theme', t);
-  window.addEventListener('storage', function(e){ if(e.key==='theme'){ var n=e.newValue||'dark'; window.__theme=n; document.documentElement.setAttribute('data-theme', n); if(window.__onTheme) window.__onTheme(n); } });
+  try{ document.documentElement.setAttribute('data-lang', (localStorage.getItem('lang')||'en')); }catch(e){ document.documentElement.setAttribute('data-lang','en'); }
+  window.addEventListener('storage', function(e){ if(e.key==='theme'){ var n=e.newValue||'dark'; window.__theme=n; document.documentElement.setAttribute('data-theme', n); if(window.__onTheme) window.__onTheme(n); } if(e.key==='lang'){ document.documentElement.setAttribute('data-lang', e.newValue||'en'); if(window.__onLang) window.__onLang(); } });
 })();
 </script>
 
 <title>Kuramoto Synchronization — PRISM Lab</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet" />
 <style>
   :root{
     --void:#15181e; --panel:#1d212a; --panel-2:#171b22; --line:#2e343f;
@@ -126,46 +127,51 @@
   }
   html[data-theme="light"] body{ background: var(--void); }
   html[data-theme="light"] .btn:hover{ border-color:#b9c4da; background:#e9eef7; }
+
+  html[data-lang="en"] .i18n-ko{ display:none !important; }
+  html[data-lang="ko"] .i18n-en{ display:none !important; }
+  .i18n-ko{ font-family:'Nanum Gothic','Inter',sans-serif; word-break:keep-all; }
 </style>
 </head>
 <body>
 <div class="wrap">
 
-  <div class="topbar"><a class="back" href="index.html">← Playground</a></div>
-  <p class="eyebrow">PRISM · Statistical-Mechanics Playground</p>
-  <h1 class="title">Kuramoto Synchronization<br><span class="thin">Coupled oscillators, order parameter, and a phase transition</span></h1>
+  <div class="topbar"><a class="back" href="index.html"><span class="i18n-en">← Playground</span><span class="i18n-ko">← 놀이터</span></a></div>
+  <p class="eyebrow"><span class="i18n-en">PRISM · Statistical-Mechanics Playground</span><span class="i18n-ko">PRISM · 통계역학 놀이터</span></p>
+  <h1 class="title"><span class="i18n-en">Kuramoto Synchronization</span><span class="i18n-ko">쿠라모토 동기화</span><br><span class="thin"><span class="i18n-en">Coupled oscillators, order parameter, and a phase transition</span><span class="i18n-ko">결합 세기 K가 임계값 Kc=2γ를 넘으면 위상이 자발적으로 잠긴다 — 질서 파라미터 r이 뛰어오르는 협동적 전이</span></span></h1>
   <p class="subtitle">
-    Oscillators with different natural frequencies suddenly fall into step the moment the <b>coupling K</b> crosses the threshold <b>K<sub>c</sub> = 2γ</b>.
+    <span class="i18n-en">Oscillators with different natural frequencies suddenly fall into step the moment the <b>coupling K</b> crosses the threshold <b>K<sub>c</sub> = 2γ</b>.
     The order parameter <b>r</b> jumps up from zero — a cooperative phenomenon that runs
-    from brain rhythms, seizures, and heartbeats all the way to fireflies, all following the same math.
+    from brain rhythms, seizures, and heartbeats all the way to fireflies, all following the same math.</span><span class="i18n-ko">서로 다른 고유 진동수를 가진 진동자들이 <b>결합 세기 K</b>가 임계값 <b>K<sub>c</sub> = 2γ</b>를 넘는 순간 갑자기 보조를 맞춘다.
+    질서 파라미터 <b>r</b>이 0에서 뛰어오르는데 — 뇌파와 발작, 심장 박동에서 반딧불이의 반짝임까지 모두 같은 수식을 따르는 협동 현상이다.</span>
   </p>
 
   <div class="grid">
     <!-- ===== LEFT ===== -->
     <div>
       <div class="card stage">
-        <div class="card-h">Phase circle · order parameter <span class="hint" id="ringHint">r·e^(iψ) = (1/N) Σ e^(iθⱼ)</span></div>
+        <div class="card-h"><span class="i18n-en">Phase circle · order parameter</span><span class="i18n-ko">위상 원 · 질서 파라미터</span> <span class="hint" id="ringHint">r·e^(iψ) = (1/N) Σ e^(iθⱼ)</span></div>
         <div class="canvas-hold"><canvas id="ring"></canvas></div>
         <div class="legend">
-          <span>slow ω&lt;0</span><span class="grad"></span><span>fast ω&gt;0</span>
+          <span><span class="i18n-en">slow ω&lt;0</span><span class="i18n-ko">느림 ω&lt;0</span></span><span class="grad"></span><span><span class="i18n-en">fast ω&gt;0</span><span class="i18n-ko">빠름 ω&gt;0</span></span>
         </div>
       </div>
 
       <div class="card stage">
-        <div class="card-h">Phase-transition plane r vs K <span class="hint">theory r = √(1 − Kc/K)</span></div>
+        <div class="card-h"><span class="i18n-en">Phase-transition plane r vs K</span><span class="i18n-ko">상전이 평면 r vs K</span> <span class="hint"><span class="i18n-en">theory r = √(1 − Kc/K)</span><span class="i18n-ko">이론값 r = √(1 − Kc/K)</span></span></div>
         <div class="canvas-hold"><canvas id="plane"></canvas></div>
-        <div class="axis-cap"><span>K = 0</span><span>coupling strength K</span><span id="planeKmax">K = 6</span></div>
+        <div class="axis-cap"><span>K = 0</span><span><span class="i18n-en">coupling strength K</span><span class="i18n-ko">결합 세기 K</span></span><span id="planeKmax">K = 6</span></div>
       </div>
     </div>
 
     <!-- ===== RIGHT ===== -->
     <div>
       <div class="card">
-        <div class="card-h">Controls</div>
+        <div class="card-h"><span class="i18n-en">Controls</span><span class="i18n-ko">제어판</span></div>
 
         <div class="ctl">
           <div class="ctl-top">
-            <span class="ctl-name">Coupling K <span class="sub">coupling</span></span>
+            <span class="ctl-name"><span class="i18n-en">Coupling K</span><span class="i18n-ko">결합 세기 K</span> <span class="sub"><span class="i18n-en">coupling</span><span class="i18n-ko">결합</span></span></span>
             <span class="ctl-val" id="kV">0.80</span>
           </div>
           <input type="range" id="coupling" min="0" max="6" step="0.02" value="0.8" aria-label="Coupling K" />
@@ -173,7 +179,7 @@
 
         <div class="ctl">
           <div class="ctl-top">
-            <span class="ctl-name">Frequency width γ <span class="sub">Lorentzian HWHM · Kc=2γ</span></span>
+            <span class="ctl-name"><span class="i18n-en">Frequency width γ</span><span class="i18n-ko">진동수 폭 γ</span> <span class="sub"><span class="i18n-en">Lorentzian HWHM · Kc=2γ</span><span class="i18n-ko">Lorentzian 반치반폭(HWHM) · Kc=2γ</span></span></span>
             <span class="ctl-val" id="gV">0.60</span>
           </div>
           <input type="range" id="gamma" min="0.2" max="1.5" step="0.01" value="0.6" aria-label="Frequency width gamma" />
@@ -181,7 +187,7 @@
 
         <div class="ctl">
           <div class="ctl-top">
-            <span class="ctl-name">Oscillators N <span class="sub">finite-size fluctuations ~ 1/√N</span></span>
+            <span class="ctl-name"><span class="i18n-en">Oscillators N</span><span class="i18n-ko">진동자 수 N</span> <span class="sub"><span class="i18n-en">finite-size fluctuations ~ 1/√N</span><span class="i18n-ko">유한 크기 요동 ~ 1/√N</span></span></span>
             <span class="ctl-val" id="nV">120</span>
           </div>
           <input type="range" id="ncount" min="20" max="300" step="1" value="120" aria-label="Oscillators N" />
@@ -189,7 +195,7 @@
 
         <div class="ctl">
           <div class="ctl-top">
-            <span class="ctl-name">Noise D <span class="sub">phase diffusion</span></span>
+            <span class="ctl-name"><span class="i18n-en">Noise D</span><span class="i18n-ko">잡음 D</span> <span class="sub"><span class="i18n-en">phase diffusion</span><span class="i18n-ko">위상 확산</span></span></span>
             <span class="ctl-val" id="dV">0.00</span>
           </div>
           <input type="range" id="noise" min="0" max="1.0" step="0.01" value="0" aria-label="Noise D" />
@@ -197,33 +203,33 @@
 
         <div class="btnrow">
           <button class="btn btn-primary wide" id="run">▶ Run</button>
-          <button class="btn" id="rephase">Reset phases</button>
-          <button class="btn" id="refreq">Resample frequencies</button>
-          <button class="btn wide" id="sweep">Draw transition curve (K sweep)</button>
+          <button class="btn" id="rephase"><span class="i18n-en">Reset phases</span><span class="i18n-ko">위상 초기화</span></button>
+          <button class="btn" id="refreq"><span class="i18n-en">Resample frequencies</span><span class="i18n-ko">진동수 재추출</span></button>
+          <button class="btn wide" id="sweep"><span class="i18n-en">Draw transition curve (K sweep)</span><span class="i18n-ko">전이 곡선 그리기 (K 스윕)</span></button>
         </div>
-        <div class="noteline" id="noteLine">Raise K above Kc and the swarm locks — r jumps up.</div>
+        <div class="noteline" id="noteLine"><span class="i18n-en">Raise K above Kc and the swarm locks — r jumps up.</span><span class="i18n-ko">K를 Kc 위로 올리면 무리가 잠기고 — r이 뛰어오른다.</span></div>
       </div>
 
       <div class="card">
-        <div class="card-h">Measurements <span id="syncTag" class="sync-tag off">Async</span></div>
+        <div class="card-h"><span class="i18n-en">Measurements</span><span class="i18n-ko">측정값</span> <span id="syncTag" class="sync-tag off">Async</span></div>
         <div class="ro-grid">
-          <div class="ro"><div class="k">order parameter r</div><div class="v big" id="roR">–</div></div>
-          <div class="ro"><div class="k">mean phase ψ</div><div class="v" id="roPsi">–</div></div>
-          <div class="ro"><div class="k">critical coupling Kc</div><div class="v" id="roKc">–</div></div>
+          <div class="ro"><div class="k"><span class="i18n-en">order parameter r</span><span class="i18n-ko">질서 파라미터 r</span></div><div class="v big" id="roR">–</div></div>
+          <div class="ro"><div class="k"><span class="i18n-en">mean phase ψ</span><span class="i18n-ko">평균 위상 ψ</span></div><div class="v" id="roPsi">–</div></div>
+          <div class="ro"><div class="k"><span class="i18n-en">critical coupling Kc</span><span class="i18n-ko">임계 결합 Kc</span></div><div class="v" id="roKc">–</div></div>
           <div class="ro"><div class="k">K / Kc</div><div class="v" id="roRatio">–</div></div>
-          <div class="ro"><div class="k">phase-locked fraction</div><div class="v" id="roLock">–</div></div>
-          <div class="ro"><div class="k">oscillators N</div><div class="v" id="roN">–</div></div>
+          <div class="ro"><div class="k"><span class="i18n-en">phase-locked fraction</span><span class="i18n-ko">위상 잠금 비율</span></div><div class="v" id="roLock">–</div></div>
+          <div class="ro"><div class="k"><span class="i18n-en">oscillators N</span><span class="i18n-ko">진동자 수 N</span></div><div class="v" id="roN">–</div></div>
         </div>
       </div>
 
       <div class="card try">
-        <div class="card-h">Things to try</div>
+        <div class="card-h"><span class="i18n-en">Things to try</span><span class="i18n-ko">해볼 것들</span></div>
         <ol>
-          <li><b>Async:</b> when <span class="kbd">K</span> is low the phases scatter around the circle, <span class="kbd">r≈0</span>, and the arrow is short.</li>
-          <li><b>Transition:</b> raise <span class="kbd">K</span> above <span class="kbd">Kc=2γ</span> and it locks abruptly; the point in the plane below jumps onto the theory curve.</li>
-          <li><b>Shifting the threshold:</b> a larger <span class="kbd">γ</span> raises <span class="kbd">Kc</span>, so stronger coupling is needed.</li>
-          <li><b>Finite size:</b> with smaller <span class="kbd">N</span>, fluctuations keep <span class="kbd">r</span> from reaching 0.</li>
-          <li><b>Noise:</b> adding <span class="kbd">D</span> disrupts synchronization.</li>
+          <li><span class="i18n-en"><b>Async:</b> when <span class="kbd">K</span> is low the phases scatter around the circle, <span class="kbd">r≈0</span>, and the arrow is short.</span><span class="i18n-ko"><b>비동기:</b> <span class="kbd">K</span>가 작으면 위상이 원 둘레에 흩어져 <span class="kbd">r≈0</span>이 되고, 화살표가 짧다.</span></li>
+          <li><span class="i18n-en"><b>Transition:</b> raise <span class="kbd">K</span> above <span class="kbd">Kc=2γ</span> and it locks abruptly; the point in the plane below jumps onto the theory curve.</span><span class="i18n-ko"><b>전이:</b> <span class="kbd">K</span>를 <span class="kbd">Kc=2γ</span> 위로 올리면 급격히 잠기고, 아래 평면의 점이 이론 곡선 위로 뛰어오른다.</span></li>
+          <li><span class="i18n-en"><b>Shifting the threshold:</b> a larger <span class="kbd">γ</span> raises <span class="kbd">Kc</span>, so stronger coupling is needed.</span><span class="i18n-ko"><b>임계값 이동:</b> <span class="kbd">γ</span>가 커지면 <span class="kbd">Kc</span>가 높아져 더 강한 결합이 필요하다.</span></li>
+          <li><span class="i18n-en"><b>Finite size:</b> with smaller <span class="kbd">N</span>, fluctuations keep <span class="kbd">r</span> from reaching 0.</span><span class="i18n-ko"><b>유한 크기:</b> <span class="kbd">N</span>이 작으면 요동 때문에 <span class="kbd">r</span>이 0에 이르지 못한다.</span></li>
+          <li><span class="i18n-en"><b>Noise:</b> adding <span class="kbd">D</span> disrupts synchronization.</span><span class="i18n-ko"><b>잡음:</b> <span class="kbd">D</span>를 더하면 동기화가 흐트러진다.</span></li>
         </ol>
       </div>
     </div>
@@ -231,25 +237,27 @@
 
   <div class="explain">
     <div class="ex a">
-      <h4>Order parameter r</h4>
-      <p><code>r·e^(iψ) = (1/N) Σ e^(iθⱼ)</code>. <code>r=0</code> is incoherent, <code>r=1</code> fully synced. In the mean-field form <code>θ̇ᵢ = ωᵢ + K·r·sin(ψ − θᵢ)</code>, each oscillator is pulled toward the common rhythm <code>ψ</code>.</p>
+      <h4><span class="i18n-en">Order parameter r</span><span class="i18n-ko">질서 파라미터 r</span></h4>
+      <p><span class="i18n-en"><code>r·e^(iψ) = (1/N) Σ e^(iθⱼ)</code>. <code>r=0</code> is incoherent, <code>r=1</code> fully synced. In the mean-field form <code>θ̇ᵢ = ωᵢ + K·r·sin(ψ − θᵢ)</code>, each oscillator is pulled toward the common rhythm <code>ψ</code>.</span><span class="i18n-ko"><code>r·e^(iψ) = (1/N) Σ e^(iθⱼ)</code>. <code>r=0</code>은 비결맞음, <code>r=1</code>은 완전 동기 상태다. 평균장 형태 <code>θ̇ᵢ = ωᵢ + K·r·sin(ψ − θᵢ)</code>에서 각 진동자는 공통 리듬 <code>ψ</code>로 끌려간다.</span></p>
     </div>
     <div class="ex b">
-      <h4>Phase transition (Kc)</h4>
-      <p>Once coupling exceeds <code>Kc = 2γ</code> (Lorentzian), the incoherent solution becomes unstable and the branch <code>r = √(1 − Kc/K)</code> appears — a second-order transition from individual disorder to collective order.</p>
+      <h4><span class="i18n-en">Phase transition (Kc)</span><span class="i18n-ko">상전이 (Kc)</span></h4>
+      <p><span class="i18n-en">Once coupling exceeds <code>Kc = 2γ</code> (Lorentzian), the incoherent solution becomes unstable and the branch <code>r = √(1 − Kc/K)</code> appears — a second-order transition from individual disorder to collective order.</span><span class="i18n-ko">결합이 <code>Kc = 2γ</code>(Lorentzian)를 넘어서면 비결맞음 해가 불안정해지고 가지 <code>r = √(1 − Kc/K)</code>가 나타난다 — 개별적 무질서에서 집단적 질서로 가는 2차 상전이다.</span></p>
     </div>
     <div class="ex c">
-      <h4>Link to brain rhythms</h4>
-      <p>Phase coupling in EEG/BOLD, hyper-synchronization in seizures and anesthesia, and pacemaker-cell synchrony all obey this equation — directly connected to PRISM\u2019s clinical-signal and network modeling.</p>
+      <h4><span class="i18n-en">Link to brain rhythms</span><span class="i18n-ko">뇌파와의 연결</span></h4>
+      <p><span class="i18n-en">Phase coupling in EEG/BOLD, hyper-synchronization in seizures and anesthesia, and pacemaker-cell synchrony all obey this equation — directly connected to PRISM\u2019s clinical-signal and network modeling.</span><span class="i18n-ko">EEG/BOLD의 위상 결합, 발작과 마취에서의 과동기화, 심박조율 세포의 동기 모두 이 방정식을 따른다 — PRISM의 임상 신호 및 네트워크 모델링과 직접 연결된다.</span></p>
     </div>
   </div>
 
-  <footer>PRISM Lab · prototype · <a href="https://sswu-prism-lab.github.io" target="_blank" rel="noopener">sswu-prism-lab.github.io</a></footer>
+  <footer><span class="i18n-en">PRISM Lab · prototype · </span><span class="i18n-ko">PRISM Lab · 프로토타입 · </span><a href="https://sswu-prism-lab.github.io" target="_blank" rel="noopener">sswu-prism-lab.github.io</a></footer>
 </div>
 
 <script>
 (() => {
   "use strict";
+
+  function L(en,ko){ return document.documentElement.getAttribute('data-lang')==='ko' ? ko : en; }
 
   const PAL={
     dark:{ ink:"#e7ecff", muted:"#8493b8", line:"#26314f", grid:a=>`rgba(38,49,79,${a})`, cool:"#5eead4", sharp:"#ff6b5a", warmA:"#ffc24b", test:"#a78bff", blue:"#6ea8ff", panel:"#111a30" },
@@ -440,13 +448,15 @@
     document.getElementById("roLock").textContent=Math.round(lockedFraction()*100)+"%";
     document.getElementById("roN").textContent=S.N;
     const tag=document.getElementById("syncTag");
-    if(S.r<0.25){ tag.textContent="Async"; tag.className="sync-tag off"; }
-    else if(S.r<0.7){ tag.textContent="Partial"; tag.className="sync-tag part"; }
-    else { tag.textContent="Synced"; tag.className="sync-tag on"; }
+    if(S.r<0.25){ tag.textContent=L("Async","비동기"); tag.className="sync-tag off"; }
+    else if(S.r<0.7){ tag.textContent=L("Partial","부분 동기"); tag.className="sync-tag part"; }
+    else { tag.textContent=L("Synced","동기화"); tag.className="sync-tag on"; }
   }
 
   function drawAll(){ drawRing(); drawPlane(); updateReadouts(); }
+  function syncRunLabel(){ document.getElementById("run").textContent = S.running ? L("❚❚ Pause","❚❚ 일시정지") : L("▶ Run","▶ 실행"); }
   window.__onTheme=t=>{ C=PAL[t==='light'?'light':'dark']; MID=hx(C.ink); drawAll(); };
+  window.__onLang=()=>{ syncRunLabel(); drawAll(); };
 
   // ---------- loop ----------
   let raf=null;
@@ -458,7 +468,7 @@
   }
   function setRunning(on){
     S.running=on;
-    document.getElementById("run").textContent = on ? "❚❚ Pause" : "▶ Run";
+    document.getElementById("run").textContent = on ? L("❚❚ Pause","❚❚ 일시정지") : L("▶ Run","▶ 실행");
     if(on && !raf) raf=requestAnimationFrame(loop);
     else if(!on) drawAll();
   }
@@ -478,8 +488,9 @@
       }
       S.sweep.push({K, r:rr/40});
     }
-    document.getElementById("noteLine").innerHTML=
-      `Measured (finite N=${S.N}) points cluster around the theory curve <b>r=√(1−Kc/K)</b>.`;
+    document.getElementById("noteLine").innerHTML= L(
+      `Measured (finite N=${S.N}) points cluster around the theory curve <b>r=√(1−Kc/K)</b>.`,
+      `측정한 (유한 N=${S.N}) 점들이 이론 곡선 <b>r=√(1−Kc/K)</b> 주위에 모인다.`);
     drawAll();
   }
 
@@ -505,6 +516,7 @@
   document.getElementById("planeKmax").textContent="K = "+KMAX;
   rebuild();
   drawAll();
+  syncRunLabel();
   if(!reduceMotion) setRunning(true);
 })();
 </script>

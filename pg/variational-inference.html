@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<script>
+(function(){
+  function g(k,d){ try{ return localStorage.getItem(k)||d; }catch(e){ return d; } }
+  var root=document.documentElement;
+  root.setAttribute('data-theme', g('theme', (window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light'));
+  root.setAttribute('data-lang', g('lang','en'));
+  window.addEventListener('storage', function(e){
+    if(e.key==='theme'){ root.setAttribute('data-theme', e.newValue||'dark'); if(window.__onTheme) window.__onTheme(); }
+    if(e.key==='lang'){ root.setAttribute('data-lang', e.newValue||'en'); if(window.__onLang) window.__onLang(); }
+  });
+})();
+</script>
+
+<title>Variational Inference — PRISM Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<style>
+* { box-sizing: border-box; }
+:root {
+  color-scheme: light;
+  --bg:#ffffff; --panel:#f7f9fc; --panel-2:#eef2f8; --ink:#141b33; --muted:#5a6488;
+  --border:#e2e7ee; --grid:#eef2f8; --axis:#c9d0c8;
+  --vi:#db2777; --c-elbo:#db2777; --c-kl:#e08a00; --c-ent:#2563eb; --c-exp:#0f9d6b;
+  --c-q:#9333ea; --c-true:#9aa5b1;
+  --shadow: 0 1px 2px rgba(28,36,49,.05);
+}
+[data-theme="dark"] {
+  color-scheme: dark;
+  --bg:#15181e; --panel:#1d212a; --panel-2:#171b22; --ink:#e6edf3; --muted:#8b949e;
+  --border:#2e343f; --grid:#252b36; --axis:#3a4250;
+  --vi:#f472b6; --c-elbo:#f472b6; --c-kl:#fbbf24; --c-ent:#60a5fa; --c-exp:#34d399;
+  --c-q:#c084fc; --c-true:#64748b;
+  --shadow: none;
+}
+html, body { margin:0; padding:0; }
+body {
+  background:var(--bg); color:var(--ink);
+  padding:26px 20px 44px;
+  font:14px/1.5 "Inter", system-ui, -apple-system, 'Noto Sans KR', sans-serif;
+  accent-color: var(--vi);
+}
+:focus-visible { outline:2px solid var(--vi); outline-offset:2px; }
+
+/* ---------- bilingual ---------- */
+html[data-lang="en"] .i18n-ko{ display:none !important; }
+html[data-lang="ko"] .i18n-en{ display:none !important; }
+.i18n-ko{ font-family:'Nanum Gothic','Inter',sans-serif; word-break:keep-all; }
+
+/* ---------- site chrome ---------- */
+.wrap{max-width:1120px;margin:0 auto}
+.topbar{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.back{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--muted);text-decoration:none;
+  border:1px solid var(--border);padding:6px 12px;border-radius:20px;transition:.14s}
+.back:hover{color:var(--vi);border-color:currentColor}
+.eyebrow{font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--muted);margin:0 0 10px;display:flex;align-items:center;gap:10px}
+.eyebrow::before{content:"";width:22px;height:1px;background:currentColor;opacity:.7}
+.title{font-family:"Space Grotesk",system-ui,sans-serif;font-weight:700;font-size:clamp(28px,4.6vw,44px);
+  line-height:1.04;margin:0 0 10px;letter-spacing:-.02em;color:var(--ink)}
+.title .thin{color:var(--muted);font-weight:500;font-size:.4em}
+.site-sub{color:var(--muted);max-width:70ch;margin:0 0 24px;font-size:15px}
+footer{margin-top:30px;color:var(--muted);font-size:12px;font-family:"JetBrains Mono",monospace;letter-spacing:.04em}
+footer a{color:var(--muted);text-decoration:underline}
+
+/* ---------- layout ---------- */
+main { padding:0; }
+.tab { display:grid; grid-template-columns:264px minmax(0,1fr); gap:14px; align-items:start; }
+.panel { background:var(--panel); border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow); }
+.stage { display:flex; flex-direction:column; gap:12px; min-width:0; }
+
+/* ---------- side controls ---------- */
+.side { padding:14px; display:flex; flex-direction:column; gap:14px; }
+.grp { display:flex; flex-direction:column; gap:8px; }
+.grp + .grp { border-top:1px dashed var(--border); padding-top:13px; }
+.grp-t { font-size:10.5px; font-weight:700; letter-spacing:.09em; text-transform:uppercase; color:var(--muted); }
+.sl { display:flex; flex-direction:column; gap:3px; font-size:12.5px; }
+.sl > span { display:flex; justify-content:space-between; align-items:baseline; gap:8px; }
+.val { font:600 12px "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+input[type=range] { width:100%; margin:0; height:22px; }
+.hint { margin:0; font-size:11.5px; color:var(--muted); }
+.btnrow { display:flex; gap:6px; flex-wrap:wrap; }
+.btn { border:1px solid var(--border); background:var(--panel); color:var(--ink); font:inherit; font-size:12.5px; padding:6px 11px; border-radius:8px; cursor:pointer; transition:background .12s; }
+.btn:hover { background:var(--bg); }
+.btn.go { border-color:var(--vi); color:var(--vi); font-weight:600; }
+.btn.go.running { background:var(--vi); color:var(--bg); }
+.btn.ghost { color:var(--muted); }
+.segs { display:flex; gap:4px; }
+.seg { flex:1; border:1px solid var(--border); background:var(--bg); color:var(--muted); font:inherit; font-size:12px; padding:5px 4px; border-radius:7px; cursor:pointer; text-align:center; transition:background .12s, color .12s, border-color .12s; }
+.seg:hover { color:var(--ink); }
+.seg.active { background:var(--ink); color:var(--bg); border-color:var(--ink); font-weight:600; }
+
+/* ---------- plot ---------- */
+.plot { padding:10px 12px 8px; }
+canvas { display:block; width:100%; }
+#mainCv { height:340px; }
+#elboCv { height:132px; }
+.legend { display:flex; flex-wrap:wrap; gap:4px 14px; padding:8px 2px 2px; font-size:11.5px; color:var(--muted); }
+.legend span { display:inline-flex; align-items:center; gap:5px; }
+.swbar { display:inline-block; width:12px; height:11px; border-radius:2px; background:currentColor; }
+.swtick { display:inline-block; width:14px; height:0; border-top:2px solid currentColor; }
+.swx { display:inline-block; width:12px; text-align:center; font-weight:700; line-height:11px; }
+.losscap { margin:6px 2px 2px; font-size:11.5px; color:var(--muted); text-align:center; }
+
+/* ---------- cards ---------- */
+.cards { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:10px; }
+.card { background:var(--panel); border:1px solid var(--border); border-top:3px solid var(--border); border-radius:12px; padding:10px 12px 9px; box-shadow:var(--shadow); }
+.card.elbo { border-top-color:var(--c-elbo); }
+.card.kl { border-top-color:var(--c-kl); }
+.card.ent { border-top-color:var(--c-ent); }
+.card.exp { border-top-color:var(--c-exp); }
+.card .k { font:700 12px "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing:.04em; }
+.card.elbo .k { color:var(--c-elbo); }
+.card.kl .k { color:var(--c-kl); }
+.card.ent .k { color:var(--c-ent); }
+.card.exp .k { color:var(--c-exp); }
+.card .nm { font-size:12px; color:var(--muted); margin-bottom:6px; }
+.card .big { font:600 20px "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; white-space:nowrap; }
+.card .note { margin:6px 0 0; font-size:11px; color:var(--muted); border-top:1px dashed var(--border); padding-top:5px; }
+
+/* ---------- fold panels ---------- */
+.fold summary { cursor:pointer; padding:9px 13px; font-size:12.5px; font-weight:600; color:var(--muted); list-style:none; display:flex; align-items:center; gap:7px; }
+.fold summary::-webkit-details-marker { display:none; }
+.fold summary::before { content:'\25B8'; font-size:10px; transition:transform .12s; }
+.fold[open] summary::before { transform:rotate(90deg); }
+.fold-body { padding:2px 16px 12px; font-size:13px; }
+.fold-body p { margin:4px 0 8px; }
+.fold ol { margin:0; padding-left:20px; display:flex; flex-direction:column; gap:8px; }
+.katex-display { margin:.5em 0; padding:2px 0; overflow-x:auto; overflow-y:hidden; }
+.katex { font-size:1.0em; }
+
+@media (max-width:760px) {
+  .tab { grid-template-columns:1fr; }
+  .cards { grid-template-columns:1fr 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition:none !important; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar"><a class="back" href="index.html"><span class="i18n-en">← Playground</span><span class="i18n-ko">← 놀이터</span></a></div>
+  <p class="eyebrow"><span class="i18n-en">PRISM · Machine Learning Playground</span><span class="i18n-ko">PRISM · 머신러닝 놀이터</span></p>
+  <h1 class="title"><span class="i18n-en">Variational Inference</span><span class="i18n-ko">변분 추론</span><br><span class="thin"><span class="i18n-en">Approximate an intractable posterior with a simpler q by maximizing the ELBO</span><span class="i18n-ko">ELBO를 최대화하여 다루기 힘든 사후분포를 더 단순한 q로 근사하기</span></span></h1>
+
+<main>
+<section class="tab">
+  <aside class="panel side">
+    <div class="grp">
+      <div class="grp-t"><span class="i18n-en">Target p(z)</span><span class="i18n-ko">목표분포 p(z)</span></div>
+      <div class="segs" id="tgtRow">
+        <button class="seg active" data-tgt="corr"><span class="i18n-en">Correlated Gaussian</span><span class="i18n-ko">상관 가우시안</span></button>
+        <button class="seg" data-tgt="mix"><span class="i18n-en">Mixture</span><span class="i18n-ko">혼합분포</span></button>
+      </div>
+      <p class="hint"><span class="i18n-en">The density we want to approximate.</span><span class="i18n-ko">근사하려는 밀도분포입니다.</span></p>
+    </div>
+
+    <div class="grp">
+      <div class="grp-t"><span class="i18n-en">Variational family q</span><span class="i18n-ko">변분족 q</span></div>
+      <div class="segs" id="famRow">
+        <button class="seg active" data-fam="mf"><span class="i18n-en">Mean-field</span><span class="i18n-ko">평균장</span></button>
+        <button class="seg" data-fam="full"><span class="i18n-en">Full covariance</span><span class="i18n-ko">완전 공분산</span></button>
+      </div>
+      <p class="hint"><span class="i18n-en">Mean-field is axis-aligned; full covariance can tilt and stretch.</span><span class="i18n-ko">평균장은 축에 정렬되고, 완전 공분산은 기울고 늘어날 수 있습니다.</span></p>
+    </div>
+
+    <div class="grp">
+      <div class="grp-t"><span class="i18n-en">Optimize</span><span class="i18n-ko">최적화</span></div>
+      <label class="sl"><span><span class="i18n-en">Samples K</span><span class="i18n-ko">표본 수 K</span> <b id="kV" class="val">64</b></span>
+        <input type="range" id="kS" min="8" max="256" step="8" value="64"></label>
+      <label class="sl"><span><span class="i18n-en">Learning rate</span><span class="i18n-ko">학습률</span> <b id="lrV" class="val">0.05</b></span>
+        <input type="range" id="lrS" min="0.01" max="0.12" step="0.01" value="0.05"></label>
+      <div class="btnrow">
+        <button id="goBtn" class="btn go"><span class="i18n-en">▶ Optimize ELBO</span><span class="i18n-ko">▶ ELBO 최대화</span></button>
+        <button id="resetBtn" class="btn ghost"><span class="i18n-en">Reset q</span><span class="i18n-ko">q 초기화</span></button>
+      </div>
+      <p class="hint"><span class="i18n-en">Reparameterized gradient ascent on the ELBO (Adam).</span><span class="i18n-ko">재매개변수화 경사상승으로 ELBO를 올립니다 (Adam).</span></p>
+    </div>
+  </aside>
+
+  <div class="stage">
+    <div class="panel plot">
+      <canvas id="mainCv"></canvas>
+      <div class="legend">
+        <span><i class="swbar" style="color:var(--vi)"></i><span class="i18n-en">Target p(z)</span><span class="i18n-ko">목표분포 p(z)</span></span>
+        <span><i class="swtick" style="color:var(--ink)"></i><span class="i18n-en">q · 1σ / 2σ ellipses</span><span class="i18n-ko">q · 1σ / 2σ 타원</span></span>
+        <span><i class="swx" style="color:var(--ink)">&times;</i><span class="i18n-en">q mean μ</span><span class="i18n-ko">q 평균 μ</span></span>
+      </div>
+    </div>
+
+    <div class="panel plot">
+      <canvas id="elboCv"></canvas>
+      <p class="losscap"><span class="i18n-en">ELBO over iterations — rises toward the ceiling at 0 (where KL = 0).</span><span class="i18n-ko">반복에 따른 ELBO — 상한 0(KL = 0)을 향해 상승합니다.</span></p>
+    </div>
+
+    <div class="cards">
+      <div class="card elbo">
+        <div class="k">ELBO</div>
+        <div class="nm"><span class="i18n-en">Evidence lower bound</span><span class="i18n-ko">증거 하한</span></div>
+        <div class="big" id="elboV">—</div>
+        <p class="note"><span class="i18n-en">E_q[log p] + H[q] = −KL(q‖p) ≤ 0; rises toward 0.</span><span class="i18n-ko">E_q[log p] + H[q] = −KL(q‖p) ≤ 0; 0을 향해 상승.</span></p>
+      </div>
+      <div class="card kl">
+        <div class="k">KL(q‖p)</div>
+        <div class="nm"><span class="i18n-en">Reverse KL</span><span class="i18n-ko">역방향 KL</span></div>
+        <div class="big" id="klV">—</div>
+        <p class="note"><span class="i18n-en">= −ELBO ≥ 0; the gap q still leaves to p.</span><span class="i18n-ko">= −ELBO ≥ 0; q가 아직 p에 남긴 간극.</span></p>
+      </div>
+      <div class="card ent">
+        <div class="k">H[q]</div>
+        <div class="nm"><span class="i18n-en">Entropy of q</span><span class="i18n-ko">q의 엔트로피</span></div>
+        <div class="big" id="entV">—</div>
+        <p class="note"><span class="i18n-en">Spread of q; the reparam. entropy term.</span><span class="i18n-ko">q의 퍼짐; 재매개변수화 엔트로피 항.</span></p>
+      </div>
+      <div class="card exp">
+        <div class="k">E_q[log p]</div>
+        <div class="nm"><span class="i18n-en">Expected log-target</span><span class="i18n-ko">기대 로그목표</span></div>
+        <div class="big" id="expV">—</div>
+        <p class="note"><span class="i18n-en">Average target log-density under q.</span><span class="i18n-ko">q 하에서 목표 로그밀도의 평균.</span></p>
+      </div>
+    </div>
+
+    <details class="panel fold">
+      <summary><span class="i18n-en">Formulas</span><span class="i18n-ko">공식</span></summary>
+      <div class="fold-body">
+        <p><span class="i18n-en">The evidence lower bound splits the log-evidence into a fit term and the KL gap:</span><span class="i18n-ko">증거 하한은 로그증거를 적합 항과 KL 간극으로 분해합니다:</span></p>
+        $$\mathrm{ELBO}(\phi)=\mathbb{E}_{q_\phi}[\log p(x,z)]-\mathbb{E}_{q_\phi}[\log q_\phi(z)]=\log p(x)-\mathrm{KL}(q_\phi\Vert p)$$
+        <p><span class="i18n-en">Here p is a normalized density, so log p(x)=0 and the ELBO is exactly minus the reverse KL:</span><span class="i18n-ko">여기서 p는 정규화된 밀도이므로 log p(x)=0이고, ELBO는 정확히 역방향 KL의 음수입니다:</span></p>
+        $$\mathrm{ELBO}=\mathbb{E}_{q}[\log p(z)]+H[q]=-\mathrm{KL}(q\Vert p)\le 0$$
+        <p><span class="i18n-en">Mean-field factorizes q; the reparameterization trick makes the gradient low-variance:</span><span class="i18n-ko">평균장은 q를 인수분해하고, 재매개변수화 기법으로 저분산 경사를 얻습니다:</span></p>
+        $$q(z)=\prod_i q_i(z_i)\ \text{(mean-field)},\qquad z=\mu+\sigma\odot\varepsilon,\ \varepsilon\sim\mathcal N(0,I)$$
+        $$z=\mu+L\varepsilon\ \text{(full)},\qquad H[q]=\tfrac12\log\!\big((2\pi e)^D|\Sigma_q|\big),\ \ \Sigma_q=LL^\top$$
+      </div>
+    </details>
+
+    <details class="panel fold">
+      <summary><span class="i18n-en">What to watch</span><span class="i18n-ko">관찰 포인트</span></summary>
+      <div class="fold-body">
+        <ol>
+          <li><span class="i18n-en">As q fits p, the <b>ELBO rises</b> and <b>KL(q‖p) falls together</b> — they are exact negatives, so the ELBO's ceiling at 0 is the point where q = p.</span><span class="i18n-ko">q가 p에 맞춰질수록 <b>ELBO는 상승</b>하고 <b>KL(q‖p)은 함께 하락</b>합니다 — 정확히 부호만 반대이므로, ELBO의 상한 0은 q = p인 지점입니다.</span></li>
+          <li><span class="i18n-en">On the <b>correlated Gaussian</b>, a <b>mean-field</b> q cannot represent correlation, so it fits <b>inside</b> p and <b>under-estimates the variance</b> — the classic mean-field pathology (KL stays positive). A <b>full-covariance</b> q tilts to match Σ and recovers p exactly (KL → 0).</span><span class="i18n-ko"><b>상관 가우시안</b>에서 <b>평균장</b> q는 상관을 표현할 수 없어 p <b>안쪽</b>에 맞춰지며 <b>분산을 과소추정</b>합니다 — 전형적인 평균장 병리 현상(KL이 양수로 남음). <b>완전 공분산</b> q는 Σ에 맞게 기울어 p를 정확히 복원합니다(KL → 0).</span></li>
+          <li><span class="i18n-en">On the <b>mixture</b>, reverse-KL is <b>mode-seeking</b>: a single Gaussian q locks onto <b>one mode</b> rather than spreading its mass to cover both.</span><span class="i18n-ko"><b>혼합분포</b>에서 역방향 KL은 <b>모드 탐색적</b>입니다: 단일 가우시안 q는 두 모드를 모두 덮으려 퍼지지 않고 <b>한 모드</b>에 고정됩니다.</span></li>
+        </ol>
+      </div>
+    </details>
+  </div>
+</section>
+</main>
+  <footer>PRISM Lab · <span class="i18n-en">prototype</span><span class="i18n-ko">프로토타입</span> · <a href="https://sswu-prism-lab.github.io" target="_blank" rel="noopener">sswu-prism-lab.github.io</a></footer>
+</div>
+
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script>
+'use strict';
+/* Variational Inference — 2D reparameterized gradient ascent on the ELBO.
+   p normalized => ELBO = E_q[log p] + H[q] = -KL(q||p) <= 0.  All logs natural. */
+
+/* ---------- helpers ---------- */
+function $(id){ return document.getElementById(id); }
+function cssv(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+function L(en,ko){ return document.documentElement.getAttribute('data-lang')==='ko' ? ko : en; }
+function fmt(v, dg){
+  if(dg===undefined) dg=3;
+  if(v===null||v===undefined||!isFinite(v)) return '—';
+  var a=Math.abs(v);
+  if(a!==0 && (a>=1e4||a<1e-3)) return v.toExponential(1);
+  return v.toFixed(dg);
+}
+function randn(){
+  var u=0,v=0;
+  while(u===0) u=Math.random();
+  while(v===0) v=Math.random();
+  return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);
+}
+function hexRGB(hex){
+  hex=hex.replace('#','');
+  if(hex.length===3) hex=hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+  return [parseInt(hex.substr(0,2),16), parseInt(hex.substr(2,2),16), parseInt(hex.substr(4,2),16)];
+}
+function hexA(hex,a){ var c=hexRGB(hex); return 'rgba('+c[0]+','+c[1]+','+c[2]+','+a+')'; }
+function setupCanvas(cv){
+  var dpr=window.devicePixelRatio||1;
+  var w=cv.clientWidth, h=cv.clientHeight;
+  if(w===0||h===0) return null;
+  var W=Math.round(w*dpr), H=Math.round(h*dpr);
+  if(cv.width!==W||cv.height!==H){ cv.width=W; cv.height=H; }
+  var ctx=cv.getContext('2d');
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  return { ctx:ctx, w:w, h:h };
+}
+var MONO='11px "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace';
+var LOG2PI=Math.log(2*Math.PI);
+var ENT_CONST=1+LOG2PI; /* D/2*(1+log2pi) with D=2 */
+
+/* ---------- 2x2 Gaussian machinery ---------- */
+function makeGauss(m,S){
+  var det=S[0][0]*S[1][1]-S[0][1]*S[1][0];
+  var Sinv=[[ S[1][1]/det, -S[0][1]/det],[ -S[1][0]/det, S[0][0]/det]];
+  var cst=-LOG2PI-0.5*Math.log(det); /* -0.5*log((2pi)^2 |S|) = -log(2pi)-0.5 log|S| */
+  return { m:m, Sinv:Sinv, cst:cst };
+}
+function logGauss(g,z){
+  var dx=z[0]-g.m[0], dy=z[1]-g.m[1];
+  var q=g.Sinv[0][0]*dx*dx + 2*g.Sinv[0][1]*dx*dy + g.Sinv[1][1]*dy*dy;
+  return g.cst - 0.5*q;
+}
+function gradLogGauss(g,z){ /* -Sinv (z-m) */
+  var dx=z[0]-g.m[0], dy=z[1]-g.m[1];
+  return [ -(g.Sinv[0][0]*dx+g.Sinv[0][1]*dy), -(g.Sinv[1][0]*dx+g.Sinv[1][1]*dy) ];
+}
+
+/* ---------- targets ---------- */
+var TARGETS={
+  corr:{ comps:[ { w:1.0, g:makeGauss([0,0], [[1.4,1.0],[1.0,1.4]]) } ] },
+  mix:{ comps:[
+    { w:0.5, g:makeGauss([-1.6,-1.0], [[0.49,0],[0,0.49]]) },
+    { w:0.5, g:makeGauss([ 1.6, 1.0], [[0.49,0],[0,0.49]]) }
+  ] }
+};
+function logp(z){
+  var comps=TARGETS[state.target].comps;
+  if(comps.length===1) return logGauss(comps[0].g,z);
+  var a=new Array(comps.length), mx=-Infinity;
+  for(var c=0;c<comps.length;c++){ a[c]=Math.log(comps[c].w)+logGauss(comps[c].g,z); if(a[c]>mx) mx=a[c]; }
+  var s=0; for(c=0;c<comps.length;c++) s+=Math.exp(a[c]-mx);
+  return mx+Math.log(s);
+}
+function gradLogp(z){
+  var comps=TARGETS[state.target].comps;
+  if(comps.length===1) return gradLogGauss(comps[0].g,z);
+  var a=new Array(comps.length), mx=-Infinity;
+  for(var c=0;c<comps.length;c++){ a[c]=Math.log(comps[c].w)+logGauss(comps[c].g,z); if(a[c]>mx) mx=a[c]; }
+  var s=0; for(c=0;c<comps.length;c++){ a[c]=Math.exp(a[c]-mx); s+=a[c]; }
+  var gx=0,gy=0;
+  for(c=0;c<comps.length;c++){ var r=a[c]/s; var g=gradLogGauss(comps[c].g,z); gx+=r*g[0]; gy+=r*g[1]; }
+  return [gx,gy];
+}
+
+/* ---------- variational q ---------- */
+/* theta layout:
+   mean-field: [mu0, mu1, s0, s1]   L=[[e^s0,0],[0,e^s1]]
+   full:       [mu0, mu1, d1, l21, d2]  L=[[e^d1,0],[l21,e^d2]] */
+var state={
+  target:'corr', family:'mf', K:64, lr:0.05,
+  theta:null, adam:null, step:0, running:false,
+  trace:[], last:{elbo:NaN,kl:NaN,ent:NaN,exp:NaN},
+  heatKey:'', heatOff:null
+};
+var DOM={ xmin:-4, xmax:4, ymin:-4, ymax:4 };
+var MAXSTEPS=700;
+
+function buildL(){
+  if(state.family==='mf'){
+    return [[Math.exp(state.theta[2]),0],[0,Math.exp(state.theta[3])]];
+  }
+  return [[Math.exp(state.theta[2]),0],[state.theta[3],Math.exp(state.theta[4])]];
+}
+function qMu(){ return [state.theta[0], state.theta[1]]; }
+function entropyOf(L){ return Math.log(L[0][0])+Math.log(L[1][1])+ENT_CONST; }
+
+function resetQ(){
+  var off=(Math.random()-0.5)*0.6; var off2=(Math.random()-0.5)*0.6;
+  var s0=Math.log(0.45);
+  if(state.family==='mf') state.theta=[off, off2, s0, s0];
+  else state.theta=[off, off2, s0, 0, s0];
+  state.adam={ m:state.theta.map(function(){return 0;}), v:state.theta.map(function(){return 0;}), t:0 };
+  state.step=0; state.trace=[];
+}
+function switchFamily(fam){
+  state.family=fam; resetQ();
+}
+
+/* one reparameterized Adam ascent step */
+function optStep(){
+  var K=state.K, mu=qMu(), Lm=buildL();
+  var gmu0=0,gmu1=0, a11=0, a21=0, a22=0;
+  for(var k=0;k<K;k++){
+    var e0=randn(), e1=randn();
+    var z0=mu[0]+Lm[0][0]*e0;
+    var z1=mu[1]+Lm[1][0]*e0+Lm[1][1]*e1;
+    var g=gradLogp([z0,z1]);
+    gmu0+=g[0]; gmu1+=g[1];
+    a11+=g[0]*e0; a21+=g[1]*e0; a22+=g[1]*e1;
+  }
+  gmu0/=K; gmu1/=K; a11/=K; a21/=K; a22/=K;
+  var grad;
+  if(state.family==='mf'){
+    /* grad wrt logSigma_i = L_ii*a_ii + 1  (the +1 is dH/dlogSigma) */
+    grad=[ gmu0, gmu1, Lm[0][0]*a11+1, Lm[1][1]*a22+1 ];
+  } else {
+    /* d1=log L11 : (a11 + 1/L11)*L11 = L11*a11 + 1 ; l21 : a21 ; d2 : L22*a22 + 1 */
+    grad=[ gmu0, gmu1, Lm[0][0]*a11+1, a21, Lm[1][1]*a22+1 ];
+  }
+  /* Adam ascent */
+  var ad=state.adam, lr=state.lr, b1=0.9, b2=0.999, eps=1e-8;
+  ad.t++;
+  var bc1=1-Math.pow(b1,ad.t), bc2=1-Math.pow(b2,ad.t);
+  for(var i=0;i<grad.length;i++){
+    ad.m[i]=b1*ad.m[i]+(1-b1)*grad[i];
+    ad.v[i]=b2*ad.v[i]+(1-b2)*grad[i]*grad[i];
+    var mh=ad.m[i]/bc1, vh=ad.v[i]/bc2;
+    state.theta[i]+=lr*mh/(Math.sqrt(vh)+eps);
+  }
+  /* keep diagonal scales sane */
+  var lo=Math.log(0.02), hi=Math.log(6);
+  state.theta[2]=Math.max(lo,Math.min(hi,state.theta[2]));
+  if(state.family==='mf'){ state.theta[3]=Math.max(lo,Math.min(hi,state.theta[3])); }
+  else { state.theta[4]=Math.max(lo,Math.min(hi,state.theta[4])); }
+}
+
+/* metrics estimate: E_q[log p] via MC, exact H, ELBO, KL */
+function metrics(K){
+  var mu=qMu(), Lm=buildL(), acc=0;
+  for(var k=0;k<K;k++){
+    var e0=randn(), e1=randn();
+    var z0=mu[0]+Lm[0][0]*e0;
+    var z1=mu[1]+Lm[1][0]*e0+Lm[1][1]*e1;
+    acc+=logp([z0,z1]);
+  }
+  var elp=acc/K;
+  var H=entropyOf(Lm);
+  var elbo=elp+H;
+  var kl=-elbo; if(kl<0 && kl>-5e-3) kl=0;
+  return { exp:elp, ent:H, elbo:elbo, kl:kl };
+}
+
+/* ---------- heatmap of p (cached offscreen) ---------- */
+function rebuildHeat(){
+  var N=110;
+  var off=state.heatOff || (state.heatOff=document.createElement('canvas'));
+  off.width=N; off.height=N;
+  var octx=off.getContext('2d');
+  var img=octx.createImageData(N,N), data=img.data;
+  var rgb=hexRGB(cssv('--vi'));
+  var dens=new Float64Array(N*N), mx=0;
+  for(var jy=0;jy<N;jy++){
+    var y=DOM.ymax-(jy+0.5)/N*(DOM.ymax-DOM.ymin);
+    for(var ix=0;ix<N;ix++){
+      var x=DOM.xmin+(ix+0.5)/N*(DOM.xmax-DOM.xmin);
+      var d=Math.exp(logp([x,y]));
+      dens[jy*N+ix]=d; if(d>mx) mx=d;
+    }
+  }
+  for(var t=0;t<N*N;t++){
+    var a=Math.pow(dens[t]/mx,0.55);
+    var o=t*4;
+    data[o]=rgb[0]; data[o+1]=rgb[1]; data[o+2]=rgb[2]; data[o+3]=Math.round(255*a*0.92);
+  }
+  octx.putImageData(img,0,0);
+}
+
+/* ---------- draw main plot ---------- */
+function drawMain(){
+  var cv=$('mainCv'), st=setupCanvas(cv);
+  if(!st) return;
+  var ctx=st.ctx, w=st.w, h=st.h;
+  var Mg={ l:34, r:12, t:12, b:24 };
+  var pw=w-Mg.l-Mg.r, ph=h-Mg.t-Mg.b;
+  ctx.clearRect(0,0,w,h);
+
+  var key=state.target+'|'+cssv('--vi');
+  if(key!==state.heatKey){ rebuildHeat(); state.heatKey=key; }
+
+  function SX(x){ return Mg.l+(x-DOM.xmin)/(DOM.xmax-DOM.xmin)*pw; }
+  function SY(y){ return Mg.t+ph-(y-DOM.ymin)/(DOM.ymax-DOM.ymin)*ph; }
+
+  /* heatmap */
+  ctx.save();
+  ctx.beginPath(); ctx.rect(Mg.l,Mg.t,pw,ph); ctx.clip();
+  ctx.imageSmoothingEnabled=true;
+  ctx.drawImage(state.heatOff, Mg.l, Mg.t, pw, ph);
+  ctx.restore();
+
+  /* grid at integers */
+  ctx.strokeStyle=cssv('--grid'); ctx.lineWidth=1; ctx.globalAlpha=.7; ctx.beginPath();
+  for(var gx=DOM.xmin;gx<=DOM.xmax+1e-6;gx+=1){ ctx.moveTo(SX(gx),Mg.t); ctx.lineTo(SX(gx),Mg.t+ph); }
+  for(var gy=DOM.ymin;gy<=DOM.ymax+1e-6;gy+=1){ ctx.moveTo(Mg.l,SY(gy)); ctx.lineTo(Mg.l+pw,SY(gy)); }
+  ctx.stroke(); ctx.globalAlpha=1;
+  ctx.strokeStyle=cssv('--axis'); ctx.strokeRect(Mg.l,Mg.t,pw,ph);
+
+  /* axis ticks */
+  ctx.fillStyle=cssv('--muted'); ctx.font=MONO;
+  ctx.textAlign='center';
+  for(gx=DOM.xmin;gx<=DOM.xmax+1e-6;gx+=2) ctx.fillText(String(gx), SX(gx), h-8);
+  ctx.textAlign='right';
+  for(gy=DOM.ymin;gy<=DOM.ymax+1e-6;gy+=2) ctx.fillText(String(gy), Mg.l-5, SY(gy)+4);
+
+  /* q ellipses (1σ, 2σ) from L */
+  var mu=qMu(), Lm=buildL();
+  var qcol=cssv('--ink');
+  ctx.save();
+  ctx.beginPath(); ctx.rect(Mg.l,Mg.t,pw,ph); ctx.clip();
+  [2,1].forEach(function(kk){
+    ctx.beginPath();
+    for(var a=0;a<=64;a++){
+      var th=a/64*Math.PI*2, ce=Math.cos(th), se=Math.sin(th);
+      var ex=mu[0]+kk*(Lm[0][0]*ce);
+      var ey=mu[1]+kk*(Lm[1][0]*ce+Lm[1][1]*se);
+      var px=SX(ex), py=SY(ey);
+      if(a===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+    }
+    ctx.closePath();
+    ctx.lineWidth=(kk===1)?2.2:1.4;
+    ctx.strokeStyle=qcol;
+    ctx.globalAlpha=(kk===1)?1:0.5;
+    ctx.stroke();
+    if(kk===1){ ctx.globalAlpha=0.10; ctx.fillStyle=qcol; ctx.fill(); }
+    ctx.globalAlpha=1;
+  });
+  /* mean marker × */
+  var mx0=SX(mu[0]), my0=SY(mu[1]);
+  ctx.strokeStyle=qcol; ctx.lineWidth=2; ctx.beginPath();
+  ctx.moveTo(mx0-5,my0-5); ctx.lineTo(mx0+5,my0+5);
+  ctx.moveTo(mx0-5,my0+5); ctx.lineTo(mx0+5,my0-5); ctx.stroke();
+  ctx.restore();
+
+  /* in-canvas language-aware labels */
+  ctx.font='600 12px "Inter", system-ui, sans-serif';
+  ctx.textAlign='left'; ctx.fillStyle=cssv('--vi');
+  ctx.fillText(L('Target p','목표분포 p'), Mg.l+8, Mg.t+16);
+  ctx.fillStyle=cssv('--ink');
+  ctx.fillText(L('Approx. q','근사분포 q'), Mg.l+8, Mg.t+34);
+  ctx.font=MONO; ctx.fillStyle=cssv('--muted');
+  ctx.textAlign='right';
+  ctx.fillText(L('z₁ →','z₁ →'), Mg.l+pw, Mg.t+ph-6);
+  ctx.save();
+  ctx.translate(Mg.l+11, Mg.t+8); ctx.rotate(-Math.PI/2);
+  ctx.textAlign='right'; ctx.fillText(L('z₂ →','z₂ →'), 0, 0);
+  ctx.restore();
+}
+
+/* ---------- draw ELBO trace ---------- */
+function drawTrace(){
+  var cv=$('elboCv'), st=setupCanvas(cv);
+  if(!st) return;
+  var ctx=st.ctx, w=st.w, h=st.h;
+  var Mg={ l:44, r:12, t:12, b:22 };
+  var pw=w-Mg.l-Mg.r, ph=h-Mg.t-Mg.b;
+  ctx.clearRect(0,0,w,h);
+
+  var tr=state.trace;
+  var ymax=0.4, ymin=-2;
+  for(var i=0;i<tr.length;i++){ if(tr[i]<ymin) ymin=tr[i]; }
+  ymin=Math.max(ymin,-12);
+  var n=Math.max(tr.length,2);
+  function X(i){ return Mg.l+(n<=1?0:i/(n-1))*pw; }
+  function Y(v){ v=Math.max(ymin,Math.min(ymax,v)); return Mg.t+ph-(v-ymin)/(ymax-ymin)*ph; }
+
+  /* grid */
+  ctx.strokeStyle=cssv('--grid'); ctx.lineWidth=1; ctx.beginPath();
+  for(var gg=Math.ceil(ymin);gg<=0;gg+=Math.max(1,Math.round((0-ymin)/4))){ ctx.moveTo(Mg.l,Y(gg)); ctx.lineTo(Mg.l+pw,Y(gg)); }
+  ctx.stroke();
+  ctx.strokeStyle=cssv('--axis'); ctx.strokeRect(Mg.l,Mg.t,pw,ph);
+
+  /* y ticks */
+  ctx.fillStyle=cssv('--muted'); ctx.font=MONO; ctx.textAlign='right';
+  ctx.fillText('0', Mg.l-5, Y(0)+4);
+  ctx.fillText(fmt(ymin,1), Mg.l-5, Y(ymin)+4);
+
+  /* KL=0 ceiling line at ELBO=0 */
+  ctx.strokeStyle=cssv('--c-kl'); ctx.lineWidth=1; ctx.setLineDash([4,4]);
+  ctx.beginPath(); ctx.moveTo(Mg.l,Y(0)); ctx.lineTo(Mg.l+pw,Y(0)); ctx.stroke();
+  ctx.setLineDash([]);
+
+  /* trace curve */
+  if(tr.length>1){
+    ctx.save(); ctx.beginPath(); ctx.rect(Mg.l,Mg.t,pw,ph); ctx.clip();
+    ctx.strokeStyle=cssv('--c-elbo'); ctx.lineWidth=2.2; ctx.beginPath();
+    for(i=0;i<tr.length;i++){ var px=X(i), py=Y(tr[i]); if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py); }
+    ctx.stroke();
+    /* head dot */
+    ctx.fillStyle=cssv('--c-elbo'); ctx.beginPath();
+    ctx.arc(X(tr.length-1),Y(tr[tr.length-1]),3,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+
+  /* labels */
+  ctx.font='600 11px "Inter", system-ui, sans-serif';
+  ctx.fillStyle=cssv('--c-elbo'); ctx.textAlign='left';
+  ctx.fillText(L('ELBO','ELBO'), Mg.l+6, Mg.t+13);
+  ctx.fillStyle=cssv('--c-kl'); ctx.textAlign='right';
+  ctx.fillText(L('KL = 0','KL = 0'), Mg.l+pw-4, Y(0)-4<Mg.t+10?Mg.t+22:Y(0)-4);
+  ctx.font=MONO; ctx.fillStyle=cssv('--muted');
+  ctx.fillText(L('iteration →','반복 →'), Mg.l+pw, h-7);
+}
+
+/* ---------- render ---------- */
+function render(){
+  $('kV').textContent=String(state.K);
+  $('lrV').textContent=state.lr.toFixed(2);
+  var m=metrics(500);
+  state.last=m;
+  $('elboV').textContent=fmt(m.elbo);
+  $('klV').textContent=fmt(m.kl);
+  $('entV').textContent=fmt(m.ent);
+  $('expV').textContent=fmt(m.exp);
+  drawMain();
+  drawTrace();
+}
+
+/* ---------- optimization animation ---------- */
+var raf=null;
+function frame(){
+  if(!state.running) return;
+  for(var s=0;s<3 && state.step<MAXSTEPS;s++){ optStep(); state.step++; }
+  var m=metrics(96);
+  state.trace.push(m.elbo);
+  if(state.trace.length>2200) state.trace.shift();
+  render();
+  if(state.step>=MAXSTEPS){ stopOpt(); return; }
+  raf=requestAnimationFrame(frame);
+}
+function startOpt(){
+  if(state.running) return;
+  if(state.step>=MAXSTEPS){ state.step=0; state.trace=[]; }
+  state.running=true;
+  $('goBtn').classList.add('running');
+  raf=requestAnimationFrame(frame);
+}
+function stopOpt(){
+  state.running=false;
+  $('goBtn').classList.remove('running');
+  if(raf) cancelAnimationFrame(raf);
+}
+function toggleOpt(){ if(state.running) stopOpt(); else startOpt(); }
+
+/* ---------- controls ---------- */
+function wire(){
+  document.querySelectorAll('#tgtRow .seg').forEach(function(b){
+    b.addEventListener('click', function(){
+      stopOpt();
+      document.querySelectorAll('#tgtRow .seg').forEach(function(x){ x.classList.remove('active'); });
+      b.classList.add('active');
+      state.target=b.dataset.tgt;
+      resetQ(); render();
+    });
+  });
+  document.querySelectorAll('#famRow .seg').forEach(function(b){
+    b.addEventListener('click', function(){
+      stopOpt();
+      document.querySelectorAll('#famRow .seg').forEach(function(x){ x.classList.remove('active'); });
+      b.classList.add('active');
+      switchFamily(b.dataset.fam); render();
+    });
+  });
+  $('kS').addEventListener('input', function(){ state.K=+this.value; $('kV').textContent=this.value; });
+  $('lrS').addEventListener('input', function(){ state.lr=+this.value; $('lrV').textContent=(+this.value).toFixed(2); });
+  $('goBtn').addEventListener('click', toggleOpt);
+  $('resetBtn').addEventListener('click', function(){ stopOpt(); resetQ(); render(); });
+  window.addEventListener('resize', render);
+}
+
+/* ---------- KaTeX ---------- */
+var mathDone=false;
+function tryMath(){
+  if(mathDone||!window.renderMathInElement) return;
+  mathDone=true;
+  window.renderMathInElement(document.body,{
+    delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}],
+    throwOnError:false
+  });
+}
+document.addEventListener('DOMContentLoaded', tryMath);
+window.addEventListener('load', tryMath);
+
+/* ---------- init + sync hooks ---------- */
+wire();
+resetQ();
+window.__onLang=function(){ render(); };   /* redraw canvases with new-language labels */
+window.__onTheme=function(){ state.heatKey=''; render(); }; /* rebuild heat + redraw with theme colors */
+render();
+</script>
+</body>
+</html>

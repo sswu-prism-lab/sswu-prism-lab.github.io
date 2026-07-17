@@ -7,17 +7,21 @@
 (function(){
   function cur(){ try{ return localStorage.getItem('theme') || (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark':'light'); }catch(e){ return 'dark'; } }
   var t=cur(); window.__theme=t; document.documentElement.setAttribute('data-theme', t);
-  window.addEventListener('storage', function(e){ if(e.key==='theme'){ var n=e.newValue||'dark'; window.__theme=n; document.documentElement.setAttribute('data-theme', n); if(window.__onTheme) window.__onTheme(n); } });
+  try{ document.documentElement.setAttribute('data-lang', (localStorage.getItem('lang')||'en')); }catch(e){ document.documentElement.setAttribute('data-lang','en'); }
+  window.addEventListener('storage', function(e){ if(e.key==='theme'){ var n=e.newValue||'dark'; window.__theme=n; document.documentElement.setAttribute('data-theme', n); if(window.__onTheme) window.__onTheme(n); } if(e.key==='lang'){ document.documentElement.setAttribute('data-lang', e.newValue||'en'); if(window.__onLang) window.__onLang(); } });
 })();
 </script>
 
 <title>MLE · MAP · Full Bayesian — PRISM Lab</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <style>
 * { box-sizing: border-box; }
+html[data-lang="en"] .i18n-ko{ display:none !important; }
+html[data-lang="ko"] .i18n-en{ display:none !important; }
+.i18n-ko{ font-family:'Nanum Gothic','Inter',sans-serif; word-break:keep-all; }
 :root {
   color-scheme: light;
   --bg:#ffffff; --panel:#f7f9fc; --panel-2:#eef2f8; --ink:#141b33; --muted:#5a6488;
@@ -153,12 +157,12 @@ canvas { display:block; width:100%; }
 </head>
 <body>
 <div class="wrap">
-  <div class="topbar"><a class="back" href="index.html">← Playground</a></div>
-  <p class="eyebrow">PRISM · Machine Learning Playground</p>
-  <h1 class="title">MLE · MAP · Full Bayesian<br><span class="thin">Same model, same data — only the philosophy of estimation differs</span></h1>
+  <div class="topbar"><a class="back" href="index.html"><span class="i18n-en">← Playground</span><span class="i18n-ko">← 놀이터</span></a></div>
+  <p class="eyebrow"><span class="i18n-en">PRISM · Machine Learning Playground</span><span class="i18n-ko">PRISM · 머신러닝 놀이터</span></p>
+  <h1 class="title"><span class="i18n-en">MLE · MAP · Full Bayesian</span><span class="i18n-ko">MLE · MAP · 완전 베이지안</span><br><span class="thin"><span class="i18n-en">Same model, same data — only the philosophy of estimation differs</span><span class="i18n-ko">같은 모델, 같은 데이터 — 추정의 철학만 다르다</span></span></h1>
   <nav class="tabs" aria-label="Choose example">
-    <button class="tabbtn active" data-tab="coin">&#127922; Coin &middot; Beta&ndash;Bernoulli</button>
-    <button class="tabbtn" data-tab="reg">&#128200; Regression &middot; Linear Regression</button>
+    <button class="tabbtn active" data-tab="coin">&#127922; <span class="i18n-en">Coin</span><span class="i18n-ko">동전</span> &middot; Beta&ndash;Bernoulli</button>
+    <button class="tabbtn" data-tab="reg">&#128200; <span class="i18n-en">Regression</span><span class="i18n-ko">회귀</span> &middot; Linear Regression</button>
   </nav>
 
 <main>
@@ -166,35 +170,35 @@ canvas { display:block; width:100%; }
 <section id="tab-coin" class="tab active">
   <aside class="panel side">
     <div class="grp">
-      <div class="grp-t">Prior distribution &middot; prior Beta(&alpha;, &beta;)</div>
+      <div class="grp-t"><span class="i18n-en">Prior distribution</span><span class="i18n-ko">사전분포</span> &middot; prior Beta(&alpha;, &beta;)</div>
       <div class="chips">
         <button class="preset" data-a="0.5" data-b="0.5">Jeffreys</button>
         <button class="preset" data-a="1" data-b="1">Uniform</button>
-        <button class="preset" data-a="2" data-b="2">Weakly fair</button>
-        <button class="preset" data-a="30" data-b="30">Strongly fair</button>
+        <button class="preset" data-a="2" data-b="2"><span class="i18n-en">Weakly fair</span><span class="i18n-ko">약한 공정</span></button>
+        <button class="preset" data-a="30" data-b="30"><span class="i18n-en">Strongly fair</span><span class="i18n-ko">강한 공정</span></button>
       </div>
       <label class="sl"><span>&alpha; <b id="cAlphaV" class="val">2.0</b></span>
         <input type="range" id="cAlpha" min="0.5" max="50" step="0.5" value="2"></label>
       <label class="sl"><span>&beta; <b id="cBetaV" class="val">2.0</b></span>
         <input type="range" id="cBeta" min="0.5" max="50" step="0.5" value="2"></label>
-      <p class="hint">Larger &alpha;, &beta; means a stronger prior belief</p>
+      <p class="hint"><span class="i18n-en">Larger &alpha;, &beta; means a stronger prior belief</span><span class="i18n-ko">&alpha;, &beta;가 클수록 강한 사전 믿음</span></p>
     </div>
     <div class="grp">
-      <div class="grp-t">Data &middot; coin flips</div>
-      <label class="sl"><span>True &theta; (for simulation) <b id="cThetaV" class="val">0.70</b></span>
+      <div class="grp-t"><span class="i18n-en">Data</span><span class="i18n-ko">데이터</span> &middot; coin flips</div>
+      <label class="sl"><span><span class="i18n-en">True &theta; (for simulation)</span><span class="i18n-ko">실제 &theta; (시뮬레이션용)</span> <b id="cThetaV" class="val">0.70</b></span>
         <input type="range" id="cTheta" min="0" max="1" step="0.01" value="0.7"></label>
       <div class="btnrow">
-        <button id="flip1" class="btn">Flip &times;1</button>
+        <button id="flip1" class="btn"><span class="i18n-en">Flip &times;1</span><span class="i18n-ko">던지기 &times;1</span></button>
         <button id="flip10" class="btn">&times;10</button>
         <button id="flip100" class="btn">&times;100</button>
       </div>
       <div class="btnrow">
-        <button id="addH" class="btn">+Heads</button>
-        <button id="addT" class="btn">+Tails</button>
-        <button id="cReset" class="btn ghost">Reset</button>
+        <button id="addH" class="btn"><span class="i18n-en">+Heads</span><span class="i18n-ko">+앞면</span></button>
+        <button id="addT" class="btn"><span class="i18n-en">+Tails</span><span class="i18n-ko">+뒷면</span></button>
+        <button id="cReset" class="btn ghost"><span class="i18n-en">Reset</span><span class="i18n-ko">초기화</span></button>
       </div>
-      <button id="scen03" class="btn warn">&#9888; 0 heads / 3 flips</button>
-      <p class="counts">Heads <b id="cntH">0</b> &middot; Tails <b id="cntT">0</b> &middot; n = <b id="cntN">0</b></p>
+      <button id="scen03" class="btn warn">&#9888; <span class="i18n-en">0 heads / 3 flips</span><span class="i18n-ko">앞면 0 / 3회 시나리오</span></button>
+      <p class="counts"><span class="i18n-en">Heads</span><span class="i18n-ko">앞면</span> <b id="cntH">0</b> &middot; <span class="i18n-en">Tails</span><span class="i18n-ko">뒷면</span> <b id="cntT">0</b> &middot; n = <b id="cntN">0</b></p>
     </div>
   </aside>
 
@@ -206,7 +210,7 @@ canvas { display:block; width:100%; }
       <canvas id="coinCv"></canvas>
       <div class="legend">
         <span><i class="sw dashed c-prior"></i>prior</span>
-        <span><i class="sw dotted c-mle"></i>likelihood (normalized)</span>
+        <span><i class="sw dotted c-mle"></i>likelihood (<span class="i18n-en">normalized</span><span class="i18n-ko">정규화</span>)</span>
         <span><i class="sw c-bayes"></i>posterior</span>
         <span><i class="swv c-mle"></i>&theta;&#770; MLE</span>
         <span><i class="swv c-map"></i>&theta;&#770; MAP</span>
@@ -217,29 +221,29 @@ canvas { display:block; width:100%; }
     <div class="cards">
       <div class="card mle">
         <div class="k">MLE</div>
-        <div class="nm">Maximum likelihood estimation</div>
+        <div class="nm"><span class="i18n-en">Maximum likelihood estimation</span><span class="i18n-ko">최대우도추정</span></div>
         <div class="stat"><span>&theta;&#770; = h/n</span><b id="mleTheta">&mdash;</b></div>
-        <div class="stat"><span>P(next = heads)</span><b id="mlePred">&mdash;</b></div>
-        <p class="note">Maximizes likelihood only &mdash; ignores the prior</p>
+        <div class="stat"><span>P(<span class="i18n-en">next = heads</span><span class="i18n-ko">다음 = 앞면</span>)</span><b id="mlePred">&mdash;</b></div>
+        <p class="note"><span class="i18n-en">Maximizes likelihood only &mdash; ignores the prior</span><span class="i18n-ko">우도만 최대화 &mdash; prior 무시</span></p>
       </div>
       <div class="card map">
         <div class="k">MAP</div>
-        <div class="nm">Maximum a posteriori</div>
+        <div class="nm"><span class="i18n-en">Maximum a posteriori</span><span class="i18n-ko">최대사후추정</span></div>
         <div class="stat"><span>&theta;&#770; = posterior mode</span><b id="mapTheta">&mdash;</b></div>
-        <div class="stat"><span>P(next = heads)</span><b id="mapPred">&mdash;</b></div>
-        <p class="note">Uses only the single mode of the posterior</p>
+        <div class="stat"><span>P(<span class="i18n-en">next = heads</span><span class="i18n-ko">다음 = 앞면</span>)</span><b id="mapPred">&mdash;</b></div>
+        <p class="note"><span class="i18n-en">Uses only the single mode of the posterior</span><span class="i18n-ko">posterior의 최빈값 한 점만 사용</span></p>
       </div>
       <div class="card bayes">
         <div class="k">BAYES</div>
-        <div class="nm">Full Bayesian</div>
+        <div class="nm"><span class="i18n-en">Full Bayesian</span><span class="i18n-ko">완전 베이지안</span></div>
         <div class="stat"><span>E[&theta;|D] &plusmn; sd</span><b id="bayesMean">&mdash;</b></div>
-        <div class="stat"><span>P(next = heads)</span><b id="bayesPred">&mdash;</b></div>
-        <p class="note">Predicts by integrating over the full posterior</p>
+        <div class="stat"><span>P(<span class="i18n-en">next = heads</span><span class="i18n-ko">다음 = 앞면</span>)</span><b id="bayesPred">&mdash;</b></div>
+        <p class="note"><span class="i18n-en">Predicts by integrating over the full posterior</span><span class="i18n-ko">posterior 전체로 적분해 예측</span></p>
       </div>
     </div>
 
     <details class="panel fold">
-      <summary>Formulas</summary>
+      <summary><span class="i18n-en">Formulas</span><span class="i18n-ko">수식</span></summary>
       <div class="fold-body">
         $$p(\theta\mid\mathcal D)\;\propto\;\underbrace{p(\mathcal D\mid\theta)}_{\text{likelihood}}\;\underbrace{p(\theta)}_{\text{prior}},\qquad p(\theta)=\mathrm{Beta}(\alpha,\beta)$$
         $$\hat\theta_{\mathrm{MLE}}=\frac{h}{n}\qquad\hat\theta_{\mathrm{MAP}}=\frac{h+\alpha-1}{n+\alpha+\beta-2}\qquad p(\theta\mid\mathcal D)=\mathrm{Beta}(\alpha+h,\;\beta+t)$$
@@ -248,13 +252,19 @@ canvas { display:block; width:100%; }
     </details>
 
     <details class="panel fold">
-      <summary>What to watch</summary>
+      <summary><span class="i18n-en">What to watch</span><span class="i18n-ko">수업 관찰 포인트</span></summary>
       <div class="fold-body">
-        <ol>
+        <ol class="i18n-en">
           <li><b>0 heads / 3 flips scenario</b>: MLE gives P(heads)=0 &mdash; the extreme conclusion that an unobserved event is impossible. This is exactly why Laplace smoothing \((h+1)/(n+2)\) equals the Bayes prediction under a Beta(1,1) prior.</li>
           <li>Repeat &times;100 and the three estimates converge to one &mdash; the data overwhelms the prior.</li>
           <li>Switch to a strong prior (&alpha;=&beta;=30) and the posterior moves far more slowly for the same data.</li>
           <li>MAP keeps a <i>single point</i>, the posterior mode; full Bayes keeps the <i>entire distribution</i> &mdash; prediction is an integral: \(P(H\mid\mathcal D)=E[\theta\mid\mathcal D]\).</li>
+        </ol>
+        <ol class="i18n-ko">
+          <li><b>앞면 0/3 시나리오</b>: MLE는 P(앞면)=0 &mdash; 관측하지 못한 사건은 불가능하다는 극단적 결론. Laplace smoothing \((h+1)/(n+2)\)이 정확히 Beta(1,1) prior의 Bayes 예측인 이유가 여기 있다.</li>
+          <li>&times;100을 반복하면 세 추정치가 하나로 수렴 &mdash; 데이터가 prior를 압도한다.</li>
+          <li>강한 prior(&alpha;=&beta;=30)로 바꾸면 같은 데이터에도 posterior가 훨씬 늦게 움직인다.</li>
+          <li>MAP은 posterior의 mode <i>한 점</i>, full Bayes는 <i>분포 전체</i>를 유지 &mdash; 예측은 적분: \(P(H\mid\mathcal D)=E[\theta\mid\mathcal D]\).</li>
         </ol>
       </div>
     </details>
@@ -265,37 +275,37 @@ canvas { display:block; width:100%; }
 <section id="tab-reg" class="tab">
   <aside class="panel side">
     <div class="grp">
-      <div class="grp-t">Model &middot; polynomial basis</div>
-      <label class="sl"><span>Degree M <b id="rMV" class="val">9</b></span>
+      <div class="grp-t"><span class="i18n-en">Model</span><span class="i18n-ko">모델</span> &middot; polynomial basis</div>
+      <label class="sl"><span><span class="i18n-en">Degree M</span><span class="i18n-ko">차수 M</span> <b id="rMV" class="val">9</b></span>
         <input type="range" id="rM" min="0" max="9" step="1" value="9"></label>
     </div>
     <div class="grp">
       <div class="grp-t">prior &middot; noise</div>
-      <label class="sl"><span>prior precision &alpha; <b id="rAlphaV" class="val">1.00</b></span>
+      <label class="sl"><span><span class="i18n-en">prior precision &alpha;</span><span class="i18n-ko">prior 정밀도 &alpha;</span> <b id="rAlphaV" class="val">1.00</b></span>
         <input type="range" id="rAlpha" min="-3" max="3" step="0.1" value="0"></label>
-      <label class="sl"><span>noise &sigma; <b id="rSigmaV" class="val">0.20</b></span>
+      <label class="sl"><span><span class="i18n-en">noise &sigma;</span><span class="i18n-ko">노이즈 &sigma;</span> <b id="rSigmaV" class="val">0.20</b></span>
         <input type="range" id="rSigma" min="0.05" max="0.5" step="0.05" value="0.2"></label>
       <p class="hint">w ~ N(0, &alpha;&#8315;&sup1;I), &beta; = 1/&sigma;&sup2;</p>
     </div>
     <div class="grp">
-      <div class="grp-t">Data &middot; y = sin(2&pi;x) + &epsilon;</div>
-      <label class="sl"><span>Sample count n <b id="rNV" class="val">10</b></span>
+      <div class="grp-t"><span class="i18n-en">Data</span><span class="i18n-ko">데이터</span> &middot; y = sin(2&pi;x) + &epsilon;</div>
+      <label class="sl"><span><span class="i18n-en">Sample count n</span><span class="i18n-ko">표본 수 n</span> <b id="rNV" class="val">10</b></span>
         <input type="range" id="rN" min="3" max="40" step="1" value="10"></label>
       <div class="btnrow">
-        <button id="rGen" class="btn">Regenerate</button>
-        <button id="rUndo" class="btn">&#8617; Undo one point</button>
-        <button id="rClear" class="btn ghost">Clear all</button>
+        <button id="rGen" class="btn"><span class="i18n-en">Regenerate</span><span class="i18n-ko">재생성</span></button>
+        <button id="rUndo" class="btn">&#8617; <span class="i18n-en">Undo one point</span><span class="i18n-ko">한 점 취소</span></button>
+        <button id="rClear" class="btn ghost"><span class="i18n-en">Clear all</span><span class="i18n-ko">모두 지우기</span></button>
       </div>
-      <p class="hint">Click the graph to add a point at that spot</p>
+      <p class="hint"><span class="i18n-en">Click the graph to add a point at that spot</span><span class="i18n-ko">그래프를 클릭하면 그 자리에 점이 추가됩니다</span></p>
     </div>
     <div class="grp">
-      <div class="grp-t">Display</div>
-      <label class="ck"><input type="checkbox" id="showMLE" checked><i class="swv c-mle"></i>MLE curve</label>
-      <label class="ck"><input type="checkbox" id="showMAP" checked><i class="swv c-map"></i>MAP curve</label>
-      <label class="ck"><input type="checkbox" id="showBand" checked><i class="swv c-bayes"></i>Bayes mean &plusmn; 2&sigma;</label>
-      <label class="ck"><input type="checkbox" id="showSamp"><i class="swv faint c-bayes"></i>12 posterior samples</label>
-      <label class="ck"><input type="checkbox" id="showTrue" checked><i class="swv c-true"></i>True function sin(2&pi;x)</label>
-      <button id="rResample" class="btn small">Resample</button>
+      <div class="grp-t"><span class="i18n-en">Display</span><span class="i18n-ko">표시</span></div>
+      <label class="ck"><input type="checkbox" id="showMLE" checked><i class="swv c-mle"></i><span class="i18n-en">MLE curve</span><span class="i18n-ko">MLE 곡선</span></label>
+      <label class="ck"><input type="checkbox" id="showMAP" checked><i class="swv c-map"></i><span class="i18n-en">MAP curve</span><span class="i18n-ko">MAP 곡선</span></label>
+      <label class="ck"><input type="checkbox" id="showBand" checked><i class="swv c-bayes"></i><span class="i18n-en">Bayes mean &plusmn; 2&sigma;</span><span class="i18n-ko">Bayes 평균 &plusmn; 2&sigma;</span></label>
+      <label class="ck"><input type="checkbox" id="showSamp"><i class="swv faint c-bayes"></i><span class="i18n-en">12 posterior samples</span><span class="i18n-ko">posterior 샘플 12개</span></label>
+      <label class="ck"><input type="checkbox" id="showTrue" checked><i class="swv c-true"></i><span class="i18n-en">True function sin(2&pi;x)</span><span class="i18n-ko">실제 함수 sin(2&pi;x)</span></label>
+      <button id="rResample" class="btn small"><span class="i18n-en">Resample</span><span class="i18n-ko">샘플 다시 뽑기</span></button>
     </div>
   </aside>
 
@@ -303,41 +313,41 @@ canvas { display:block; width:100%; }
     <div class="panel plot">
       <canvas id="regCv"></canvas>
       <div class="legend">
-        <span><i class="swp"></i>data</span>
+        <span><i class="swp"></i><span class="i18n-en">data</span><span class="i18n-ko">데이터</span></span>
         <span><i class="sw dashed c-true"></i>true sin(2&pi;x)</span>
         <span><i class="sw c-mle"></i>MLE</span>
         <span><i class="sw c-map"></i>MAP</span>
-        <span><i class="sw dashed c-bayes"></i>Bayes mean (= MAP)</span>
-        <span><i class="bandsw c-bayes"></i>&plusmn;2&sigma; predictive band</span>
+        <span><i class="sw dashed c-bayes"></i><span class="i18n-en">Bayes mean (= MAP)</span><span class="i18n-ko">Bayes 평균 (= MAP)</span></span>
+        <span><i class="bandsw c-bayes"></i>&plusmn;2&sigma; <span class="i18n-en">predictive band</span><span class="i18n-ko">예측 밴드</span></span>
       </div>
     </div>
 
     <div class="cards">
       <div class="card mle">
         <div class="k">MLE</div>
-        <div class="nm">Maximum likelihood estimation</div>
+        <div class="nm"><span class="i18n-en">Maximum likelihood estimation</span><span class="i18n-ko">최대우도추정</span></div>
         <div class="stat"><span>&Vert;w&Vert;&#8322;</span><b id="mleNorm">&mdash;</b></div>
         <div class="stat"><span>Train RMSE</span><b id="mleRmse">&mdash;</b></div>
-        <p class="note">No regularization &mdash; overfitting risk</p>
+        <p class="note"><span class="i18n-en">No regularization &mdash; overfitting risk</span><span class="i18n-ko">정규화 없음 &mdash; 과적합 위험</span></p>
       </div>
       <div class="card map">
         <div class="k">MAP</div>
-        <div class="nm">Maximum a posteriori</div>
+        <div class="nm"><span class="i18n-en">Maximum a posteriori</span><span class="i18n-ko">최대사후추정</span></div>
         <div class="stat"><span>&Vert;w&Vert;&#8322;</span><b id="mapNorm">&mdash;</b></div>
         <div class="stat"><span>Train RMSE</span><b id="mapRmse">&mdash;</b></div>
-        <p class="note">Same as Ridge &middot; &lambda; = &alpha;/&beta; = <span id="mapLam">&mdash;</span></p>
+        <p class="note"><span class="i18n-en">Same as Ridge</span><span class="i18n-ko">Ridge와 동일</span> &middot; &lambda; = &alpha;/&beta; = <span id="mapLam">&mdash;</span></p>
       </div>
       <div class="card bayes">
         <div class="k">BAYES</div>
-        <div class="nm">Full Bayesian</div>
-        <div class="stat"><span>Mean &sigma; (x&isin;[0,1])</span><b id="bayesSbar">&mdash;</b></div>
-        <div class="stat"><span>Max &sigma; (incl. extrapolation)</span><b id="bayesSmax">&mdash;</b></div>
-        <p class="note">Mean curve matches MAP &mdash; the difference is &sigma;(x)</p>
+        <div class="nm"><span class="i18n-en">Full Bayesian</span><span class="i18n-ko">완전 베이지안</span></div>
+        <div class="stat"><span><span class="i18n-en">Mean &sigma;</span><span class="i18n-ko">평균 &sigma;</span> (x&isin;[0,1])</span><b id="bayesSbar">&mdash;</b></div>
+        <div class="stat"><span><span class="i18n-en">Max &sigma; (incl. extrapolation)</span><span class="i18n-ko">최대 &sigma; (외삽 포함)</span></span><b id="bayesSmax">&mdash;</b></div>
+        <p class="note"><span class="i18n-en">Mean curve matches MAP &mdash; the difference is &sigma;(x)</span><span class="i18n-ko">평균 곡선은 MAP과 일치 &mdash; 차이는 &sigma;(x)</span></p>
       </div>
     </div>
 
     <details class="panel fold">
-      <summary>Formulas</summary>
+      <summary><span class="i18n-en">Formulas</span><span class="i18n-ko">수식</span></summary>
       <div class="fold-body">
         $$y=\mathbf w^\top\boldsymbol\phi(x)+\varepsilon,\quad\varepsilon\sim\mathcal N(0,\beta^{-1}),\quad p(\mathbf w)=\mathcal N(\mathbf 0,\alpha^{-1}I)$$
         $$\mathbf w_{\mathrm{MLE}}=(\Phi^\top\Phi)^{-1}\Phi^\top\mathbf y\qquad\mathbf w_{\mathrm{MAP}}=\Big(\tfrac{\alpha}{\beta}I+\Phi^\top\Phi\Big)^{-1}\Phi^\top\mathbf y=\text{Ridge}\;(\lambda=\alpha/\beta)$$
@@ -347,13 +357,19 @@ canvas { display:block; width:100%; }
     </details>
 
     <details class="panel fold">
-      <summary>What to watch</summary>
+      <summary><span class="i18n-en">What to watch</span><span class="i18n-ko">수업 관찰 포인트</span></summary>
       <div class="fold-body">
-        <ol>
+        <ol class="i18n-en">
           <li>At M=9, n=10 the MLE curve passes straight through the training points &mdash; the exploding &Vert;w&Vert;&#8322; is the numerical signature of overfitting.</li>
           <li>Increase &alpha; and the MAP curve becomes smoother. MAP under a Gaussian prior &equiv; Ridge (&lambda;=&alpha;/&beta;) &mdash; <b>regularization is really a prior.</b></li>
           <li>In the Gaussian-linear model the Bayes predictive mean = the MAP curve. The difference is <b>uncertainty</b>: the &plusmn;2&sigma; band expands where there is no data and in extrapolation regions (epistemic uncertainty).</li>
           <li>Click an empty region to add a point and the nearby band immediately narrows. Turn on posterior samples to see the &ldquo;distribution of plausible functions.&rdquo; Press &ldquo;Clear all&rdquo; and only the prior predictive remains.</li>
+        </ol>
+        <ol class="i18n-ko">
+          <li>M=9, n=10에서 MLE 곡선은 훈련점을 그대로 관통 &mdash; &Vert;w&Vert;&#8322; 폭발이 과적합의 수치적 신호.</li>
+          <li>&alpha;를 키우면 MAP 곡선이 매끄러워진다. Gaussian prior의 MAP &equiv; Ridge (&lambda;=&alpha;/&beta;) &mdash; <b>정규화는 사실 prior다.</b></li>
+          <li>Gaussian-linear 모델에서는 Bayes 예측 평균 = MAP 곡선. 차이는 <b>불확실성</b>: 데이터가 없는 구간과 외삽 구간에서 &plusmn;2&sigma; 밴드가 팽창한다 (epistemic uncertainty).</li>
+          <li>빈 구간을 클릭해 점을 추가하면 그 근처 밴드가 즉시 좁아진다. posterior 샘플을 켜면 &ldquo;그럴듯한 함수들의 분포&rdquo;가 보인다. &ldquo;모두 지우기&rdquo;를 누르면 prior predictive만 남는다.</li>
         </ol>
       </div>
     </details>
@@ -371,6 +387,8 @@ canvas { display:block; width:100%; }
    - Tab 1: Beta-Bernoulli coin flips
    - Tab 2: Bayesian polynomial regression (Bishop PRML style)
 */
+
+function L(en,ko){ return document.documentElement.getAttribute('data-lang')==='ko' ? ko : en; }
 
 /* ===MATH-BEGIN=== */
 var LANCZOS_G = [676.5203681218851, -1259.1392167224028, 771.32342877765313,
@@ -1049,6 +1067,7 @@ window.addEventListener('load', tryMath);
 wire();
 regGen(10);
 window.__onTheme = function(){ drawAll(); };
+window.__onLang = function(){ drawAll(); };
 drawAll();
 
 </script>

@@ -6,7 +6,7 @@ sitemap: false
 permalink: /playground/
 ---
 
-# Playground
+# <span class="i18n-en">Playground</span><span class="i18n-ko">놀이터</span>
 
 <iframe id="pgframe" src="{{ site.url }}{{ site.baseurl }}/pg/index.html" title="PRISM Playground"
         style="width:100%;border:0;display:block;height:900px"></iframe>

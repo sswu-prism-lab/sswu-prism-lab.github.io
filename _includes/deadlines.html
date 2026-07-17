@@ -1,11 +1,11 @@
 <div id="deadlines-wrap">
 
   <p class="deadlines-updated">
-    Last data update: {{ site.time | date: "%Y-%m-%d" }} (Automatic renewal everyday · <a href="https://github.com/ccfddl/ccf-deadlines" target="_blank" rel="noopener">ccf-deadlines</a> data-based)
+    <span class="i18n-en">Last data update:</span><span class="i18n-ko">마지막 데이터 업데이트:</span> {{ site.time | date: "%Y-%m-%d" }} <span class="i18n-en">(Automatic renewal everyday · </span><span class="i18n-ko">(매일 자동 갱신 · </span><a href="https://github.com/ccfddl/ccf-deadlines" target="_blank" rel="noopener">ccf-deadlines</a><span class="i18n-en"> data-based)</span><span class="i18n-ko"> 데이터 기반)</span>
   </p>
 
   <div class="deadlines-filters">
-    <button class="deadlines-filter-btn active" data-tag="all">All</button>
+    <button class="deadlines-filter-btn active" data-tag="all"><span class="i18n-en">All</span><span class="i18n-ko">전체</span></button>
     {% assign tags = site.data.deadlines | map: "tag" | flatten | uniq | sort %}
     {% for tag in tags %}
       <button class="deadlines-filter-btn" data-tag="{{ tag }}">{{ tag }}</button>
@@ -15,17 +15,17 @@
   <div id="deadlines-sections">
 
     <div class="deadlines-section" id="deadlines-section-upcoming">
-      <h2 class="deadlines-section-title">Open for Submission</h2>
+      <h2 class="deadlines-section-title"><span class="i18n-en">Open for Submission</span><span class="i18n-ko">제출 접수 중</span></h2>
       <div class="deadlines-grid" id="deadlines-grid-upcoming"></div>
     </div>
 
     <div class="deadlines-section" id="deadlines-section-ongoing">
-      <h2 class="deadlines-section-title">Awaiting Conferences</h2>
+      <h2 class="deadlines-section-title"><span class="i18n-en">Awaiting Conferences</span><span class="i18n-ko">학회 대기 중</span></h2>
       <div class="deadlines-grid" id="deadlines-grid-ongoing"></div>
     </div>
 
     <div class="deadlines-section" id="deadlines-section-past">
-      <h2 class="deadlines-section-title">Completed Conferences</h2>
+      <h2 class="deadlines-section-title"><span class="i18n-en">Completed Conferences</span><span class="i18n-ko">종료된 학회</span></h2>
       <div class="deadlines-grid" id="deadlines-grid-past"></div>
     </div>
 
@@ -53,26 +53,26 @@
           <div class="deadlines-countdown">
             <div class="deadlines-countdown-unit">
               <span class="deadlines-num" data-unit="days">--</span>
-              <span class="deadlines-label">days</span>
+              <span class="deadlines-label"><span class="i18n-en">days</span><span class="i18n-ko">일</span></span>
             </div>
             <div class="deadlines-countdown-unit">
               <span class="deadlines-num" data-unit="hours">--</span>
-              <span class="deadlines-label">hours</span>
+              <span class="deadlines-label"><span class="i18n-en">hours</span><span class="i18n-ko">시간</span></span>
             </div>
             <div class="deadlines-countdown-unit">
               <span class="deadlines-num" data-unit="minutes">--</span>
-              <span class="deadlines-label">minutes</span>
+              <span class="deadlines-label"><span class="i18n-en">minutes</span><span class="i18n-ko">분</span></span>
             </div>
             <div class="deadlines-countdown-unit">
               <span class="deadlines-num" data-unit="seconds">--</span>
-              <span class="deadlines-label">seconds</span>
+              <span class="deadlines-label"><span class="i18n-en">seconds</span><span class="i18n-ko">초</span></span>
             </div>
           </div>
 
           <p class="deadlines-local-time">
             <span class="deadlines-local-time-label">Deadline in KST</span>: <span class="deadlines-local-time-value">-</span>
           </p>
-          <a href="{{ conf.link }}" target="_blank" rel="noopener" class="deadlines-visit-btn">Visit website →</a>
+          <a href="{{ conf.link }}" target="_blank" rel="noopener" class="deadlines-visit-btn"><span class="i18n-en">Visit website</span><span class="i18n-ko">웹사이트 방문</span> →</a>
         </div>
       </div>
     </div>

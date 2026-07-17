@@ -1,39 +1,54 @@
 - name: Jeongwon Choe (최정원)
   photo: Jeongwon.jpeg
   duration: In PRISM Lab 2023 - 2026
+  duration_ko: PRISM Lab 소속 2023 - 2026
   info: Undergraduate Intern
+  info_ko: 학부 인턴
   email: 20220363@sungshin.ac.kr
   number_educ: 1
   education1: Biosignal representation, topological deep learning
   performance: One published SCIE journal, two SCIE journals (under review), and one presented domestic conference (win the poster award)
+  performance_ko: SCIE 저널 1편 게재, SCIE 저널 2편 심사 중, 국내 학회 1편 발표 (포스터상 수상)
 
 - name: Minseo Cho (조민서)
   photo: Minseo.jpg
   duration: In PRISM Lab 2024 - 2026
+  duration_ko: PRISM Lab 소속 2024 - 2026
   info: Undergraduate Intern
+  info_ko: 학부 인턴
   email: 20211404@sungshin.ac.kr
   number_educ: 1
   education1: Imaging genetics, computer vision
   performance: One presented top-tier CS conference, two SCIE journals (under review), and one presented domestic conference
-  
+  performance_ko: 최상위 CS 학회 1편 발표, SCIE 저널 2편 심사 중, 국내 학회 1편 발표
+
 - name: Chanmi Park (박찬미)
   photo: Chanmi.jpeg
   duration: In PRISM Lab 2024 - 2026
+  duration_ko: PRISM Lab 소속 2024 - 2026
   info: Undergraduate Intern
+  info_ko: 학부 인턴
   email: 20221633@sungshin.ac.kr
   number_educ: 1
   education1: Imaging genetics, computer vision
   performance: One presented top-tier CS conference, two SCIE journals (under review), and one presented domestic conference
+  performance_ko: 최상위 CS 학회 1편 발표, SCIE 저널 2편 심사 중, 국내 학회 1편 발표
 
 - name: Yobin Yoon (윤여빈)
   photo: Yobin.jpg
   duration: In PRISM Lab 2025 - 2026
+  duration_ko: PRISM Lab 소속 2025 - 2026
   info: Undergraduate Intern
+  info_ko: 학부 인턴
   number_educ: 1
   education1: Electronic health record analysis, topological deep learning
   performance: One SCIE journal (under review)
+  performance_ko: SCIE 저널 1편 심사 중
 
 - name: Hee Young Shin (신희영)
   duration: In PRISM Lab 2025
+  duration_ko: PRISM Lab 소속 2025
   info: Undergraduate Intern
+  info_ko: 학부 인턴
   performance: One presented domestic conference
+  performance_ko: 국내 학회 1편 발표

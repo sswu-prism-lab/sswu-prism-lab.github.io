@@ -7,16 +7,20 @@
 (function(){
   function cur(){ try{ return localStorage.getItem('theme') || (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark':'light'); }catch(e){ return 'dark'; } }
   var t=cur(); window.__theme=t; document.documentElement.setAttribute('data-theme', t);
-  window.addEventListener('storage', function(e){ if(e.key==='theme'){ var n=e.newValue||'dark'; window.__theme=n; document.documentElement.setAttribute('data-theme', n); if(window.__onTheme) window.__onTheme(n); } });
+  try{ document.documentElement.setAttribute('data-lang', (localStorage.getItem('lang')||'en')); }catch(e){ document.documentElement.setAttribute('data-lang','en'); }
+  window.addEventListener('storage', function(e){ if(e.key==='theme'){ var n=e.newValue||'dark'; window.__theme=n; document.documentElement.setAttribute('data-theme', n); if(window.__onTheme) window.__onTheme(n); } if(e.key==='lang'){ document.documentElement.setAttribute('data-lang', e.newValue||'en'); if(window.__onLang) window.__onLang(); } });
 })();
 </script>
 
 <title>Support Vector Machine — PRISM Lab</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <style>
+html[data-lang="en"] .i18n-ko{ display:none !important; }
+html[data-lang="ko"] .i18n-en{ display:none !important; }
+.i18n-ko{ font-family:'Nanum Gothic','Inter',sans-serif; word-break:keep-all; }
 * { box-sizing: border-box; }
 :root {
   color-scheme: light;
@@ -136,95 +140,95 @@ canvas { display:block; width:100%; }
 </head>
 <body>
 <div class="wrap">
-  <div class="topbar"><a class="back" href="index.html">← Playground</a></div>
-  <p class="eyebrow">PRISM · Machine Learning Playground</p>
-  <h1 class="title">Support Vector Machine<br><span class="thin">Find the maximum-margin boundary — large-margin classification</span></h1>
+  <div class="topbar"><a class="back" href="index.html"><span class="i18n-en">← Playground</span><span class="i18n-ko">← 놀이터</span></a></div>
+  <p class="eyebrow"><span class="i18n-en">PRISM · Machine Learning Playground</span><span class="i18n-ko">PRISM · 머신러닝 놀이터</span></p>
+  <h1 class="title"><span class="i18n-en">Support Vector Machine</span><span class="i18n-ko">서포트 벡터 머신</span><br><span class="thin"><span class="i18n-en">Find the maximum-margin boundary — large-margin classification</span><span class="i18n-ko">마진이 최대가 되는 경계를 찾아라 — 최대 마진 분류</span></span></h1>
 
 <main>
 <div class="layout">
   <aside class="panel side">
     <div class="grp">
-      <div class="grp-t">Data</div>
+      <div class="grp-t"><span class="i18n-en">Data</span><span class="i18n-ko">데이터</span></div>
       <div class="chips">
-        <button class="dpreset" data-d="linsep">Linearly separable</button>
-        <button class="dpreset" data-d="overlap">Overlap</button>
-        <button class="dpreset" data-d="circles">Concentric circles</button>
-        <button class="dpreset" data-d="moons">Moons</button>
+        <button class="dpreset" data-d="linsep"><span class="i18n-en">Linearly separable</span><span class="i18n-ko">선형 분리</span></button>
+        <button class="dpreset" data-d="overlap"><span class="i18n-en">Overlap</span><span class="i18n-ko">겹침</span></button>
+        <button class="dpreset" data-d="circles"><span class="i18n-en">Concentric circles</span><span class="i18n-ko">동심원</span></button>
+        <button class="dpreset" data-d="moons"><span class="i18n-en">Moons</span><span class="i18n-ko">초승달</span></button>
       </div>
-      <label class="sl"><span>Samples per class <b id="sNpcV" class="val">20</b></span>
+      <label class="sl"><span><span class="i18n-en">Samples per class</span><span class="i18n-ko">클래스당 표본</span> <b id="sNpcV" class="val">20</b></span>
         <input type="range" id="sNpc" min="10" max="60" step="5" value="20"></label>
       <div class="btnrow">
-        <button id="sGen" class="btn">Regenerate</button>
-        <button id="sUndo" class="btn">&#8617; Undo point</button>
-        <button id="sClear" class="btn ghost">Clear all</button>
+        <button id="sGen" class="btn"><span class="i18n-en">Regenerate</span><span class="i18n-ko">재생성</span></button>
+        <button id="sUndo" class="btn">&#8617; <span class="i18n-en">Undo point</span><span class="i18n-ko">한 점 취소</span></button>
+        <button id="sClear" class="btn ghost"><span class="i18n-en">Clear all</span><span class="i18n-ko">모두 지우기</span></button>
       </div>
       <div class="segs">
-        <button class="seg cseg active" data-c="1">&#9679; Add +1</button>
-        <button class="seg cseg" data-c="-1">&#9679; Add &minus;1</button>
+        <button class="seg cseg active" data-c="1">&#9679; <span class="i18n-en">Add +1</span><span class="i18n-ko">+1 추가</span></button>
+        <button class="seg cseg" data-c="-1">&#9679; <span class="i18n-en">Add &minus;1</span><span class="i18n-ko">&minus;1 추가</span></button>
       </div>
-      <p class="hint">Click empty space = add point &middot; Drag point = move &middot; Right-click = delete</p>
+      <p class="hint"><span class="i18n-en">Click empty space = add point &middot; Drag point = move &middot; Right-click = delete</span><span class="i18n-ko">빈 곳 클릭 = 점 추가 &middot; 점 드래그 = 이동 &middot; 우클릭 = 삭제</span></p>
     </div>
     <div class="grp">
-      <div class="grp-t">Model</div>
+      <div class="grp-t"><span class="i18n-en">Model</span><span class="i18n-ko">모델</span></div>
       <div class="segs">
         <button class="seg kseg active" data-k="linear">Linear</button>
         <button class="seg kseg" data-k="rbf">RBF</button>
       </div>
       <label class="sl"><span>C (soft margin) <b id="sCV" class="val">1.00</b></span>
         <input type="range" id="sC" min="-2" max="3" step="0.1" value="0"></label>
-      <label class="sl" id="sGRow"><span>&gamma; (RBF width) <b id="sGV" class="val">1.00</b></span>
+      <label class="sl" id="sGRow"><span>&gamma; <span class="i18n-en">(RBF width)</span><span class="i18n-ko">(RBF 폭)</span> <b id="sGV" class="val">1.00</b></span>
         <input type="range" id="sG" min="-1.5" max="1.5" step="0.1" value="0"></label>
-      <p class="hint">C&darr; wider margin &middot; allows violations &nbsp;|&nbsp; C&uarr; approaches hard margin</p>
+      <p class="hint"><span class="i18n-en">C&darr; wider margin &middot; allows violations &nbsp;|&nbsp; C&uarr; approaches hard margin</span><span class="i18n-ko">C&darr; 넓은 마진 &middot; 위반 허용 &nbsp;|&nbsp; C&uarr; hard margin에 접근</span></p>
     </div>
     <div class="grp">
-      <div class="grp-t">Display</div>
-      <label class="ck"><input type="checkbox" id="sShowBand" checked><i class="sw thin c-pos"></i>Margin f = &plusmn;1</label>
-      <label class="ck"><input type="checkbox" id="sShowSV" checked><i class="ringsw"></i>Highlight support vectors</label>
+      <div class="grp-t"><span class="i18n-en">Display</span><span class="i18n-ko">표시</span></div>
+      <label class="ck"><input type="checkbox" id="sShowBand" checked><i class="sw thin c-pos"></i><span class="i18n-en">Margin f = &plusmn;1</span><span class="i18n-ko">마진 f = &plusmn;1</span></label>
+      <label class="ck"><input type="checkbox" id="sShowSV" checked><i class="ringsw"></i><span class="i18n-en">Highlight support vectors</span><span class="i18n-ko">서포트 벡터 강조</span></label>
     </div>
   </aside>
 
   <div class="stage">
     <div class="panel plot">
       <div class="plot-head">
-        <span>Training accuracy <b id="sAcc">&mdash;</b></span>
+        <span><span class="i18n-en">Training accuracy</span><span class="i18n-ko">훈련 정확도</span> <b id="sAcc">&mdash;</b></span>
       </div>
       <canvas id="sCv"></canvas>
       <div class="legend">
         <span><i class="dot c-pos"></i>+1</span>
         <span><i class="dot c-neg"></i>&minus;1</span>
-        <span><i class="sw c-ink"></i>Decision boundary f = 0</span>
-        <span><i class="sw thin c-pos"></i>Margin f = &plusmn;1</span>
-        <span><i class="ringsw"></i>SV (on margin, 0&lt;&alpha;&lt;C)</span>
-        <span><i class="ringsw dash"></i>Margin violation (&alpha; = C)</span>
+        <span><i class="sw c-ink"></i><span class="i18n-en">Decision boundary f = 0</span><span class="i18n-ko">결정 경계 f = 0</span></span>
+        <span><i class="sw thin c-pos"></i><span class="i18n-en">Margin f = &plusmn;1</span><span class="i18n-ko">마진 f = &plusmn;1</span></span>
+        <span><i class="ringsw"></i><span class="i18n-en">SV (on margin, 0&lt;&alpha;&lt;C)</span><span class="i18n-ko">SV (마진 위, 0&lt;&alpha;&lt;C)</span></span>
+        <span><i class="ringsw dash"></i><span class="i18n-en">Margin violation (&alpha; = C)</span><span class="i18n-ko">마진 위반 (&alpha; = C)</span></span>
       </div>
     </div>
 
     <div class="cards">
       <div class="card bnd">
         <div class="k">MARGIN</div>
-        <div class="nm">Decision boundary</div>
+        <div class="nm"><span class="i18n-en">Decision boundary</span><span class="i18n-ko">결정 경계</span></div>
         <div class="stat"><span>&Vert;w&Vert;</span><b id="sWnorm">&mdash;</b></div>
-        <div class="stat"><span>Margin 2/&Vert;w&Vert;</span><b id="sMargin">&mdash;</b></div>
-        <p class="note">For RBF, the margin is in feature space</p>
+        <div class="stat"><span><span class="i18n-en">Margin</span><span class="i18n-ko">마진</span> 2/&Vert;w&Vert;</span><b id="sMargin">&mdash;</b></div>
+        <p class="note"><span class="i18n-en">For RBF, the margin is in feature space</span><span class="i18n-ko">RBF는 특징공간(feature space)에서의 마진</span></p>
       </div>
       <div class="card sv">
         <div class="k">SUPPORT VECTORS</div>
-        <div class="nm">Points that hold up the boundary</div>
-        <div class="stat"><span>On margin (0&lt;&alpha;&lt;C)</span><b id="sOnM">&mdash;</b></div>
-        <div class="stat"><span>Violating (&alpha; = C)</span><b id="sBound">&mdash;</b></div>
-        <p class="note">Points with &alpha; = 0 don't affect the boundary</p>
+        <div class="nm"><span class="i18n-en">Points that hold up the boundary</span><span class="i18n-ko">경계를 떠받치는 점</span></div>
+        <div class="stat"><span><span class="i18n-en">On margin (0&lt;&alpha;&lt;C)</span><span class="i18n-ko">마진 위 (0&lt;&alpha;&lt;C)</span></span><b id="sOnM">&mdash;</b></div>
+        <div class="stat"><span><span class="i18n-en">Violating (&alpha; = C)</span><span class="i18n-ko">위반 (&alpha; = C)</span></span><b id="sBound">&mdash;</b></div>
+        <p class="note"><span class="i18n-en">Points with &alpha; = 0 don't affect the boundary</span><span class="i18n-ko">&alpha; = 0인 점은 경계에 영향 없음</span></p>
       </div>
       <div class="card loss">
         <div class="k">LOSS</div>
-        <div class="nm">Slack and objective</div>
-        <div class="stat"><span>&Sigma;&xi;&#7522; (hinge sum)</span><b id="sHinge">&mdash;</b></div>
+        <div class="nm"><span class="i18n-en">Slack and objective</span><span class="i18n-ko">슬랙과 목적함수</span></div>
+        <div class="stat"><span>&Sigma;&xi;&#7522; <span class="i18n-en">(hinge sum)</span><span class="i18n-ko">(hinge 합)</span></span><b id="sHinge">&mdash;</b></div>
         <div class="stat"><span>&frac12;&Vert;w&Vert;&sup2; + C&Sigma;&xi;</span><b id="sObj">&mdash;</b></div>
-        <p class="note">C is the price of slack (violations)</p>
+        <p class="note"><span class="i18n-en">C is the price of slack (violations)</span><span class="i18n-ko">C는 슬랙(위반)의 가격</span></p>
       </div>
     </div>
 
     <details class="panel fold">
-      <summary>Formulas</summary>
+      <summary><span class="i18n-en">Formulas</span><span class="i18n-ko">수식</span></summary>
       <div class="fold-body">
         $$\min_{\mathbf w,\,b,\,\boldsymbol\xi}\ \tfrac12\|\mathbf w\|^2+C\textstyle\sum_i\xi_i\quad\text{s.t.}\quad y_i\big(\mathbf w^\top\phi(\mathbf x_i)+b\big)\ge 1-\xi_i,\ \ \xi_i\ge0$$
         $$\text{margin}=\frac{2}{\|\mathbf w\|},\qquad \xi_i=\max\big(0,\ 1-y_i f(\mathbf x_i)\big)\ \ (\text{hinge})$$
@@ -235,13 +239,13 @@ canvas { display:block; width:100%; }
     </details>
 
     <details class="panel fold">
-      <summary>What to watch</summary>
+      <summary><span class="i18n-en">What to watch</span><span class="i18n-ko">수업 관찰 포인트</span></summary>
       <div class="fold-body">
         <ol>
-          <li><b>Scan C</b>: On overlapping data, lowering C (&le;0.1) widens the margin and allows violations (&xi;&gt;0) &mdash; a soft margin; raising C approaches a hard margin, and the boundary becomes sensitive to individual points.</li>
-          <li>Try dragging a point that is <b>not</b> a support vector (&alpha;=0) &mdash; the boundary doesn't move at all. Drag a point on the margin and the boundary follows immediately: the solution is determined by just a few SVs (sparsity).</li>
-          <li>On the concentric-circles preset, a linear kernel fails by design. Switch to RBF and a circular boundary appears &mdash; &gamma;&uarr; wraps the boundary around each individual point, overfitting (tiny islands), while &gamma;&darr; is nearly linear.</li>
-          <li>Try adding a single point deep in the opposing camp: with large C the boundary contorts to fit it, while with small C it gives up on that point as slack.</li>
+          <li><span class="i18n-en"><b>Scan C</b>: On overlapping data, lowering C (&le;0.1) widens the margin and allows violations (&xi;&gt;0) &mdash; a soft margin; raising C approaches a hard margin, and the boundary becomes sensitive to individual points.</span><span class="i18n-ko"><b>C 스캔</b>: 겹침 데이터에서 C를 낮추면(&le;0.1) 마진이 넓어지고 위반(&xi;&gt;0)을 허용하는 soft margin, C를 키우면 hard margin에 접근하며 경계가 개별 점에 민감해진다.</span></li>
+          <li><span class="i18n-en">Try dragging a point that is <b>not</b> a support vector (&alpha;=0) &mdash; the boundary doesn't move at all. Drag a point on the margin and the boundary follows immediately: the solution is determined by just a few SVs (sparsity).</span><span class="i18n-ko">서포트 벡터가 <b>아닌</b> 점(&alpha;=0)을 드래그해 보라 &mdash; 경계가 전혀 안 움직인다. 마진 위의 점을 끌면 경계가 즉시 따라온다: 해는 소수의 SV만으로 결정된다 (sparsity).</span></li>
+          <li><span class="i18n-en">On the concentric-circles preset, a linear kernel fails by design. Switch to RBF and a circular boundary appears &mdash; &gamma;&uarr; wraps the boundary around each individual point, overfitting (tiny islands), while &gamma;&darr; is nearly linear.</span><span class="i18n-ko">동심원 프리셋에서 linear kernel은 원리적으로 실패한다. RBF로 바꾸면 원형 경계가 나온다 &mdash; &gamma;&uarr;는 경계가 점 하나하나를 감싸 과적합(작은 섬), &gamma;&darr;는 거의 선형.</span></li>
+          <li><span class="i18n-en">Try adding a single point deep in the opposing camp: with large C the boundary contorts to fit it, while with small C it gives up on that point as slack.</span><span class="i18n-ko">반대 진영 깊숙이 점 하나를 추가해 보라: C가 크면 경계가 그 점을 맞추려 뒤틀리고, C가 작으면 그 점을 슬랙으로 포기한다.</span></li>
         </ol>
       </div>
     </details>
@@ -256,6 +260,7 @@ canvas { display:block; width:100%; }
 <script>
 'use strict';
 /* SVM interactive playground — SMO in the browser, kernels, draggable points */
+function L(en,ko){ return document.documentElement.getAttribute('data-lang')==='ko' ? ko : en; }
 
 /* ===MATH-BEGIN=== */
 function randn() {
@@ -684,7 +689,7 @@ function svmDraw(model) {
     ctx.fillStyle = cssv('--muted');
     ctx.font = '13px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('Need points from both classes to train', cx, cy);
+    ctx.fillText(L('Need points from both classes to train', '두 클래스의 점이 있어야 학습합니다'), cx, cy);
   }
   ctx.restore();
 }
@@ -824,6 +829,7 @@ window.addEventListener('load', tryMath);
 wire();
 genPreset('linsep');
 window.__onTheme = function(){ svmRender(); };
+window.__onLang = function(){ svmRender(); };
 svmRender();
 
 </script>

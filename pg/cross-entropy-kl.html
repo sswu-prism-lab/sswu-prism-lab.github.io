@@ -7,17 +7,21 @@
 (function(){
   function cur(){ try{ return localStorage.getItem('theme') || (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark':'light'); }catch(e){ return 'dark'; } }
   var t=cur(); window.__theme=t; document.documentElement.setAttribute('data-theme', t);
-  window.addEventListener('storage', function(e){ if(e.key==='theme'){ var n=e.newValue||'dark'; window.__theme=n; document.documentElement.setAttribute('data-theme', n); if(window.__onTheme) window.__onTheme(n); } });
+  try{ document.documentElement.setAttribute('data-lang', (localStorage.getItem('lang')||'en')); }catch(e){ document.documentElement.setAttribute('data-lang','en'); }
+  window.addEventListener('storage', function(e){ if(e.key==='theme'){ var n=e.newValue||'dark'; window.__theme=n; document.documentElement.setAttribute('data-theme', n); if(window.__onTheme) window.__onTheme(n); } if(e.key==='lang'){ document.documentElement.setAttribute('data-lang', e.newValue||'en'); if(window.__onLang) window.__onLang(); } });
 })();
 </script>
 
 <title>Cross-Entropy &amp; KL Divergence — PRISM Lab</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&family=Nanum+Gothic:wght@400;700&display=swap" rel="stylesheet" />
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <style>
 * { box-sizing: border-box; }
+html[data-lang="en"] .i18n-ko{ display:none !important; }
+html[data-lang="ko"] .i18n-en{ display:none !important; }
+.i18n-ko{ font-family:'Nanum Gothic','Inter',sans-serif; word-break:keep-all; }
 :root {
   color-scheme: light;
   --bg:#ffffff; --panel:#f7f9fc; --panel-2:#eef2f8; --ink:#141b33; --muted:#5a6488;
@@ -145,19 +149,19 @@ canvas { display:block; width:100%; }
 </head>
 <body>
 <div class="wrap">
-  <div class="topbar"><a class="back" href="index.html">← Playground</a></div>
-  <p class="eyebrow">PRISM · Machine Learning Playground</p>
-  <h1 class="title">Cross-Entropy &amp; KL Divergence<br><span class="thin">Entropy, cross-entropy, and KL — the information behind classification loss</span></h1>
+  <div class="topbar"><a class="back" href="index.html"><span class="i18n-en">← Playground</span><span class="i18n-ko">← 놀이터</span></a></div>
+  <p class="eyebrow"><span class="i18n-en">PRISM · Machine Learning Playground</span><span class="i18n-ko">PRISM · 머신러닝 놀이터</span></p>
+  <h1 class="title"><span class="i18n-en">Cross-Entropy &amp; KL Divergence</span><span class="i18n-ko">교차 엔트로피 &amp; KL 발산</span><br><span class="thin"><span class="i18n-en">Entropy, cross-entropy, and KL — the information behind classification loss</span><span class="i18n-ko">엔트로피, 교차 엔트로피, KL — 분류 손실의 정보이론적 근거</span></span></h1>
 
 <main>
 <section class="tab active">
   <aside class="panel side">
     <div class="grp">
-      <div class="grp-t">True distribution p</div>
+      <div class="grp-t"><span class="i18n-en">True distribution p</span><span class="i18n-ko">참 분포 p</span></div>
       <div class="chips">
-        <button class="preset active" id="pOnehot" data-pmode="onehot">One-hot</button>
-        <button class="preset" id="pSkewed" data-pmode="skewed">Skewed</button>
-        <button class="preset" id="pUniform" data-pmode="uniform">Uniform</button>
+        <button class="preset active" id="pOnehot" data-pmode="onehot"><span class="i18n-en">One-hot</span><span class="i18n-ko">원-핫</span></button>
+        <button class="preset" id="pSkewed" data-pmode="skewed"><span class="i18n-en">Skewed</span><span class="i18n-ko">치우침</span></button>
+        <button class="preset" id="pUniform" data-pmode="uniform"><span class="i18n-en">Uniform</span><span class="i18n-ko">균등</span></button>
       </div>
       <div class="segs" id="clsRow">
         <button class="seg" data-cls="0">1</button>
@@ -166,11 +170,11 @@ canvas { display:block; width:100%; }
         <button class="seg" data-cls="3">4</button>
         <button class="seg" data-cls="4">5</button>
       </div>
-      <p class="hint">Pick which class holds all the mass (p = 1).</p>
+      <p class="hint"><span class="i18n-en">Pick which class holds all the mass (p = 1).</span><span class="i18n-ko">모든 확률 질량을 가질 클래스를 선택하세요 (p = 1).</span></p>
     </div>
 
     <div class="grp">
-      <div class="grp-t">Model distribution q · logits</div>
+      <div class="grp-t"><span class="i18n-en">Model distribution q · logits</span><span class="i18n-ko">모델 분포 q · 로짓</span></div>
       <label class="sl"><span>z&#8321; <b id="zV0" class="val">0.0</b></span>
         <input type="range" id="z0" min="-8" max="8" step="0.1" value="0"></label>
       <label class="sl"><span>z&#8322; <b id="zV1" class="val">0.0</b></span>
@@ -181,12 +185,12 @@ canvas { display:block; width:100%; }
         <input type="range" id="z3" min="-8" max="8" step="0.1" value="0"></label>
       <label class="sl"><span>z&#8325; <b id="zV4" class="val">0.0</b></span>
         <input type="range" id="z4" min="-8" max="8" step="0.1" value="0"></label>
-      <label class="sl"><span>Temperature T <b id="tV" class="val">1.0</b></span>
+      <label class="sl"><span><span class="i18n-en">Temperature T</span><span class="i18n-ko">온도 T</span> <b id="tV" class="val">1.0</b></span>
         <input type="range" id="tT" min="0.3" max="3" step="0.1" value="1"></label>
       <p class="hint">q = softmax(z / T)</p>
       <div class="btnrow">
-        <button id="setQ" class="btn">Set q &larr; p</button>
-        <button id="randQ" class="btn ghost">Randomize q</button>
+        <button id="setQ" class="btn"><span class="i18n-en">Set q &larr; p</span><span class="i18n-ko">q &larr; p 설정</span></button>
+        <button id="randQ" class="btn ghost"><span class="i18n-en">Randomize q</span><span class="i18n-ko">q 무작위화</span></button>
       </div>
     </div>
   </aside>
@@ -195,34 +199,34 @@ canvas { display:block; width:100%; }
     <div class="panel plot">
       <canvas id="barCv"></canvas>
       <div class="legend">
-        <span><i class="swbar" style="color:var(--c-q)"></i>q &mdash; model (softmax)</span>
-        <span><i class="swtick" style="color:var(--ink)"></i>p &mdash; true distribution</span>
+        <span><i class="swbar" style="color:var(--c-q)"></i><span class="i18n-en">q &mdash; model (softmax)</span><span class="i18n-ko">q &mdash; 모델 (softmax)</span></span>
+        <span><i class="swtick" style="color:var(--ink)"></i><span class="i18n-en">p &mdash; true distribution</span><span class="i18n-ko">p &mdash; 참 분포</span></span>
       </div>
     </div>
 
     <div class="panel plot">
       <canvas id="lossCv"></canvas>
-      <p class="losscap" id="lossCap">loss on the true class = &minus;log&#8322; q(true)</p>
+      <p class="losscap" id="lossCap"><span class="i18n-en">loss on the true class = &minus;log&#8322; q(true)</span><span class="i18n-ko">참 클래스의 손실 = &minus;log&#8322; q(true)</span></p>
     </div>
 
     <div class="cards">
       <div class="card ent">
         <div class="k">H(p)</div>
-        <div class="nm">Entropy</div>
+        <div class="nm"><span class="i18n-en">Entropy</span><span class="i18n-ko">엔트로피</span></div>
         <div class="stat"><span>&minus;&Sigma; p&#8342; log&#8322; p&#8342;</span><b id="entV">&mdash;</b></div>
-        <p class="note">Uncertainty already inside the true labels</p>
+        <p class="note"><span class="i18n-en">Uncertainty already inside the true labels</span><span class="i18n-ko">참 레이블 안에 이미 존재하는 불확실성</span></p>
       </div>
       <div class="card ce">
         <div class="k">H(p,q)</div>
-        <div class="nm">Cross-entropy</div>
+        <div class="nm"><span class="i18n-en">Cross-entropy</span><span class="i18n-ko">교차 엔트로피</span></div>
         <div class="stat"><span>&minus;&Sigma; p&#8342; log&#8322; q&#8342;</span><b id="ceV">&mdash;</b></div>
-        <p class="note">Average bits to encode p using q &mdash; this is the loss</p>
+        <p class="note"><span class="i18n-en">Average bits to encode p using q &mdash; this is the loss</span><span class="i18n-ko">q로 p를 부호화하는 데 드는 평균 비트 수 &mdash; 이것이 손실입니다</span></p>
       </div>
       <div class="card kl">
         <div class="k">D(p&#8214;q)</div>
-        <div class="nm">KL divergence</div>
+        <div class="nm"><span class="i18n-en">KL divergence</span><span class="i18n-ko">KL 발산</span></div>
         <div class="stat"><span>&Sigma; p&#8342; log&#8322;(p&#8342;/q&#8342;)</span><b id="klV">&mdash;</b></div>
-        <p class="note">Extra bits from using q instead of p &mdash; always &ge; 0</p>
+        <p class="note"><span class="i18n-en">Extra bits from using q instead of p &mdash; always &ge; 0</span><span class="i18n-ko">p 대신 q를 사용해 늘어난 비트 수 &mdash; 항상 &ge; 0</span></p>
       </div>
     </div>
 
@@ -233,7 +237,7 @@ canvas { display:block; width:100%; }
     </p>
 
     <details class="panel fold">
-      <summary>Formulas</summary>
+      <summary><span class="i18n-en">Formulas</span><span class="i18n-ko">수식</span></summary>
       <div class="fold-body">
         $$H(p)=-\sum_{k} p_k \log_2 p_k$$
         $$H(p,q)=-\sum_{k} p_k \log_2 q_k$$
@@ -243,13 +247,13 @@ canvas { display:block; width:100%; }
     </details>
 
     <details class="panel fold">
-      <summary>What to watch</summary>
+      <summary><span class="i18n-en">What to watch</span><span class="i18n-ko">관찰 포인트</span></summary>
       <div class="fold-body">
         <ol>
-          <li><b>D(p&#8214;q) &ge; 0</b>, and equals <b>0 exactly when q = p</b> &mdash; press &ldquo;Set q &larr; p&rdquo; to see the gap collapse.</li>
-          <li><b>H(p,q) &ge; H(p) always</b>; the cross-entropy sits above the entropy floor, and the gap between them <i>is</i> the KL divergence.</li>
-          <li>A <b>one-hot p</b> makes H(p)=0, so cross-entropy = KL = &minus;log&#8322; q(true) &mdash; that single number <i>is</i> the classification loss.</li>
-          <li>Raising temperature <b>T</b> flattens q toward uniform and raises the loss; lowering T sharpens q and (when it is right) lowers it.</li>
+          <li><span class="i18n-en"><b>D(p&#8214;q) &ge; 0</b>, and equals <b>0 exactly when q = p</b> &mdash; press &ldquo;Set q &larr; p&rdquo; to see the gap collapse.</span><span class="i18n-ko"><b>D(p&#8214;q) &ge; 0</b>이며, <b>q = p일 때 정확히 0</b>이 됩니다 &mdash; &ldquo;q &larr; p 설정&rdquo;을 눌러 간극이 사라지는 것을 확인하세요.</span></li>
+          <li><span class="i18n-en"><b>H(p,q) &ge; H(p) always</b>; the cross-entropy sits above the entropy floor, and the gap between them <i>is</i> the KL divergence.</span><span class="i18n-ko"><b>항상 H(p,q) &ge; H(p)</b>이며, 교차 엔트로피는 엔트로피 하한 위에 위치하고, 둘 사이의 간극이 <i>바로</i> KL 발산입니다.</span></li>
+          <li><span class="i18n-en">A <b>one-hot p</b> makes H(p)=0, so cross-entropy = KL = &minus;log&#8322; q(true) &mdash; that single number <i>is</i> the classification loss.</span><span class="i18n-ko"><b>원-핫 p</b>는 H(p)=0으로 만들어 교차 엔트로피 = KL = &minus;log&#8322; q(true)가 됩니다 &mdash; 이 하나의 숫자가 <i>바로</i> 분류 손실입니다.</span></li>
+          <li><span class="i18n-en">Raising temperature <b>T</b> flattens q toward uniform and raises the loss; lowering T sharpens q and (when it is right) lowers it.</span><span class="i18n-ko">온도 <b>T</b>를 높이면 q가 균등 분포에 가까워지며 손실이 커지고, T를 낮추면 q가 뾰족해져 (예측이 맞을 때) 손실이 줄어듭니다.</span></li>
         </ol>
       </div>
     </details>
@@ -277,6 +281,7 @@ var state = {
 };
 
 /* ---------- helpers ---------- */
+function L(en, ko) { return document.documentElement.getAttribute('data-lang') === 'ko' ? ko : en; }
 function $(id) { return document.getElementById(id); }
 function cssv(name) {
   return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
@@ -464,8 +469,10 @@ function render() {
   // true class for the loss curve
   var tc = state.pMode === 'onehot' ? state.onehot : argmax(p);
   var qtrue = q[tc];
-  $('lossCap').innerHTML = 'loss on the true class (k=' + (tc + 1) +
-    ') = &minus;log&#8322; q(true) = <b>' + fmt(-log2(Math.max(qtrue, 1e-12)), 2) + '</b> bits';
+  var lossNum = fmt(-log2(Math.max(qtrue, 1e-12)), 2);
+  $('lossCap').innerHTML = L(
+    'loss on the true class (k=' + (tc + 1) + ') = &minus;log&#8322; q(true) = <b>' + lossNum + '</b> bits',
+    '참 클래스(k=' + (tc + 1) + ')의 손실 = &minus;log&#8322; q(true) = <b>' + lossNum + '</b> bits');
 
   barDraw(p, q);
   lossDraw(qtrue);
@@ -546,6 +553,7 @@ window.addEventListener('load', tryMath);
 /* init */
 wire();
 window.__onTheme = function () { render(); };
+window.__onLang = function () { render(); };
 render();
 </script>
 </body>
