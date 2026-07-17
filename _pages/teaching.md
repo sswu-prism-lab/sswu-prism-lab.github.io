@@ -32,7 +32,7 @@ permalink: /teaching/
 - Notes & Exams: TBA
 
 ### C++ Programming (LZ000500 @ Fall 2023)
-- Slides: <a href="https://sswu-prism-lab.github.io/slides/cpp-programming-2027/" target="_blank">Slides</a>
+- <a href="https://sswu-prism-lab.github.io/slides/cpp-programming-2027/" target="_blank">Slides</a>
 - <a href="https://sswu-prism-lab.github.io/slides/notes/cpp-programming-2027/" target="_blank">Exams</a>
 
 <!---

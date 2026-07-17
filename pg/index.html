@@ -118,6 +118,8 @@
   a.c-gvd:hover{border-color:#a78bfa} a.c-unc:hover{border-color:#5eead4}
   a.c-mmb:hover{border-color:#ffb454} a.c-pca:hover{border-color:#8b5cf6}
   a.c-svm:hover{border-color:#2dd4bf} a.c-rep:hover{border-color:#f472b6}
+  .c-bvt{border-top-color:#f0883e} .c-bp{border-top-color:#6ea8ff}
+  .c-gd{border-top-color:#4ade80} .c-ce{border-top-color:#c084fc}
 </style>
 </head>
 <body>
@@ -406,12 +408,80 @@
 
   </div>
 
-  <h2 class="section-h">Concepts of Machine · Deep Learning <span class="n">8 live</span></h2>
+  <h2 class="section-h">Concepts of Machine · Deep Learning <span class="n">8 live · 4 soon</span></h2>
   <p class="section-sub">Core machine-learning and deep-learning ideas, hands-on — estimation, clustering, kernels, representations, and uncertainty.</p>
 
   <div class="deck">
 
-    <!-- ===== ACTIVE: PCA ===== -->
+    <a class="card-demo c-mmb" href="mle-map-bayes.html">
+      <div class="glyph">
+        <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M22 62 C52 62 56 32 70 32 C84 32 88 62 118 62" stroke="#a78bfa" stroke-width="1.8" stroke-dasharray="4 3"/>
+          <path d="M78 62 C108 62 112 24 126 24 C140 24 144 62 174 62" stroke="#34d399" stroke-width="1.8"/>
+          <path d="M46 62 C86 62 94 16 102 16 C110 16 118 62 158 62" stroke="#60a5fa" stroke-width="2.6"/>
+        </svg>
+      </div>
+      <div class="body">
+        <div class="tags"><span>Estimation</span><span>Priors</span></div>
+        <h3>MLE · MAP · Full Bayesian</h3>
+        <p>Coin flips and regression under three philosophies — point estimates versus the full posterior. See why L2 regularization is secretly a prior.</p>
+        <div class="go">Open →</div>
+      </div>
+    </a>
+
+    <a class="card-demo c-unc" href="uncertainty.html">
+      <div class="glyph">
+        <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M20 46 C70 40 120 30 184 18 L184 62 C120 50 70 52 20 50 Z" fill="#5eead4" opacity=".18"/>
+          <path d="M20 48 C70 45 120 41 184 40" stroke="#5eead4" stroke-width="2.2" fill="none"/>
+          <g fill="#8b949e"><circle cx="52" cy="47" r="2.4"/><circle cx="78" cy="44" r="2.4"/><circle cx="96" cy="43" r="2.4"/></g>
+        </svg>
+      </div>
+      <div class="body">
+        <div class="tags"><span>Bayesian</span><span>Gaussian process</span></div>
+        <h3>Uncertainty: Aleatoric vs Epistemic</h3>
+        <p>Split predictive uncertainty into reducible (epistemic) and irreducible (aleatoric) with a Gaussian process — the basis of active learning.</p>
+        <div class="go">Open →</div>
+      </div>
+    </a>
+
+    <a class="card-demo c-gvd" href="gen-vs-disc.html">
+      <div class="glyph">
+        <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <ellipse cx="62" cy="32" rx="19" ry="12" stroke="#60a5fa" stroke-width="1.4" opacity=".5" transform="rotate(-18 62 32)"/>
+          <g fill="#60a5fa"><circle cx="52" cy="30" r="2.6"/><circle cx="64" cy="24" r="2.6"/><circle cx="58" cy="38" r="2.6"/><circle cx="71" cy="33" r="2.6"/></g>
+          <g fill="#ffb454"><circle cx="140" cy="52" r="2.6"/><circle cx="128" cy="46" r="2.6"/><circle cx="146" cy="44" r="2.6"/><circle cx="134" cy="58" r="2.6"/></g>
+          <line x1="72" y1="16" x2="120" y2="64" stroke="#a78bfa" stroke-width="2.4" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="body">
+        <div class="tags"><span>GDA</span><span>Logistic</span></div>
+        <h3>Generative vs Discriminative</h3>
+        <p>Model p(x,y) then apply Bayes, or learn p(y|x) directly — same data, different questions. Only the generative side can synthesize new samples.</p>
+        <div class="go">Open →</div>
+      </div>
+    </a>
+
+    <a class="card-demo c-svm" href="svm.html">
+      <div class="glyph">
+        <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <line x1="58" y1="12" x2="118" y2="68" stroke="#8b949e" stroke-width="2.2" stroke-linecap="round"/>
+          <line x1="44" y1="18" x2="104" y2="74" stroke="#2dd4bf" stroke-width="1.3" stroke-dasharray="4 3"/>
+          <line x1="72" y1="6" x2="132" y2="62" stroke="#2dd4bf" stroke-width="1.3" stroke-dasharray="4 3"/>
+          <g fill="#60a5fa"><circle cx="40" cy="42" r="2.8"/><circle cx="54" cy="54" r="2.8"/></g>
+          <g fill="#ffb454"><circle cx="150" cy="34" r="2.8"/><circle cx="138" cy="24" r="2.8"/></g>
+          <circle cx="64" cy="40" r="5" stroke="#2dd4bf" stroke-width="1.6"/>
+          <circle cx="112" cy="44" r="5" stroke="#2dd4bf" stroke-width="1.6"/>
+        </svg>
+      </div>
+      <div class="body">
+        <div class="tags"><span>Max-margin</span><span>Kernels</span></div>
+        <h3>Support Vector Machine</h3>
+        <p>Find the widest-margin boundary and watch the support vectors hold it up. Switch to an RBF kernel for curved decision surfaces.</p>
+        <div class="go">Open →</div>
+      </div>
+    </a>
+
     <a class="card-demo c-pca" href="pca.html">
       <div class="glyph">
         <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -432,7 +502,25 @@
       </div>
     </a>
 
-    <!-- ===== ACTIVE: K-means ===== -->
+    <a class="card-demo c-em" href="em.html">
+      <div class="glyph">
+        <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <ellipse cx="78" cy="40" rx="30" ry="17" stroke="#34d399" stroke-width="2" transform="rotate(-12 78 40)"/>
+          <ellipse cx="128" cy="42" rx="25" ry="14" stroke="#a78bfa" stroke-width="2" transform="rotate(12 128 42)"/>
+          <g fill="#8b949e">
+            <circle cx="66" cy="38" r="2.4"/><circle cx="82" cy="45" r="2.4"/><circle cx="74" cy="33" r="2.4"/>
+            <circle cx="120" cy="40" r="2.4"/><circle cx="135" cy="46" r="2.4"/><circle cx="128" cy="37" r="2.4"/>
+          </g>
+        </svg>
+      </div>
+      <div class="body">
+        <div class="tags"><span>Latent variables</span><span>GMM</span></div>
+        <h3>EM Algorithm</h3>
+        <p>E-step recolors points by responsibility, M-step moves the Gaussians — the log-likelihood never decreases, and local optima are everywhere.</p>
+        <div class="go">Open →</div>
+      </div>
+    </a>
+
     <a class="card-demo c-kmeans" href="kmeans.html">
       <div class="glyph">
         <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -454,83 +542,6 @@
       </div>
     </a>
 
-    <!-- ===== ACTIVE: EM ===== -->
-    <a class="card-demo c-em" href="em.html">
-      <div class="glyph">
-        <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <ellipse cx="78" cy="40" rx="30" ry="17" stroke="#34d399" stroke-width="2" transform="rotate(-12 78 40)"/>
-          <ellipse cx="128" cy="42" rx="25" ry="14" stroke="#a78bfa" stroke-width="2" transform="rotate(12 128 42)"/>
-          <g fill="#8b949e">
-            <circle cx="66" cy="38" r="2.4"/><circle cx="82" cy="45" r="2.4"/><circle cx="74" cy="33" r="2.4"/>
-            <circle cx="120" cy="40" r="2.4"/><circle cx="135" cy="46" r="2.4"/><circle cx="128" cy="37" r="2.4"/>
-          </g>
-        </svg>
-      </div>
-      <div class="body">
-        <div class="tags"><span>Latent variables</span><span>GMM</span></div>
-        <h3>EM Algorithm</h3>
-        <p>E-step recolors points by responsibility, M-step moves the Gaussians — the log-likelihood never decreases, and local optima are everywhere.</p>
-        <div class="go">Open →</div>
-      </div>
-    </a>
-
-    <!-- ===== ACTIVE: MLE / MAP / Bayes ===== -->
-    <a class="card-demo c-mmb" href="mle-map-bayes.html">
-      <div class="glyph">
-        <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <path d="M22 62 C52 62 56 32 70 32 C84 32 88 62 118 62" stroke="#a78bfa" stroke-width="1.8" stroke-dasharray="4 3"/>
-          <path d="M78 62 C108 62 112 24 126 24 C140 24 144 62 174 62" stroke="#34d399" stroke-width="1.8"/>
-          <path d="M46 62 C86 62 94 16 102 16 C110 16 118 62 158 62" stroke="#60a5fa" stroke-width="2.6"/>
-        </svg>
-      </div>
-      <div class="body">
-        <div class="tags"><span>Estimation</span><span>Priors</span></div>
-        <h3>MLE · MAP · Full Bayesian</h3>
-        <p>Coin flips and regression under three philosophies — point estimates versus the full posterior. See why L2 regularization is secretly a prior.</p>
-        <div class="go">Open →</div>
-      </div>
-    </a>
-
-    <!-- ===== ACTIVE: Generative vs Discriminative ===== -->
-    <a class="card-demo c-gvd" href="gen-vs-disc.html">
-      <div class="glyph">
-        <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <ellipse cx="62" cy="32" rx="19" ry="12" stroke="#60a5fa" stroke-width="1.4" opacity=".5" transform="rotate(-18 62 32)"/>
-          <g fill="#60a5fa"><circle cx="52" cy="30" r="2.6"/><circle cx="64" cy="24" r="2.6"/><circle cx="58" cy="38" r="2.6"/><circle cx="71" cy="33" r="2.6"/></g>
-          <g fill="#ffb454"><circle cx="140" cy="52" r="2.6"/><circle cx="128" cy="46" r="2.6"/><circle cx="146" cy="44" r="2.6"/><circle cx="134" cy="58" r="2.6"/></g>
-          <line x1="72" y1="16" x2="120" y2="64" stroke="#a78bfa" stroke-width="2.4" stroke-linecap="round"/>
-        </svg>
-      </div>
-      <div class="body">
-        <div class="tags"><span>GDA</span><span>Logistic</span></div>
-        <h3>Generative vs Discriminative</h3>
-        <p>Model p(x,y) then apply Bayes, or learn p(y|x) directly — same data, different questions. Only the generative side can synthesize new samples.</p>
-        <div class="go">Open →</div>
-      </div>
-    </a>
-
-    <!-- ===== ACTIVE: SVM ===== -->
-    <a class="card-demo c-svm" href="svm.html">
-      <div class="glyph">
-        <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <line x1="58" y1="12" x2="118" y2="68" stroke="#8b949e" stroke-width="2.2" stroke-linecap="round"/>
-          <line x1="44" y1="18" x2="104" y2="74" stroke="#2dd4bf" stroke-width="1.3" stroke-dasharray="4 3"/>
-          <line x1="72" y1="6" x2="132" y2="62" stroke="#2dd4bf" stroke-width="1.3" stroke-dasharray="4 3"/>
-          <g fill="#60a5fa"><circle cx="40" cy="42" r="2.8"/><circle cx="54" cy="54" r="2.8"/></g>
-          <g fill="#ffb454"><circle cx="150" cy="34" r="2.8"/><circle cx="138" cy="24" r="2.8"/></g>
-          <circle cx="64" cy="40" r="5" stroke="#2dd4bf" stroke-width="1.6"/>
-          <circle cx="112" cy="44" r="5" stroke="#2dd4bf" stroke-width="1.6"/>
-        </svg>
-      </div>
-      <div class="body">
-        <div class="tags"><span>Max-margin</span><span>Kernels</span></div>
-        <h3>Support Vector Machine</h3>
-        <p>Find the widest-margin boundary and watch the support vectors hold it up. Switch to an RBF kernel for curved decision surfaces.</p>
-        <div class="go">Open →</div>
-      </div>
-    </a>
-
-    <!-- ===== ACTIVE: Representation ===== -->
     <a class="card-demo c-rep" href="representation.html">
       <div class="glyph">
         <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -551,22 +562,78 @@
       </div>
     </a>
 
-    <!-- ===== ACTIVE: Uncertainty ===== -->
-    <a class="card-demo c-unc" href="uncertainty.html">
+    <div class="card-demo c-bvt soon">
       <div class="glyph">
         <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <path d="M20 46 C70 40 120 30 184 18 L184 62 C120 50 70 52 20 50 Z" fill="#5eead4" opacity=".18"/>
-          <path d="M20 48 C70 45 120 41 184 40" stroke="#5eead4" stroke-width="2.2" fill="none"/>
-          <g fill="#8b949e"><circle cx="52" cy="47" r="2.4"/><circle cx="78" cy="44" r="2.4"/><circle cx="96" cy="43" r="2.4"/></g>
+          <path d="M22 26 C64 42 110 56 178 60" stroke="#6ea8ff" stroke-width="1.7" stroke-dasharray="4 3" fill="none"/>
+          <path d="M22 60 C90 56 132 42 178 24" stroke="#34d399" stroke-width="1.7" stroke-dasharray="4 3" fill="none"/>
+          <path d="M22 30 C70 52 100 52 118 50 C146 46 164 34 178 22" stroke="#f0883e" stroke-width="2.4" fill="none"/>
         </svg>
       </div>
       <div class="body">
-        <div class="tags"><span>Bayesian</span><span>Gaussian process</span></div>
-        <h3>Uncertainty: Aleatoric vs Epistemic</h3>
-        <p>Split predictive uncertainty into reducible (epistemic) and irreducible (aleatoric) with a Gaussian process — the basis of active learning.</p>
-        <div class="go">Open →</div>
+        <div class="tags"><span>Generalization</span><span>Model capacity</span></div>
+        <h3>Bias&ndash;Variance Tradeoff</h3>
+        <p>Underfit vs. overfit &mdash; watch total error split into bias&sup2; and variance as model capacity grows, and find where test error bottoms out.</p>
+        <div class="go">Coming soon</div>
       </div>
-    </a>
+    </div>
+
+    <div class="card-demo c-bp soon">
+      <div class="glyph">
+        <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <g stroke="#8b949e" stroke-width="1.3" opacity=".7">
+            <line x1="52" y1="26" x2="100" y2="22"/><line x1="52" y1="26" x2="100" y2="58"/>
+            <line x1="52" y1="54" x2="100" y2="22"/><line x1="52" y1="54" x2="100" y2="58"/>
+            <line x1="100" y1="22" x2="150" y2="40"/><line x1="100" y1="58" x2="150" y2="40"/>
+          </g>
+          <g fill="#6ea8ff">
+            <circle cx="52" cy="26" r="4"/><circle cx="52" cy="54" r="4"/>
+            <circle cx="100" cy="22" r="4"/><circle cx="100" cy="58" r="4"/><circle cx="150" cy="40" r="4"/>
+          </g>
+          <path d="M150 70 C118 74 82 74 54 71 m9 -4 l-9 4 l9 4" stroke="#f0883e" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="body">
+        <div class="tags"><span>Chain rule</span><span>Autodiff</span></div>
+        <h3>Backpropagation</h3>
+        <p>Follow the chain rule backward through a computation graph &mdash; see how each weight's gradient is assembled from local derivatives.</p>
+        <div class="go">Coming soon</div>
+      </div>
+    </div>
+
+    <div class="card-demo c-gd soon">
+      <div class="glyph">
+        <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M18 22 C55 30 80 70 100 70 C120 70 145 30 182 22" stroke="#8b949e" stroke-width="1.8" fill="none" opacity=".7"/>
+          <g fill="#4ade80">
+            <circle cx="34" cy="30" r="3"/><circle cx="48" cy="44" r="3"/><circle cx="64" cy="58" r="3"/><circle cx="82" cy="67" r="3"/><circle cx="100" cy="69" r="3"/>
+          </g>
+        </svg>
+      </div>
+      <div class="body">
+        <div class="tags"><span>Optimization</span><span>Momentum</span></div>
+        <h3>Gradient Descent &amp; Optimizers</h3>
+        <p>Roll down a loss landscape with SGD, momentum, and Adam &mdash; feel how the learning rate and curvature shape the path to a minimum.</p>
+        <div class="go">Coming soon</div>
+      </div>
+    </div>
+
+    <div class="card-demo c-ce soon">
+      <div class="glyph">
+        <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <g fill="#8b949e" opacity=".55">
+            <rect x="44" y="40" width="11" height="24" rx="1.5"/><rect x="62" y="28" width="11" height="36" rx="1.5"/><rect x="80" y="46" width="11" height="18" rx="1.5"/><rect x="98" y="52" width="11" height="12" rx="1.5"/>
+          </g>
+          <path d="M44 50 C64 30 82 30 102 42 C124 55 146 42 166 48" stroke="#c084fc" stroke-width="2.4" fill="none"/>
+        </svg>
+      </div>
+      <div class="body">
+        <div class="tags"><span>Information</span><span>Loss</span></div>
+        <h3>Cross-Entropy &amp; KL Divergence</h3>
+        <p>Entropy, cross-entropy, and KL divergence &mdash; why classification minimizes the gap between the predicted and the true distribution.</p>
+        <div class="go">Coming soon</div>
+      </div>
+    </div>
 
   </div>
 
