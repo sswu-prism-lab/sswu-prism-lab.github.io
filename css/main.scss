@@ -134,6 +134,13 @@ firstp {
   color: #A87700;
 }
 
+.dblp-link {
+  color: #8B5CF6; /* 보라색 계열 - 흰 배경/어두운 배경 모두 판독 가능 */
+}
+.dblp-link:hover {
+  color: #7C3AED;
+}
+
 .navbar-rainbow {
   background: linear-gradient(90deg,
     rgb(188,90,93), rgb(242,221,134), rgb(111,142,114),
@@ -232,6 +239,9 @@ html[data-theme="dark"] .email-link:focus { color: #C22E26; }
 html[data-theme="dark"] .tel-link { color: #C99000; }
 html[data-theme="dark"] .tel-link:hover,
 html[data-theme="dark"] .tel-link:focus { color: #A87700; }
+html[data-theme="dark"] .dblp-link { color: #8B5CF6; }
+html[data-theme="dark"] .dblp-link:hover,
+html[data-theme="dark"] .dblp-link:focus { color: #7C3AED; }
 
 /* Navbar */
 html[data-theme="dark"] .navbar-default {
