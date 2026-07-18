@@ -1,0 +1,378 @@
+<html lang="en" data-theme="light" data-lang="en"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+(function(){
+  function cur(){ try{ return localStorage.getItem('theme') || (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark':'light'); }catch(e){ return 'dark'; } }
+  var t=cur(); window.__theme=t; document.documentElement.setAttribute('data-theme', t);
+  try{ document.documentElement.setAttribute('data-lang', (localStorage.getItem('lang')||'en')); }catch(e){ document.documentElement.setAttribute('data-lang','en'); }
+  window.addEventListener('storage', function(e){ if(e.key==='theme'){ var n=e.newValue||'dark'; window.__theme=n; document.documentElement.setAttribute('data-theme', n); if(window.__onTheme) window.__onTheme(n); } if(e.key==='lang'){ document.documentElement.setAttribute('data-lang', e.newValue||'en'); if(window.__onLang) window.__onLang(); } });
+})();
+</script>
+
+<title>Regularization &amp; Double Descent — PRISM Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;600&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+  :root{
+    --void:#15181e; --panel:#1d212a; --panel-2:#171b22; --line:#2e343f;
+    --ink:#e6edf3; --muted:#8b949e;
+    --cool:#5eead4; --sharp:#ff6b5a; --warm-a:#ffc24b; --warm-b:#ff5a3c; --test:#a78bff; --blue:#6ea8ff;
+    --focus:#9cc7ff;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{ background: var(--void); color:var(--ink); font-family:"Inter",system-ui,-apple-system,sans-serif; line-height:1.5;
+    -webkit-font-smoothing:antialiased; padding:24px 20px 48px; }
+  .wrap{max-width:1120px;margin:0 auto}
+  .topbar{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+  .back{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--muted);text-decoration:none;
+    border:1px solid var(--line);padding:6px 12px;border-radius:20px;transition:.14s}
+  .back:hover{color:var(--cool);border-color:var(--cool)}
+  .eyebrow{font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--cool);margin:0 0 10px;display:flex;align-items:center;gap:10px}
+  .eyebrow::before{content:"";width:22px;height:1px;background:var(--cool);opacity:.7}
+  .title{font-family:"Space Grotesk",system-ui,sans-serif;font-weight:700;font-size:clamp(28px,4.6vw,46px);
+    line-height:1.02;margin:0 0 10px;letter-spacing:-.02em}
+  .title .thin{color:var(--muted);font-weight:500}
+  .subtitle{color:var(--muted);max-width:none;margin:0 0 26px;font-size:15px}
+  .subtitle b{color:var(--ink);font-weight:600}
+  .grid{display:grid;grid-template-columns:1.62fr 1fr;gap:18px;align-items:start}
+  @media (max-width:860px){ .grid{grid-template-columns:1fr} }
+  .card{background:linear-gradient(180deg,var(--panel) 0%,var(--panel-2) 100%);
+    border:1px solid var(--line);border-radius:16px;padding:16px}
+  .card + .card{margin-top:14px}
+  .card-h{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--muted);margin:0 0 12px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .card-h .hint{color:#3f7f76;letter-spacing:.02em;text-transform:none;font-size:11px}
+  .stage{padding:14px 12px 10px}
+  .canvas-hold{position:relative;width:100%}
+  canvas{display:block;width:100%;height:auto;border-radius:8px}
+  #curve{height:300px}
+  #wnorm{height:172px}
+  .legend{display:flex;align-items:center;gap:14px;margin:10px 6px 2px;flex-wrap:wrap;font-family:"JetBrains Mono",monospace;
+    font-size:10.5px;color:var(--muted)}
+  .legend i{display:inline-block;width:14px;height:3px;border-radius:2px;margin-right:6px;vertical-align:middle}
+  .axis-cap{font-family:"JetBrains Mono",monospace;font-size:10.5px;color:var(--muted);
+    display:flex;justify-content:space-between;margin:2px 6px 0}
+  .ctl{margin:14px 0 0}
+  .ctl-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px}
+  .ctl-name{font-size:13px;font-weight:500}
+  .ctl-name .sub{color:var(--muted);font-weight:400;font-size:12px}
+  .ctl-val{font-family:"JetBrains Mono",monospace;font-size:13px;color:var(--cool)}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:3px;
+    background:var(--line);outline:none;margin:6px 0 0}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;
+    background:var(--ink);border:2px solid var(--void);cursor:pointer;box-shadow:0 0 0 1px var(--line)}
+  input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--ink);border:2px solid var(--void);cursor:pointer}
+  #Dr{background:linear-gradient(90deg,#2b3a63 0%, var(--blue) 100%)}
+  .btnrow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+  .btnrow .wide{grid-column:1 / -1}
+  .btn{border:1px solid var(--line);background:var(--panel-2);color:var(--ink);font-family:"Inter",sans-serif;
+    font-size:13px;font-weight:500;padding:10px 8px;border-radius:9px;cursor:pointer;transition:.14s}
+  .btn:hover{border-color:#3a486e;background:#152238}
+  .btn:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+  .noteline{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--muted);margin-top:11px;min-height:16px}
+  .noteline b{color:var(--cool)}
+  .ro-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .ro{background:var(--panel);padding:10px 12px}
+  .ro .k{font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:.06em;color:var(--muted);text-transform:uppercase}
+  .ro .v{font-family:"JetBrains Mono",monospace;font-size:17px;margin-top:3px}
+  .ro .v.big{font-size:22px;color:var(--cool)}
+  .sync-tag{font-size:12px;padding:2px 8px;border-radius:20px;font-family:"Inter",sans-serif;font-weight:600}
+  .sync-tag.off{background:rgba(255,107,90,.14);color:var(--sharp)}
+  .sync-tag.part{background:rgba(255,194,75,.16);color:var(--warm-a)}
+  .sync-tag.on{background:rgba(94,234,212,.14);color:var(--cool)}
+  .try ol{margin:0;padding-left:20px;color:var(--muted);font-size:13.5px}
+  .try li{margin-bottom:6px}
+  .try li b{color:var(--ink);font-weight:600}
+  .try li .kbd{font-family:"JetBrains Mono",monospace;color:var(--cool);font-size:12.5px}
+  .explain{margin-top:26px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media (max-width:860px){ .explain{grid-template-columns:1fr} }
+  .ex{border-top:2px solid var(--line);padding-top:12px}
+  .ex.a{border-color:var(--blue)} .ex.b{border-color:var(--sharp)} .ex.c{border-color:var(--cool)}
+  .ex h4{font-family:"Space Grotesk",sans-serif;font-size:15px;margin:0 0 7px;font-weight:500}
+  .ex p{margin:0;font-size:13px;color:var(--muted)}
+  .ex code{font-family:"JetBrains Mono",monospace;color:var(--ink);font-size:12.5px;background:var(--panel);padding:1px 5px;border-radius:4px}
+  footer{margin-top:30px;color:var(--muted);font-size:12px;font-family:"JetBrains Mono",monospace;letter-spacing:.04em}
+  footer a{color:var(--cool);text-decoration:none}
+  html[data-theme="light"]{
+    --void:#ffffff; --panel:#f7f9fc; --panel-2:#eef2f8; --line:#e2e7ee;
+    --ink:#141b33; --muted:#5a6488;
+    --cool:#12a08d; --sharp:#e04a37; --warm-a:#c98a12; --warm-b:#cf4a24; --test:#6d4fe0; --blue:#2f6fd6; --focus:#2f6fd6;
+  }
+  html[data-theme="light"] body{ background: var(--void); }
+  html[data-theme="light"] .btn:hover{ border-color:#b9c4da; background:#e9eef7; }
+  html[data-lang="en"] .i18n-ko{ display:none !important; }
+  html[data-lang="ko"] .i18n-en{ display:none !important; }
+  .i18n-ko{ font-family:'Pretendard','Inter',sans-serif; word-break:keep-all; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar"><a class="back" href="index.html"><span class="i18n-en">← Playground</span><span class="i18n-ko">← 놀이터</span></a></div>
+  <p class="eyebrow"><span class="i18n-en">PRISM · Machine Learning Playground</span><span class="i18n-ko">PRISM · 머신러닝 놀이터</span></p>
+  <h1 class="title"><span class="i18n-en">Regularization &amp; Double Descent</span><span class="i18n-ko">정규화와 이중 하강</span><br><span class="thin"><span class="i18n-en">Test error dips, spikes at the interpolation threshold, then falls again</span><span class="i18n-ko">테스트 오차가 내려갔다 보간 임계점에서 치솟은 뒤 다시 떨어진다</span></span></h1>
+  <p class="subtitle">
+    <span class="i18n-en">Classical wisdom says test error is U-shaped in model size — too simple underfits, too complex overfits. But push the number of features <b>past</b> the number of training points (<code>D = N</code>) and, after a violent spike, test error <b>falls a second time</b>, often below the classical sweet spot. Here it is in a high-dimensional linear model fit by the <b>minimum-norm</b> solution — the effect behind why massively over-parameterized networks generalize.</span><span class="i18n-ko">고전 이론은 테스트 오차가 모델 크기에 대해 U자형이라 말한다 — 너무 단순하면 과소적합, 너무 복잡하면 과대적합. 그러나 특징 수를 훈련점 수 <b>너머</b>로(<code>D = N</code>) 밀면, 격렬한 스파이크 뒤에 테스트 오차가 <b>다시 떨어지며</b> 종종 고전적 최적점보다 더 낮아진다. 여기서는 <b>최소 노름</b> 해로 적합한 고차원 선형 모델로 보인다 — 거대한 과매개변수 신경망이 일반화되는 이유의 배경이다.</span>
+  </p>
+
+  <div class="grid">
+    <!-- ===== LEFT ===== -->
+    <div>
+      <div class="card stage">
+        <div class="card-h"><span class="i18n-en">Error vs model size D — the double-descent curve</span><span class="i18n-ko">모델 크기 D에 따른 오차 — 이중 하강 곡선</span> <span class="hint"><span class="i18n-en">log scale</span><span class="i18n-ko">로그 스케일</span></span></div>
+        <div class="canvas-hold"><canvas id="curve" width="1310" height="600"></canvas></div>
+        <div class="legend">
+          <span><i style="background:#6ea8ff"></i><span class="i18n-en">test error (risk)</span><span class="i18n-ko">테스트 오차 (위험도)</span></span>
+          <span><i style="background:#ff6b5a"></i><span class="i18n-en">train error</span><span class="i18n-ko">훈련 오차</span></span>
+          <span><i style="background:#ffc24b"></i><span class="i18n-en">D = N threshold</span><span class="i18n-ko">D = N 임계점</span></span>
+        </div>
+      </div>
+
+      <div class="card stage">
+        <div class="card-h"><span class="i18n-en">Weight norm ‖w‖ — the mechanism</span><span class="i18n-ko">가중치 크기 ‖w‖ — 원리</span> <span class="hint"><span class="i18n-en">peaks exactly at D = N</span><span class="i18n-ko">D = N에서 정확히 최고점</span></span></div>
+        <div class="canvas-hold"><canvas id="wnorm" width="1310" height="344"></canvas></div>
+        <div class="axis-cap"><span>D = 1</span><span><span class="i18n-en">number of features D →</span><span class="i18n-ko">특징 수 D →</span></span><span id="wnDmax">D = 140</span></div>
+      </div>
+    </div>
+
+    <!-- ===== RIGHT ===== -->
+    <div>
+      <div class="card">
+        <div class="card-h"><span class="i18n-en">Controls</span><span class="i18n-ko">제어판</span></div>
+
+        <div class="ctl">
+          <div class="ctl-top">
+            <span class="ctl-name"><span class="i18n-en">Model size D</span><span class="i18n-ko">모델 크기 D</span> <span class="sub"><span class="i18n-en">features used</span><span class="i18n-ko">사용 특징 수</span></span></span>
+            <span class="ctl-val" id="DV">14</span>
+          </div>
+          <input type="range" id="Dr" min="1" max="140" step="1" value="14" aria-label="Model size D">
+        </div>
+
+        <div class="ctl">
+          <div class="ctl-top">
+            <span class="ctl-name"><span class="i18n-en">Regularization λ</span><span class="i18n-ko">정규화 λ</span> <span class="sub">L2 ridge</span></span>
+            <span class="ctl-val" id="lV">0.01</span>
+          </div>
+          <input type="range" id="lambda" min="-5" max="0.5" step="0.1" value="-2" aria-label="Regularization (log10)">
+        </div>
+
+        <div class="ctl">
+          <div class="ctl-top">
+            <span class="ctl-name"><span class="i18n-en">Noise σ</span><span class="i18n-ko">잡음 σ</span> <span class="sub"><span class="i18n-en">label noise</span><span class="i18n-ko">레이블 잡음</span></span></span>
+            <span class="ctl-val" id="sV">0.20</span>
+          </div>
+          <input type="range" id="sigma" min="0" max="0.6" step="0.01" value="0.2" aria-label="Noise">
+        </div>
+
+        <div class="ctl">
+          <div class="ctl-top">
+            <span class="ctl-name"><span class="i18n-en">Training points N</span><span class="i18n-ko">훈련점 수 N</span> <span class="sub"><span class="i18n-en">threshold D = N</span><span class="i18n-ko">임계점 D = N</span></span></span>
+            <span class="ctl-val" id="NV">30</span>
+          </div>
+          <input type="range" id="Nr" min="15" max="45" step="1" value="30" aria-label="Training points N">
+        </div>
+
+        <div class="btnrow">
+          <button class="btn wide" id="resample"><span class="i18n-en">Resample data</span><span class="i18n-ko">데이터 재표집</span></button>
+        </div>
+        <div class="noteline" id="noteLine"><span class="i18n-en">Drag D across the dashed D = N line — test error and ‖w‖ both spike, then recover.</span><span class="i18n-ko">D를 점선 D = N을 가로질러 끌어보라 — 테스트 오차와 ‖w‖가 함께 치솟았다 회복된다.</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-h"><span class="i18n-en">Measurements</span><span class="i18n-ko">측정값</span> <span id="regTag" class="sync-tag on">classical</span></div>
+        <div class="ro-grid">
+          <div class="ro"><div class="k"><span class="i18n-en">test error</span><span class="i18n-ko">테스트 오차</span></div><div class="v big" id="roTest">0.652</div></div>
+          <div class="ro"><div class="k"><span class="i18n-en">train error</span><span class="i18n-ko">훈련 오차</span></div><div class="v" id="roTrain">0.215</div></div>
+          <div class="ro"><div class="k">D / N</div><div class="v" id="roRatio">0.47</div></div>
+          <div class="ro"><div class="k"><span class="i18n-en">regime</span><span class="i18n-ko">영역</span></div><div class="v" id="roRegime">under-param</div></div>
+          <div class="ro"><div class="k"><span class="i18n-en">‖w‖ weight norm</span><span class="i18n-ko">‖w‖ 가중치 크기</span></div><div class="v" id="roW">0.99</div></div>
+          <div class="ro"><div class="k"><span class="i18n-en">peak at D ≈ N</span><span class="i18n-ko">D ≈ N 최고점</span></div><div class="v" id="roPeak">D≈30</div></div>
+        </div>
+      </div>
+
+      <div class="card try">
+        <div class="card-h"><span class="i18n-en">Things to try</span><span class="i18n-ko">해볼 것들</span></div>
+        <ol>
+          <li><span class="i18n-en"><b>The classical U:</b> in the under-parameterized zone (<span class="kbd">D &lt; N</span>) sweep <span class="kbd">D</span> — test error dips then rises, the textbook bias–variance tradeoff.</span><span class="i18n-ko"><b>고전적 U:</b> 과소매개변수 구역(<span class="kbd">D &lt; N</span>)에서 <span class="kbd">D</span>를 훑으면 테스트 오차가 내려갔다 오른다 — 교과서적 편향–분산 절충.</span></li>
+          <li><span class="i18n-en"><b>The spike:</b> set <span class="kbd">D ≈ N</span> — test error and the weight norm both explode. The model is forced to interpolate the noise with wild weights.</span><span class="i18n-ko"><b>스파이크:</b> <span class="kbd">D ≈ N</span>에서 테스트 오차와 가중치 크기가 함께 폭발한다. 모델이 요동치는 가중치로 잡음을 억지로 보간한다.</span></li>
+          <li><span class="i18n-en"><b>Second descent:</b> push <span class="kbd">D</span> far past <span class="kbd">N</span> — the minimum-norm solution stays small and test error drops again, often below the classical best.</span><span class="i18n-ko"><b>두 번째 하강:</b> <span class="kbd">D</span>를 <span class="kbd">N</span>보다 훨씬 크게 하면 최소 노름 해가 작게 유지되고 테스트 오차가 다시 떨어진다 — 종종 고전적 최적보다 낮게.</span></li>
+          <li><span class="i18n-en"><b>Regularize the peak away:</b> raise <span class="kbd">λ</span> — the spike at <span class="kbd">D = N</span> flattens. Ridge is the practical cure for interpolation blow-up.</span><span class="i18n-ko"><b>정규화로 최고점 제거:</b> <span class="kbd">λ</span>를 올리면 <span class="kbd">D = N</span>의 스파이크가 평평해진다. 릿지는 보간 폭주의 실전 해법이다.</span></li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <div class="explain">
+    <div class="ex a">
+      <h4><span class="i18n-en">Classical bias–variance</span><span class="i18n-ko">고전적 편향–분산</span></h4>
+      <p><span class="i18n-en">While <code>D &lt; N</code> the usual U holds: too few features miss the signal (bias), too many chase the noise (variance), and the sweet spot is in between. Ridge <code>λ</code> shifts that balance — the first descent is ordinary regularization at work.</span><span class="i18n-ko"><code>D &lt; N</code>인 동안에는 익숙한 U가 성립한다: 특징이 너무 적으면 신호를 놓치고(편향), 너무 많으면 잡음을 좇는다(분산), 최적점은 그 사이에 있다. 릿지 <code>λ</code>가 그 균형을 옮긴다 — 첫 번째 하강은 평범한 정규화의 작동이다.</span></p>
+    </div>
+    <div class="ex b">
+      <h4><span class="i18n-en">The interpolation threshold</span><span class="i18n-ko">보간 임계점</span></h4>
+      <p><span class="i18n-en">At <code>D = N</code> there is exactly one solution that fits every point, and it is forced through the noise — the design matrix becomes ill-conditioned, weights blow up, and test error peaks. The <code>‖w‖</code> panel spikes at exactly the same place: same cause, two views.</span><span class="i18n-ko"><code>D = N</code>에서는 모든 점을 맞추는 해가 정확히 하나뿐이고, 그것은 잡음 사이로 억지로 통과된다 — 설계 행렬이 나빠지고 가중치가 폭발하며 테스트 오차가 최고점을 찍는다. <code>‖w‖</code> 패널이 정확히 같은 지점에서 치솟는다: 같은 원인, 두 관점.</span></p>
+    </div>
+    <div class="ex c">
+      <h4><span class="i18n-en">Why big models work</span><span class="i18n-ko">큰 모델이 통하는 이유</span></h4>
+      <p><span class="i18n-en">Past <code>D = N</code> there are many exact fits; the <b>minimum-norm</b> one is smooth, so error descends a second time. It's why over-parameterized deep nets generalize, and why mild <b>regularization</b> or early stopping quietly removes the peak in practice.</span><span class="i18n-ko"><code>D = N</code>을 지나면 정확한 적합이 무수히 많고, 그중 <b>최소 노름</b> 해는 매끄럽다 — 그래서 오차가 두 번째로 하강한다. 과매개변수 심층 신경망이 일반화되는 이유이며, 실전에서 약한 <b>정규화</b>나 조기 종료가 조용히 최고점을 없애는 이유다.</span></p>
+    </div>
+  </div>
+
+  <footer><span class="i18n-en">PRISM Lab · prototype · </span><span class="i18n-ko">PRISM Lab · 프로토타입 · </span><a href="https://sswu-prism-lab.github.io" target="_blank" rel="noopener">sswu-prism-lab.github.io</a></footer>
+</div>
+
+<script>
+(() => {
+  "use strict";
+  function L(en,ko){ return document.documentElement.getAttribute('data-lang')==='ko' ? ko : en; }
+  const PAL={
+    dark:{ ink:"#e7ecff", muted:"#8493b8", line:"#26314f", grid:a=>`rgba(38,49,79,${a})`, cool:"#5eead4", sharp:"#ff6b5a", warmA:"#ffc24b", test:"#a78bff", blue:"#6ea8ff", panel:"#111a30" },
+    light:{ ink:"#141b33", muted:"#5a6488", line:"#d9e0ec", grid:a=>`rgba(150,162,190,${a})`, cool:"#12a08d", sharp:"#e04a37", warmA:"#c98a12", test:"#6d4fe0", blue:"#2f6fd6", panel:"#ffffff" }
+  };
+  let C = PAL[(window.__theme==='light')?'light':'dark'];
+  const clamp=(x,a,b)=> x<a?a : x>b?b : x;
+  const DMAX=140, R=16, DECAY=0.96;                 // features cap, averaging draws, teacher spectrum decay
+
+  const S = { D:14, lambda:1e-2, sigma:0.2, N:30,
+    draws:[], testCurve:new Float64Array(DMAX+1), trainCurve:new Float64Array(DMAX+1), wCurve:new Float64Array(DMAX+1),
+    peakD:0 };
+
+  let spare=null;
+  function gauss(){ if(spare!==null){const v=spare;spare=null;return v;}
+    let u=0; do{u=Math.random();}while(u<=1e-12); const w=Math.sqrt(-2*Math.log(u)), a=2*Math.PI*Math.random();
+    spare=w*Math.sin(a); return w*Math.cos(a); }
+
+  // R draws: X (N×DMAX Gaussian), teacher β (decaying spectrum, unit norm), clean signal Xβ, and noise ε.
+  function makeDraws(){
+    S.draws=[];
+    for(let r=0;r<R;r++){
+      const beta=new Float64Array(DMAX); let bn=0;
+      for(let p=0;p<DMAX;p++){ beta[p]=gauss()*Math.pow(DECAY,p); bn+=beta[p]*beta[p]; }
+      bn=Math.sqrt(bn); for(let p=0;p<DMAX;p++) beta[p]/=bn;
+      const X=[], sig=new Float64Array(S.N), eps=new Float64Array(S.N);
+      for(let i=0;i<S.N;i++){ const row=new Float64Array(DMAX); let dot=0;
+        for(let p=0;p<DMAX;p++){ row[p]=gauss(); dot+=row[p]*beta[p]; }
+        X.push(row); sig[i]=dot; eps[i]=gauss(); }
+      S.draws.push({X,beta,sig,eps});
+    }
+  }
+
+  // solve (G+λI)α = y, G is N×N — Gaussian elimination, partial pivot
+  function solveN(G,y,N,lam){
+    const M=[]; for(let i=0;i<N;i++){ M[i]=new Float64Array(N+1); for(let j=0;j<N;j++) M[i][j]=G[i][j]; M[i][i]+=lam; M[i][N]=y[i]; }
+    for(let c=0;c<N;c++){ let piv=c; for(let r=c+1;r<N;r++) if(Math.abs(M[r][c])>Math.abs(M[piv][c])) piv=r;
+      const t=M[c]; M[c]=M[piv]; M[piv]=t; const d=M[c][c]||1e-13;
+      for(let r=0;r<N;r++){ if(r===c) continue; const f=M[r][c]/d; if(f===0) continue; for(let k=c;k<=N;k++) M[r][k]-=f*M[c][k]; } }
+    const a=new Float64Array(N); for(let i=0;i<N;i++) a[i]=M[i][N]/(M[i][i]||1e-13); return a;
+  }
+
+  // Sweep D=1..DMAX using the dual min-norm ridge (valid for all D). Excess risk closed-form (x~N(0,I)).
+  function sweep(){
+    const N=S.N; const teA=new Float64Array(DMAX+1), trA=new Float64Array(DMAX+1), wA=new Float64Array(DMAX+1);
+    for(let r=0;r<R;r++){
+      const d=S.draws[r]; const Y=new Float64Array(N); for(let i=0;i<N;i++) Y[i]=d.sig[i]+S.sigma*d.eps[i];
+      const G=[]; for(let i=0;i<N;i++) G.push(new Float64Array(N));
+      const bproj=new Float64Array(N); let bnorm2=0;
+      for(let D=1;D<=DMAX;D++){
+        const p=D-1;
+        for(let i=0;i<N;i++){ const xi=d.X[i][p], Gi=G[i]; for(let j=0;j<N;j++) Gi[j]+=xi*d.X[j][p]; }
+        for(let i=0;i<N;i++) bproj[i]+=d.X[i][p]*d.beta[p];
+        bnorm2+=d.beta[p]*d.beta[p];
+        const al=solveN(G,Y,N,S.lambda);
+        // ||w||^2 = alpha^T G alpha ; train pred = G alpha
+        let wn2=0, tr=0;
+        for(let i=0;i<N;i++){ let s=0; const Gi=G[i]; for(let j=0;j<N;j++) s+=Gi[j]*al[j]; wn2+=al[i]*s; const e=s-Y[i]; tr+=e*e; }
+        let wb=0; for(let i=0;i<N;i++) wb+=al[i]*bproj[i];       // w·β_{1:D}
+        const excess = wn2 - 2*wb + bnorm2 + (1-bnorm2);          // ||w-β_{1:D}||² + tail(1-||β_{1:D}||²)
+        teA[D]+=excess; trA[D]+=tr/N; wA[D]+=Math.sqrt(Math.max(wn2,0));
+      }
+    }
+    let peak=0,pv=-1;
+    for(let D=1;D<=DMAX;D++){ S.testCurve[D]=teA[D]/R; S.trainCurve[D]=trA[D]/R; S.wCurve[D]=wA[D]/R;
+      if(D>=S.N-4 && D<=S.N+4 && S.testCurve[D]>pv){ pv=S.testCurve[D]; peak=D; } }
+    S.peakD=peak;
+  }
+
+  // ---------- canvases ----------
+  const cvC=document.getElementById("curve"), cxC=cvC.getContext("2d");
+  const cvW=document.getElementById("wnorm"), cxW=cvW.getContext("2d");
+  function fit(cv,ctx){ const dpr=Math.min(window.devicePixelRatio||1,2); const w=cv.clientWidth,h=cv.clientHeight;
+    cv.width=Math.round(w*dpr); cv.height=Math.round(h*dpr); ctx.setTransform(dpr,0,0,dpr,0,0); return {w,h}; }
+
+  function logCurve(ctx, cv, arrs, opts){
+    const {w,h}=fit(cv,ctx); ctx.clearRect(0,0,w,h);
+    const pl=44,pr=12,pt=12,pb=18;
+    const X=(D)=> pl+(D-1)/(DMAX-1)*(w-pl-pr);
+    let lo=1e9,hi=-1e9;
+    arrs.forEach(a=>{ for(let D=1;D<=DMAX;D++){ const v=a.data[D]; if(v>1e-9){ const l=Math.log10(v); if(l<lo)lo=l; if(l>hi)hi=l; } } });
+    if(!isFinite(lo)){lo=-2;hi=1;} lo=Math.floor(lo); hi=Math.ceil(hi); if(hi-lo<1) hi=lo+1;
+    const Y=(v)=>{ const l=Math.log10(Math.max(v,Math.pow(10,lo))); return h-pb - (l-lo)/(hi-lo)*(h-pt-pb); };
+    ctx.font='10px "JetBrains Mono", monospace'; ctx.textAlign="right"; ctx.textBaseline="middle";
+    for(let e=lo;e<=hi;e++){ const y=h-pb-(e-lo)/(hi-lo)*(h-pt-pb); ctx.strokeStyle=C.grid(.5); ctx.lineWidth=1;
+      ctx.beginPath(); ctx.moveTo(pl,y); ctx.lineTo(w-pr,y); ctx.stroke(); ctx.fillStyle=C.muted; ctx.fillText("10"+(e>=0?"+"+e:e), pl-5, y); }
+    // D=N threshold
+    const xn=X(S.N); ctx.strokeStyle="rgba(255,194,75,.6)"; ctx.setLineDash([3,3]); ctx.lineWidth=1.2;
+    ctx.beginPath(); ctx.moveTo(xn,pt); ctx.lineTo(xn,h-pb); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle=C.warmA; ctx.textAlign="center"; ctx.textBaseline="top"; ctx.fillText("D=N", xn, pt);
+    // curves
+    arrs.forEach(a=>{ ctx.strokeStyle=a.col; ctx.lineWidth=a.wid; ctx.beginPath(); let st=false;
+      for(let D=1;D<=DMAX;D++){ const v=a.data[D]; if(v<=0) continue; const px=X(D),py=Y(v); if(!st){ctx.moveTo(px,py);st=true;} else ctx.lineTo(px,py); } ctx.stroke(); });
+    // current D marker
+    const cxp=X(S.D); ctx.strokeStyle=C.grid(1); ctx.setLineDash([2,3]); ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(cxp,pt); ctx.lineTo(cxp,h-pb); ctx.stroke(); ctx.setLineDash([]);
+    const mk=arrs[0]; if(mk.data[S.D]>0){ ctx.fillStyle=mk.col; ctx.beginPath(); ctx.arc(cxp,Y(mk.data[S.D]),3.6,0,6.283); ctx.fill(); }
+    return {X,Y};
+  }
+
+  function drawAll(){
+    logCurve(cxC, cvC, [ {data:S.testCurve,col:C.blue,wid:2.4}, {data:S.trainCurve,col:C.sharp,wid:1.8} ]);
+    // legend on curve
+    cxC.font='10px "JetBrains Mono", monospace'; cxC.textAlign="left"; cxC.textBaseline="middle";
+    logCurve(cxW, cvW, [ {data:S.wCurve,col:C.cool,wid:2.4} ]);
+    updateReadouts();
+  }
+
+  function updateReadouts(){
+    const te=S.testCurve[S.D], tr=S.trainCurve[S.D], wn=S.wCurve[S.D];
+    document.getElementById("roTest").textContent = te.toFixed(3);
+    document.getElementById("roTrain").textContent = tr<0.001? tr.toExponential(1) : tr.toFixed(3);
+    document.getElementById("roRatio").textContent = (S.D/S.N).toFixed(2);
+    document.getElementById("roW").textContent = wn>=100? wn.toFixed(0) : wn.toFixed(2);
+    document.getElementById("roPeak").textContent = "D≈"+S.peakD;
+    const reg=document.getElementById("roRegime"), tag=document.getElementById("regTag");
+    if(S.D < S.N-1){ reg.textContent=L("under-param","과소"); tag.textContent=L("classical","고전"); tag.className="sync-tag on"; }
+    else if(S.D<=S.N+1){ reg.textContent=L("interpolation","보간"); tag.textContent=L("threshold","임계"); tag.className="sync-tag off"; }
+    else { reg.textContent=L("over-param","과대"); tag.textContent=L("modern","현대"); tag.className="sync-tag part"; }
+  }
+
+  function fullResweep(){ sweep(); drawAll(); }
+
+  window.__onTheme=t=>{ C=PAL[t==='light'?'light':'dark']; drawAll(); };
+  window.__onLang=()=>{ drawAll(); };
+  window.addEventListener("resize",()=>{ clearTimeout(window.__rt); window.__rt=setTimeout(drawAll,80); });
+
+  // ---------- controls (debounce heavy resweep) ----------
+  let sweepTimer=null;
+  function scheduleSweep(){ clearTimeout(sweepTimer); sweepTimer=setTimeout(fullResweep, 90); }
+  document.getElementById("Dr").addEventListener("input",e=>{ S.D=parseInt(e.target.value); document.getElementById("DV").textContent=S.D; drawAll(); });
+  document.getElementById("lambda").addEventListener("input",e=>{ S.lambda=Math.pow(10,parseFloat(e.target.value));
+    document.getElementById("lV").textContent = S.lambda>=0.01? S.lambda.toFixed(2) : S.lambda.toExponential(0); scheduleSweep(); });
+  document.getElementById("sigma").addEventListener("input",e=>{ S.sigma=parseFloat(e.target.value); document.getElementById("sV").textContent=S.sigma.toFixed(2); scheduleSweep(); });
+  document.getElementById("Nr").addEventListener("input",e=>{ S.N=parseInt(e.target.value); document.getElementById("NV").textContent=S.N;
+    if(S.D>DMAX)S.D=DMAX; makeDraws(); scheduleSweep(); });
+  document.getElementById("resample").onclick=()=>{ makeDraws(); fullResweep(); };
+
+  // ---------- init ----------
+  document.getElementById("wnDmax").textContent="D = "+DMAX;
+  document.getElementById("Dr").max=DMAX;
+  document.getElementById("lV").textContent=(1e-2).toFixed(2);
+  makeDraws(); fullResweep();
+})();
+</script>
+
+
+</body></html>
