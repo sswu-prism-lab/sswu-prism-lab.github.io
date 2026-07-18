@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<script>
+(function(){
+  function cur(){ try{ return localStorage.getItem('theme') || (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark':'light'); }catch(e){ return 'dark'; } }
+  var t=cur(); window.__theme=t; document.documentElement.setAttribute('data-theme', t);
+  try{ document.documentElement.setAttribute('data-lang', (localStorage.getItem('lang')||'en')); }catch(e){ document.documentElement.setAttribute('data-lang','en'); }
+  window.addEventListener('storage', function(e){ if(e.key==='theme'){ var n=e.newValue||'dark'; window.__theme=n; document.documentElement.setAttribute('data-theme', n); if(window.__onTheme) window.__onTheme(n); } if(e.key==='lang'){ document.documentElement.setAttribute('data-lang', e.newValue||'en'); if(window.__onLang) window.__onLang(); } });
+})();
+</script>
+<title>Convolution & Receptive Fields — PRISM Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+  :root{
+    --void:#15181e; --panel:#1d212a; --panel-2:#171b22; --line:#2e343f;
+    --ink:#e6edf3; --muted:#8b949e;
+    --cool:#5eead4; --sharp:#ff6b5a; --warm-a:#ffc24b; --warm-b:#ff5a3c; --test:#a78bff; --blue:#6ea8ff;
+    --focus:#9cc7ff;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{ background: var(--void); color:var(--ink); font-family:"Inter",system-ui,-apple-system,sans-serif; line-height:1.5;
+    -webkit-font-smoothing:antialiased; padding:24px 20px 48px; }
+  .wrap{max-width:1120px;margin:0 auto}
+  .topbar{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+  .back{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--muted);text-decoration:none;
+    border:1px solid var(--line);padding:6px 12px;border-radius:20px;transition:.14s}
+  .back:hover{color:var(--cool);border-color:var(--cool)}
+  .eyebrow{font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--cool);margin:0 0 10px;display:flex;align-items:center;gap:10px}
+  .eyebrow::before{content:"";width:22px;height:1px;background:var(--cool);opacity:.7}
+  .title{font-family:"Space Grotesk",system-ui,sans-serif;font-weight:700;font-size:clamp(28px,4.6vw,46px);
+    line-height:1.02;margin:0 0 10px;letter-spacing:-.02em}
+  .title .thin{color:var(--muted);font-weight:500}
+  .subtitle{color:var(--muted);max-width:none;margin:0 0 26px;font-size:15px}
+  .subtitle b{color:var(--ink);font-weight:600}
+  .grid{display:grid;grid-template-columns:1.62fr 1fr;gap:18px;align-items:start}
+  @media (max-width:860px){ .grid{grid-template-columns:1fr} }
+  .card{background:linear-gradient(180deg,var(--panel) 0%,var(--panel-2) 100%);
+    border:1px solid var(--line);border-radius:16px;padding:16px}
+  .card + .card{margin-top:14px}
+  .card-h{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--muted);margin:0 0 12px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .card-h .hint{color:#3f7f76;letter-spacing:.02em;text-transform:none;font-size:11px}
+  .stage{padding:14px 12px 10px}
+  .canvas-hold{position:relative;width:100%}
+  canvas{display:block;width:100%;height:auto;border-radius:8px}
+  .legend{display:flex;align-items:center;gap:14px;margin:10px 6px 2px;flex-wrap:wrap;font-family:"JetBrains Mono",monospace;
+    font-size:10.5px;color:var(--muted)}
+  .legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:middle}
+  .legend i.bar{width:14px;height:3px;border-radius:2px}
+  .axis-cap{font-family:"JetBrains Mono",monospace;font-size:10.5px;color:var(--muted);
+    display:flex;justify-content:space-between;margin:2px 6px 0}
+  .seg{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{font-family:"Inter",sans-serif;font-size:12.5px;font-weight:500;color:var(--ink);
+    background:var(--panel-2);border:1px solid var(--line);padding:7px 12px;border-radius:9px;cursor:pointer;transition:.14s}
+  .chip:hover{border-color:#3a486e}
+  .chip.active{background:var(--cool);border-color:var(--cool);color:#04231f;font-weight:600}
+  .clab{font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 7px}
+  .ctl{margin:14px 0 0}
+  .ctl-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px}
+  .ctl-name{font-size:13px;font-weight:500}
+  .ctl-name .sub{color:var(--muted);font-weight:400;font-size:12px}
+  .ctl-val{font-family:"JetBrains Mono",monospace;font-size:13px;color:var(--cool)}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:3px;
+    background:var(--line);outline:none;margin:6px 0 0}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;
+    background:var(--ink);border:2px solid var(--void);cursor:pointer;box-shadow:0 0 0 1px var(--line)}
+  input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--ink);border:2px solid var(--void);cursor:pointer}
+  .btnrow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+  .btnrow .wide{grid-column:1 / -1}
+  .btn{border:1px solid var(--line);background:var(--panel-2);color:var(--ink);font-family:"Inter",sans-serif;
+    font-size:13px;font-weight:500;padding:10px 8px;border-radius:9px;cursor:pointer;transition:.14s}
+  .btn:hover{border-color:#3a486e;background:#152238}
+  .btn:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+  .btn-primary{background:var(--cool);border-color:var(--cool);color:#04231f;font-weight:600}
+  .btn-primary:hover{filter:brightness(1.06)}
+  .btn.on{background:rgba(94,234,212,.14);border-color:var(--cool);color:var(--cool)}
+  .noteline{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--muted);margin-top:11px;min-height:16px}
+  .noteline b{color:var(--cool)}
+  .ro-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .ro{background:var(--panel);padding:10px 12px}
+  .ro .k{font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:.06em;color:var(--muted);text-transform:uppercase}
+  .ro .v{font-family:"JetBrains Mono",monospace;font-size:17px;margin-top:3px}
+  .ro .v.big{font-size:22px;color:var(--cool)}
+  .sync-tag{font-size:12px;padding:2px 8px;border-radius:20px;font-family:"Inter",sans-serif;font-weight:600}
+  .sync-tag.off{background:rgba(255,107,90,.14);color:var(--sharp)}
+  .sync-tag.part{background:rgba(255,194,75,.16);color:var(--warm-a)}
+  .sync-tag.on{background:rgba(94,234,212,.14);color:var(--cool)}
+  .try ol{margin:0;padding-left:20px;color:var(--muted);font-size:13.5px}
+  .try li{margin-bottom:6px}
+  .try li b{color:var(--ink);font-weight:600}
+  .try li .kbd{font-family:"JetBrains Mono",monospace;color:var(--cool);font-size:12.5px}
+  .explain{margin-top:26px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media (max-width:860px){ .explain{grid-template-columns:1fr} }
+  .ex{border-top:2px solid var(--line);padding-top:12px}
+  .ex.a{border-color:var(--blue)} .ex.b{border-color:var(--cool)} .ex.c{border-color:var(--sharp)}
+  .ex h4{font-family:"Space Grotesk",sans-serif;font-size:15px;margin:0 0 7px;font-weight:500}
+  .ex p{margin:0;font-size:13px;color:var(--muted)}
+  .ex code{font-family:"JetBrains Mono",monospace;color:var(--ink);font-size:12.5px;background:var(--panel);padding:1px 5px;border-radius:4px}
+  footer{margin-top:30px;color:var(--muted);font-size:12px;font-family:"JetBrains Mono",monospace;letter-spacing:.04em}
+  footer a{color:var(--cool);text-decoration:none}
+  html[data-theme="light"]{
+    --void:#ffffff; --panel:#f7f9fc; --panel-2:#eef2f8; --line:#e2e7ee;
+    --ink:#141b33; --muted:#5a6488;
+    --cool:#12a08d; --sharp:#e04a37; --warm-a:#c98a12; --warm-b:#cf4a24; --test:#6d4fe0; --blue:#2f6fd6; --focus:#2f6fd6;
+  }
+  html[data-theme="light"] body{ background: var(--void); }
+  html[data-theme="light"] .btn:hover{ border-color:#b9c4da; background:#e9eef7; }
+  html[data-lang="en"] .i18n-ko{ display:none !important; }
+  html[data-lang="ko"] .i18n-en{ display:none !important; }
+  .i18n-ko{ font-family:'Pretendard','Inter',sans-serif; word-break:keep-all; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar"><a class="back" href="index.html"><span class="i18n-en">← Playground</span><span class="i18n-ko">← 놀이터</span></a></div>
+  <p class="eyebrow"><span class="i18n-en">PRISM · Machine Learning Playground</span><span class="i18n-ko">PRISM · 머신러닝 놀이터</span></p>
+  <h1 class="title"><span class="i18n-en">Convolution &amp; Receptive Fields</span><span class="i18n-ko">합성곱과 수용 영역</span><br><span class="thin"><span class="i18n-en">One little filter, slid everywhere — and a window that grows with depth</span><span class="i18n-ko">작은 필터 하나를 사방에 미끄러뜨리고, 깊이와 함께 커지는 창</span></span></h1>
+  <p class="subtitle"><span class="i18n-en">A convolution slides one small <b>kernel</b> across the whole image, computing a weighted sum at every position. Because the same weights are reused everywhere (<b>weight sharing</b>), the layer detects a feature — an edge, a blob — wherever it appears, with very few parameters. Stack layers and each unit's <b>receptive field</b> grows, so deep units see whole objects. Pick a kernel and watch the feature map form.</span><span class="i18n-ko">합성곱은 하나의 작은 <b>커널</b>을 이미지 전체에 미끄러뜨리며 모든 위치에서 가중합을 계산한다. 같은 가중치를 어디서나 재사용하므로(<b>가중치 공유</b>), 이 층은 아주 적은 매개변수로 특징 — 에지, 덩어리 — 을 위치에 상관없이 검출한다. 층을 쌓으면 각 유닛의 <b>수용 영역</b>이 커져 깊은 유닛은 사물 전체를 본다. 커널을 고르고 특징 맵이 형성되는 것을 보라.</span></p>
+
+  <div class="grid">
+    <div>
+      <div class="card stage">
+        <div class="card-h"><span class="i18n-en">Input &nbsp;·&nbsp; kernel &nbsp;·&nbsp; feature map</span><span class="i18n-ko">입력 &nbsp;·&nbsp; 커널 &nbsp;·&nbsp; 특징 맵</span> <span class="hint" id="convHint"></span></div>
+        <div class="canvas-hold"><canvas id="conv"></canvas></div>
+        <div class="legend">
+          <span><i style="background:#6ea8ff" class="bar"></i><span class="i18n-en">sliding 3×3 window</span><span class="i18n-ko">움직이는 3×3 창</span></span>
+          <span><i style="background:#5eead4" class="bar"></i><span class="i18n-en">output pixel</span><span class="i18n-ko">출력 픽셀</span></span>
+        </div>
+      </div>
+      <div class="card stage">
+        <div class="card-h"><span class="i18n-en">Receptive field grows with depth</span><span class="i18n-ko">깊이에 따라 커지는 수용 영역</span> <span class="hint" id="rfHint"></span></div>
+        <div class="canvas-hold"><canvas id="rf"></canvas></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <div class="card-h"><span class="i18n-en">Controls</span><span class="i18n-ko">제어판</span></div>
+        <p class="clab"><span class="i18n-en">Kernel</span><span class="i18n-ko">커널</span></p>
+        <div class="seg" id="kernSeg">
+          <button class="chip active" data-k="edgex"><span class="i18n-en">Edge ↔</span><span class="i18n-ko">에지 ↔</span></button>
+          <button class="chip" data-k="edgey"><span class="i18n-en">Edge ↕</span><span class="i18n-ko">에지 ↕</span></button>
+          <button class="chip" data-k="sharp"><span class="i18n-en">Sharpen</span><span class="i18n-ko">샤픈</span></button>
+          <button class="chip" data-k="blur"><span class="i18n-en">Blur</span><span class="i18n-ko">블러</span></button>
+          <button class="chip" data-k="emboss"><span class="i18n-en">Emboss</span><span class="i18n-ko">엠보스</span></button>
+          <button class="chip" data-k="id"><span class="i18n-en">Identity</span><span class="i18n-ko">항등</span></button>
+        </div>
+        <div class="ctl">
+          <div class="ctl-top"><span class="ctl-name"><span class="i18n-en">Stacked layers</span><span class="i18n-ko">쌓은 층 수</span> <span class="sub"><span class="i18n-en">receptive field = 2L+1</span><span class="i18n-ko">수용 영역 = 2L+1</span></span></span><span class="ctl-val" id="layV">4</span></div>
+          <input type="range" id="layers" min="1" max="10" step="1" value="4" aria-label="Layers" />
+        </div>
+        <p class="clab" style="margin-top:14px"><span class="i18n-en">Input pattern</span><span class="i18n-ko">입력 패턴</span></p>
+        <div class="seg" id="imgSeg">
+          <button class="chip active" data-i="shapes"><span class="i18n-en">Shapes</span><span class="i18n-ko">도형</span></button>
+          <button class="chip" data-i="stripes"><span class="i18n-en">Stripes</span><span class="i18n-ko">줄무늬</span></button>
+          <button class="chip" data-i="dot"><span class="i18n-en">Spot</span><span class="i18n-ko">점</span></button>
+        </div>
+        <div class="btnrow">
+          <button class="btn btn-primary wide" id="run">❚❚ Pause scan</button>
+        </div>
+        <div class="noteline" id="noteLine"><span class="i18n-en">The window slides; each output pixel is one weighted sum of the patch under it.</span><span class="i18n-ko">창이 미끄러지고, 각 출력 픽셀은 그 아래 패치의 가중합 하나입니다.</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-h"><span class="i18n-en">Kernel weights (3×3)</span><span class="i18n-ko">커널 가중치 (3×3)</span> <span id="tag" class="sync-tag part" style="text-transform:none"></span></div>
+        <div class="canvas-hold"><canvas id="kern" style="height:150px"></canvas></div>
+      </div>
+
+      <div class="card try">
+        <div class="card-h"><span class="i18n-en">Things to try</span><span class="i18n-ko">해볼 것들</span></div>
+        <ol>
+          <li><span class="i18n-en"><b>Edge detectors:</b> <span class="kbd">Edge ↔</span> lights up vertical edges, <span class="kbd">Edge ↕</span> horizontal ones — the same filter fires wherever that edge appears.</span><span class="i18n-ko"><b>에지 검출기:</b> <span class="kbd">에지 ↔</span>는 수직 에지를, <span class="kbd">에지 ↕</span>는 수평 에지를 밝힌다 — 같은 필터가 그 에지가 있는 곳마다 반응한다.</span></li>
+          <li><span class="i18n-en"><b>Weight sharing:</b> this whole map uses just 9 numbers. That parameter efficiency is why CNNs scale to images.</span><span class="i18n-ko"><b>가중치 공유:</b> 이 전체 맵은 단 9개의 숫자만 쓴다. 그 매개변수 효율성이 CNN이 이미지로 확장되는 이유다.</span></li>
+          <li><span class="i18n-en"><b>Depth = context:</b> raise <span class="kbd">Stacked layers</span> — the receptive field grows, so a deep unit combines many edges into a shape.</span><span class="i18n-ko"><b>깊이 = 맥락:</b> <span class="kbd">쌓은 층 수</span>를 올리면 수용 영역이 커져, 깊은 유닛이 여러 에지를 하나의 도형으로 합친다.</span></li>
+          <li><span class="i18n-en"><b>Stripes:</b> switch the input to <span class="kbd">Stripes</span> and compare edge kernels — orientation selectivity, just like early visual cortex.</span><span class="i18n-ko"><b>줄무늬:</b> 입력을 <span class="kbd">줄무늬</span>로 바꿔 에지 커널을 비교하라 — 방향 선택성, 초기 시각 피질과 똑같다.</span></li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <div class="explain">
+    <div class="ex a">
+      <h4><span class="i18n-en">Slide, don't reconnect</span><span class="i18n-ko">재연결이 아니라 미끄러뜨리기</span></h4>
+      <p><span class="i18n-en">A dense layer would learn a separate weight for every pixel pair. A convolution reuses one small kernel at every location, so it needs far fewer parameters and is <b>translation-equivariant</b> — a feature detected in one corner is detected in all of them.</span><span class="i18n-ko">밀집 층은 모든 픽셀 쌍마다 별도의 가중치를 배운다. 합성곱은 하나의 작은 커널을 모든 위치에서 재사용하므로 훨씬 적은 매개변수로 충분하고 <b>이동 등변</b>이다 — 한 구석에서 검출된 특징은 모든 구석에서 검출된다.</span></p>
+    </div>
+    <div class="ex b">
+      <h4><span class="i18n-en">Receptive fields</span><span class="i18n-ko">수용 영역</span></h4>
+      <p><span class="i18n-en">One 3×3 layer sees a 3×3 patch. Stack <code>L</code> of them and a unit sees a <code>(2L+1)×(2L+1)</code> region of the input. Depth turns local edge detectors into detectors of textures, parts, and finally whole objects.</span><span class="i18n-ko">3×3 층 하나는 3×3 패치를 본다. <code>L</code>개를 쌓으면 한 유닛이 입력의 <code>(2L+1)×(2L+1)</code> 영역을 본다. 깊이는 국소 에지 검출기를 질감·부분, 마침내 사물 전체의 검출기로 바꾼다.</span></p>
+    </div>
+    <div class="ex c">
+      <h4><span class="i18n-en">Where it's used</span><span class="i18n-ko">쓰이는 곳</span></h4>
+      <p><span class="i18n-en">Convolutions are the backbone of medical-image models — tumor segmentation on MRI/CT, cell detection in pathology, lesion classification — precisely because a diagnostic feature can appear anywhere in the scan and weight sharing finds it everywhere.</span><span class="i18n-ko">합성곱은 의료 영상 모델의 근간이다 — MRI/CT 종양 분할, 병리 세포 검출, 병변 분류 — 진단 특징이 스캔의 어디에나 나타날 수 있고 가중치 공유가 그것을 어디서나 찾아내기 때문이다.</span></p>
+    </div>
+  </div>
+  <footer><span class="i18n-en">PRISM Lab · prototype · </span><span class="i18n-ko">PRISM Lab · 프로토타입 · </span><a href="https://sswu-prism-lab.github.io" target="_blank" rel="noopener">sswu-prism-lab.github.io</a></footer>
+</div>
+
+<style>#conv{height:300px}#rf{height:172px}</style>
+<script>
+(() => {
+  "use strict";
+  function L(en,ko){ return document.documentElement.getAttribute('data-lang')==='ko' ? ko : en; }
+  const PAL={ dark:{ink:"#e7ecff",muted:"#8493b8",line:"#26314f",grid:a=>`rgba(38,49,79,${a})`,cool:"#5eead4",sharp:"#ff6b5a",blue:"#6ea8ff",warmA:"#ffc24b",bg:"#0e1424"},
+    light:{ink:"#141b33",muted:"#5a6488",line:"#d9e0ec",grid:a=>`rgba(150,162,190,${a})`,cool:"#12a08d",sharp:"#e04a37",blue:"#2f6fd6",warmA:"#c98a12",bg:"#eef2f8"} };
+  let C=PAL[(window.__theme==='light')?'light':'dark'];
+  const clamp=(x,a,b)=>x<a?a:x>b?b:x;
+  const reduceMotion=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const N=24;
+  const KERN={ edgex:[-1,0,1,-2,0,2,-1,0,1], edgey:[-1,-2,-1,0,0,0,1,2,1], sharp:[0,-1,0,-1,5,-1,0,-1,0], blur:[1,1,1,1,1,1,1,1,1].map(v=>v/9), emboss:[-2,-1,0,-1,1,1,0,1,2], id:[0,0,0,0,1,0,0,0,0] };
+  const S={ kernel:"edgex", img:"shapes", layers:4, running:true, cur:0, in:[], out:[] };
+
+  function makeImg(){ const a=new Float64Array(N*N);
+    for(let y=0;y<N;y++)for(let x=0;x<N;x++){ let v=0.14;
+      if(S.img==="shapes"){ const dx=x-8,dy=y-9; if(dx*dx+dy*dy<26)v=0.85; if(x>=13&&x<=20&&y>=5&&y<=18)v=Math.max(v,0.55); if(Math.abs((x-2)-(y-2))<1.2)v=Math.max(v,0.9); }
+      else if(S.img==="stripes"){ v=0.5+0.42*Math.sign(Math.sin((x+y)*0.9)); }
+      else { const dx=x-12,dy=y-12; v=0.15+0.8*Math.exp(-(dx*dx+dy*dy)/18); }
+      a[y*N+x]=clamp(v,0,1);
+    } S.in=a;
+  }
+  function convolve(src,k){ const out=new Float64Array(N*N);
+    for(let y=0;y<N;y++)for(let x=0;x<N;x++){ let s=0,idx=0;
+      for(let dy=-1;dy<=1;dy++)for(let dx=-1;dx<=1;dx++){ const yy=clamp(y+dy,0,N-1),xx=clamp(x+dx,0,N-1); s+=src[yy*N+xx]*k[idx++]; }
+      out[y*N+x]=s; } return out;
+  }
+  function recompute(){ S.out=convolve(S.in,KERN[S.kernel]); S.cur=0; }
+
+  const cvC=document.getElementById("conv"),cxC=cvC.getContext("2d");
+  const cvR=document.getElementById("rf"),cxR=cvR.getContext("2d");
+  const cvK=document.getElementById("kern"),cxK=cvK.getContext("2d");
+  function fit(cv,ctx){const dpr=Math.min(window.devicePixelRatio||1,2),w=cv.clientWidth,h=cv.clientHeight;cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);return{w,h};}
+  function gray(v){ const g=Math.round(clamp(v,0,1)*255); return `rgb(${g},${g},${g})`; }
+  function signed(v){ // for feature maps: -..+ → blue..black..red-ish, use diverging
+    const t=clamp(v*0.5+0.5,0,1); const r=Math.round(255*t+40*(1-t)), g=Math.round(120), b=Math.round(255*(1-t)+40*t); return `rgb(${r},${g},${b})`;
+  }
+  function drawGrid(ctx,px,py,cell,data,mode){ for(let y=0;y<N;y++)for(let x=0;x<N;x++){ const v=data[y*N+x];
+    ctx.fillStyle = mode==="in"?gray(v):signed(v); ctx.fillRect(px+x*cell,py+y*cell,cell+0.5,cell+0.5); } }
+
+  function drawConv(){ const {w,h}=fit(cvC,cxC); cxC.clearRect(0,0,w,h);
+    const pad=10, gap=44; const cell=Math.min((w-2*pad-gap)/(2*N), (h-24)/N); const gw=cell*N;
+    const px1=pad+((w-2*pad-gap)/2-gw)/2, py=12;
+    const px2=w-pad-((w-2*pad-gap)/2-gw)/2-gw;
+    // labels
+    cxC.fillStyle=C.muted;cxC.font='10px "JetBrains Mono",monospace';cxC.textAlign="center";cxC.textBaseline="bottom";
+    cxC.fillText(L("input","입력"),px1+gw/2,py-1); cxC.fillText(L("feature map","특징 맵"),px2+gw/2,py-1);
+    drawGrid(cxC,px1,py,cell,S.in,"in");
+    drawGrid(cxC,px2,py,cell,S.out,"out");
+    // sliding window on input + output pixel
+    const cy=Math.floor(S.cur/N), cx=S.cur%N;
+    cxC.strokeStyle=C.blue;cxC.lineWidth=2;cxC.strokeRect(px1+(cx-1)*cell,py+(cy-1)*cell,cell*3,cell*3);
+    cxC.strokeStyle=C.cool;cxC.lineWidth=2;cxC.strokeRect(px2+cx*cell,py+cy*cell,cell,cell);
+    // arrow
+    cxC.strokeStyle=C.muted;cxC.lineWidth=1.4; const ay=py+gw/2; cxC.beginPath();cxC.moveTo(px1+gw+8,ay);cxC.lineTo(px2-8,ay);cxC.stroke();
+    cxC.beginPath();cxC.moveTo(px2-8,ay);cxC.lineTo(px2-14,ay-4);cxC.lineTo(px2-14,ay+4);cxC.closePath();cxC.fillStyle=C.muted;cxC.fill();
+    cxC.fillStyle=C.muted;cxC.textBaseline="middle";cxC.fillText("∗",(px1+gw+px2)/2,ay-12);
+  }
+  function drawRF(){ const {w,h}=fit(cvR,cxR); cxR.clearRect(0,0,w,h);
+    const pad=8; const cell=Math.min((w-2*pad)/N,(h-20)/N); const gw=cell*N; const px=(w-gw)/2, py=8;
+    cxR.strokeStyle=C.grid(.8);cxR.lineWidth=1; cxR.strokeRect(px,py,gw,gw);
+    // faint grid
+    cxR.strokeStyle=C.grid(.4); for(let i=1;i<N;i+=3){cxR.beginPath();cxR.moveTo(px+i*cell,py);cxR.lineTo(px+i*cell,py+gw);cxR.moveTo(px,py+i*cell);cxR.lineTo(px+gw,py+i*cell);cxR.stroke();}
+    // concentric receptive fields for layers 1..L centered
+    const cxp=px+gw/2, cyp=py+gw/2;
+    for(let l=1;l<=S.layers;l++){ const r=(2*l+1)/2*cell; const a=0.12+0.5*(l/S.layers);
+      cxR.strokeStyle=`rgba(94,234,212,${a})`;cxR.lineWidth=1.6;cxR.strokeRect(cxp-r,cyp-r,2*r,2*r); }
+    cxR.fillStyle=C.cool;cxR.beginPath();cxR.arc(cxp,cyp,3,0,6.283);cxR.fill();
+    cxR.fillStyle=C.muted;cxR.font='9.5px "JetBrains Mono",monospace';cxR.textAlign="center";cxR.textBaseline="top";
+    cxR.fillText(L(`a depth-${S.layers} unit sees a ${2*S.layers+1}×${2*S.layers+1} patch`,`깊이 ${S.layers} 유닛은 ${2*S.layers+1}×${2*S.layers+1} 패치를 본다`),w/2,py+gw+3);
+  }
+  function drawKern(){ const {w,h}=fit(cvK,cxK); cxK.clearRect(0,0,w,h);
+    const k=KERN[S.kernel]; const cell=Math.min((w-20)/3,(h-10)/3); const gw=cell*3; const px=(w-gw)/2,py=(h-gw)/2;
+    let mx=0; for(const v of k)mx=Math.max(mx,Math.abs(v)); mx=mx||1;
+    for(let i=0;i<9;i++){ const r=i/3|0,c=i%3; const v=k[i]; const t=v/mx;
+      const col = v>0?`rgba(94,234,212,${0.15+0.5*Math.abs(t)})`:(v<0?`rgba(255,107,90,${0.15+0.5*Math.abs(t)})`:"transparent");
+      cxK.fillStyle=col;cxK.fillRect(px+c*cell,py+r*cell,cell-2,cell-2);
+      cxK.strokeStyle=C.grid(1);cxK.lineWidth=1;cxK.strokeRect(px+c*cell,py+r*cell,cell-2,cell-2);
+      cxK.fillStyle=C.ink;cxK.font='600 12px "JetBrains Mono",monospace';cxK.textAlign="center";cxK.textBaseline="middle";
+      cxK.fillText((Math.round(v*100)/100).toString(),px+c*cell+cell/2-1,py+r*cell+cell/2-1);
+    }
+  }
+  function drawAll(){ drawConv(); drawRF(); drawKern(); updateRO(); }
+  const KNAME={edgex:["Edge ↔ (Sobel-x)","에지 ↔ (Sobel-x)"],edgey:["Edge ↕ (Sobel-y)","에지 ↕ (Sobel-y)"],sharp:["Sharpen","샤픈"],blur:["Blur (box)","블러 (박스)"],emboss:["Emboss","엠보스"],id:["Identity","항등"]};
+  function updateRO(){ document.getElementById("convHint").textContent="24×24 · 3×3";
+    document.getElementById("rfHint").textContent="L="+S.layers+" → "+(2*S.layers+1)+"×"+(2*S.layers+1);
+    document.getElementById("tag").textContent=L(KNAME[S.kernel][0],KNAME[S.kernel][1]); }
+  window.__onTheme=t=>{C=PAL[t==='light'?'light':'dark'];drawAll();};
+  window.__onLang=()=>{syncLabel();drawAll();};
+  function syncLabel(){document.getElementById("run").textContent=S.running?L("❚❚ Pause scan","❚❚ 스캔 정지"):L("▶ Scan","▶ 스캔");}
+
+  let raf=null;
+  function loop(){ if(!S.running){raf=null;return;} S.cur=(S.cur+1)%(N*N); drawConv(); raf=requestAnimationFrame(loop); }
+  function setRun(on){S.running=on;syncLabel();if(on&&!raf)raf=requestAnimationFrame(loop);else if(!on){raf=null;drawConv();}}
+
+  document.getElementById("kernSeg").addEventListener("click",e=>{const b=e.target.closest(".chip");if(!b)return;[...e.currentTarget.children].forEach(c=>c.classList.remove("active"));b.classList.add("active");S.kernel=b.dataset.k;recompute();drawAll();});
+  document.getElementById("imgSeg").addEventListener("click",e=>{const b=e.target.closest(".chip");if(!b)return;[...e.currentTarget.children].forEach(c=>c.classList.remove("active"));b.classList.add("active");S.img=b.dataset.i;makeImg();recompute();drawAll();});
+  document.getElementById("layers").addEventListener("input",e=>{S.layers=parseInt(e.target.value);document.getElementById("layV").textContent=S.layers;drawRF();updateRO();});
+  document.getElementById("run").onclick=()=>setRun(!S.running);
+  window.addEventListener("resize",()=>{clearTimeout(window.__rt);window.__rt=setTimeout(drawAll,80);});
+
+  makeImg(); recompute(); drawAll(); syncLabel();
+  if(!reduceMotion) setRun(true); else S.running=false, syncLabel();
+})();
+</script>
+</body>
+</html>

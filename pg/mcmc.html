@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<script>
+(function(){
+  function cur(){ try{ return localStorage.getItem('theme') || (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark':'light'); }catch(e){ return 'dark'; } }
+  var t=cur(); window.__theme=t; document.documentElement.setAttribute('data-theme', t);
+  try{ document.documentElement.setAttribute('data-lang', (localStorage.getItem('lang')||'en')); }catch(e){ document.documentElement.setAttribute('data-lang','en'); }
+  window.addEventListener('storage', function(e){ if(e.key==='theme'){ var n=e.newValue||'dark'; window.__theme=n; document.documentElement.setAttribute('data-theme', n); if(window.__onTheme) window.__onTheme(n); } if(e.key==='lang'){ document.documentElement.setAttribute('data-lang', e.newValue||'en'); if(window.__onLang) window.__onLang(); } });
+})();
+</script>
+<title>MCMC · Metropolis–Hastings — PRISM Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+  :root{
+    --void:#15181e; --panel:#1d212a; --panel-2:#171b22; --line:#2e343f;
+    --ink:#e6edf3; --muted:#8b949e;
+    --cool:#5eead4; --sharp:#ff6b5a; --warm-a:#ffc24b; --warm-b:#ff5a3c; --test:#a78bff; --blue:#6ea8ff;
+    --focus:#9cc7ff;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{ background: var(--void); color:var(--ink); font-family:"Inter",system-ui,-apple-system,sans-serif; line-height:1.5;
+    -webkit-font-smoothing:antialiased; padding:24px 20px 48px; }
+  .wrap{max-width:1120px;margin:0 auto}
+  .topbar{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+  .back{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--muted);text-decoration:none;
+    border:1px solid var(--line);padding:6px 12px;border-radius:20px;transition:.14s}
+  .back:hover{color:var(--cool);border-color:var(--cool)}
+  .eyebrow{font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--cool);margin:0 0 10px;display:flex;align-items:center;gap:10px}
+  .eyebrow::before{content:"";width:22px;height:1px;background:var(--cool);opacity:.7}
+  .title{font-family:"Space Grotesk",system-ui,sans-serif;font-weight:700;font-size:clamp(28px,4.6vw,46px);
+    line-height:1.02;margin:0 0 10px;letter-spacing:-.02em}
+  .title .thin{color:var(--muted);font-weight:500}
+  .subtitle{color:var(--muted);max-width:none;margin:0 0 26px;font-size:15px}
+  .subtitle b{color:var(--ink);font-weight:600}
+  .grid{display:grid;grid-template-columns:1.62fr 1fr;gap:18px;align-items:start}
+  @media (max-width:860px){ .grid{grid-template-columns:1fr} }
+  .card{background:linear-gradient(180deg,var(--panel) 0%,var(--panel-2) 100%);
+    border:1px solid var(--line);border-radius:16px;padding:16px}
+  .card + .card{margin-top:14px}
+  .card-h{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--muted);margin:0 0 12px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .card-h .hint{color:#3f7f76;letter-spacing:.02em;text-transform:none;font-size:11px}
+  .stage{padding:14px 12px 10px}
+  .canvas-hold{position:relative;width:100%}
+  canvas{display:block;width:100%;height:auto;border-radius:8px}
+  .legend{display:flex;align-items:center;gap:14px;margin:10px 6px 2px;flex-wrap:wrap;font-family:"JetBrains Mono",monospace;
+    font-size:10.5px;color:var(--muted)}
+  .legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:middle}
+  .legend i.bar{width:14px;height:3px;border-radius:2px}
+  .axis-cap{font-family:"JetBrains Mono",monospace;font-size:10.5px;color:var(--muted);
+    display:flex;justify-content:space-between;margin:2px 6px 0}
+  .seg{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{font-family:"Inter",sans-serif;font-size:12.5px;font-weight:500;color:var(--ink);
+    background:var(--panel-2);border:1px solid var(--line);padding:7px 12px;border-radius:9px;cursor:pointer;transition:.14s}
+  .chip:hover{border-color:#3a486e}
+  .chip.active{background:var(--cool);border-color:var(--cool);color:#04231f;font-weight:600}
+  .clab{font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 7px}
+  .ctl{margin:14px 0 0}
+  .ctl-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px}
+  .ctl-name{font-size:13px;font-weight:500}
+  .ctl-name .sub{color:var(--muted);font-weight:400;font-size:12px}
+  .ctl-val{font-family:"JetBrains Mono",monospace;font-size:13px;color:var(--cool)}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:3px;
+    background:var(--line);outline:none;margin:6px 0 0}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;
+    background:var(--ink);border:2px solid var(--void);cursor:pointer;box-shadow:0 0 0 1px var(--line)}
+  input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--ink);border:2px solid var(--void);cursor:pointer}
+  .btnrow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+  .btnrow .wide{grid-column:1 / -1}
+  .btn{border:1px solid var(--line);background:var(--panel-2);color:var(--ink);font-family:"Inter",sans-serif;
+    font-size:13px;font-weight:500;padding:10px 8px;border-radius:9px;cursor:pointer;transition:.14s}
+  .btn:hover{border-color:#3a486e;background:#152238}
+  .btn:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+  .btn-primary{background:var(--cool);border-color:var(--cool);color:#04231f;font-weight:600}
+  .btn-primary:hover{filter:brightness(1.06)}
+  .btn.on{background:rgba(94,234,212,.14);border-color:var(--cool);color:var(--cool)}
+  .noteline{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--muted);margin-top:11px;min-height:16px}
+  .noteline b{color:var(--cool)}
+  .ro-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .ro{background:var(--panel);padding:10px 12px}
+  .ro .k{font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:.06em;color:var(--muted);text-transform:uppercase}
+  .ro .v{font-family:"JetBrains Mono",monospace;font-size:17px;margin-top:3px}
+  .ro .v.big{font-size:22px;color:var(--cool)}
+  .sync-tag{font-size:12px;padding:2px 8px;border-radius:20px;font-family:"Inter",sans-serif;font-weight:600}
+  .sync-tag.off{background:rgba(255,107,90,.14);color:var(--sharp)}
+  .sync-tag.part{background:rgba(255,194,75,.16);color:var(--warm-a)}
+  .sync-tag.on{background:rgba(94,234,212,.14);color:var(--cool)}
+  .try ol{margin:0;padding-left:20px;color:var(--muted);font-size:13.5px}
+  .try li{margin-bottom:6px}
+  .try li b{color:var(--ink);font-weight:600}
+  .try li .kbd{font-family:"JetBrains Mono",monospace;color:var(--cool);font-size:12.5px}
+  .explain{margin-top:26px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media (max-width:860px){ .explain{grid-template-columns:1fr} }
+  .ex{border-top:2px solid var(--line);padding-top:12px}
+  .ex.a{border-color:var(--blue)} .ex.b{border-color:var(--cool)} .ex.c{border-color:var(--sharp)}
+  .ex h4{font-family:"Space Grotesk",sans-serif;font-size:15px;margin:0 0 7px;font-weight:500}
+  .ex p{margin:0;font-size:13px;color:var(--muted)}
+  .ex code{font-family:"JetBrains Mono",monospace;color:var(--ink);font-size:12.5px;background:var(--panel);padding:1px 5px;border-radius:4px}
+  footer{margin-top:30px;color:var(--muted);font-size:12px;font-family:"JetBrains Mono",monospace;letter-spacing:.04em}
+  footer a{color:var(--cool);text-decoration:none}
+  html[data-theme="light"]{
+    --void:#ffffff; --panel:#f7f9fc; --panel-2:#eef2f8; --line:#e2e7ee;
+    --ink:#141b33; --muted:#5a6488;
+    --cool:#12a08d; --sharp:#e04a37; --warm-a:#c98a12; --warm-b:#cf4a24; --test:#6d4fe0; --blue:#2f6fd6; --focus:#2f6fd6;
+  }
+  html[data-theme="light"] body{ background: var(--void); }
+  html[data-theme="light"] .btn:hover{ border-color:#b9c4da; background:#e9eef7; }
+  html[data-lang="en"] .i18n-ko{ display:none !important; }
+  html[data-lang="ko"] .i18n-en{ display:none !important; }
+  .i18n-ko{ font-family:'Pretendard','Inter',sans-serif; word-break:keep-all; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar"><a class="back" href="index.html"><span class="i18n-en">← Playground</span><span class="i18n-ko">← 놀이터</span></a></div>
+  <p class="eyebrow"><span class="i18n-en">PRISM · Machine Learning Playground</span><span class="i18n-ko">PRISM · 머신러닝 놀이터</span></p>
+  <h1 class="title"><span class="i18n-en">MCMC · Metropolis–Hastings</span><span class="i18n-ko">MCMC · 메트로폴리스–헤이스팅스</span><br><span class="thin"><span class="i18n-en">Sample a distribution you can't integrate, with a guided random walk</span><span class="i18n-ko">적분할 수 없는 분포를, 안내된 무작위 걸음으로 표집한다</span></span></h1>
+  <p class="subtitle"><span class="i18n-en">Often you can compute a distribution's density up to a constant but can't integrate it — so you can't sample directly. <b>Metropolis–Hastings</b> builds a random walk that visits each region in proportion to its probability: <b>propose</b> a nearby move, then <b>accept</b> it with probability <code>min(1, p(x′)/p(x))</code> — always step uphill, sometimes step down. Over time the walker's footprints <b>are</b> the distribution. Watch the samples fill it in.</span><span class="i18n-ko">흔히 분포의 밀도를 상수배까지는 계산할 수 있지만 적분은 못 해 — 직접 표집할 수 없다. <b>메트로폴리스–헤이스팅스</b>는 각 영역을 그 확률에 비례해 방문하는 무작위 걸음을 만든다: 가까운 이동을 <b>제안</b>하고, 확률 <code>min(1, p(x′)/p(x))</code>로 <b>수락</b>한다 — 언제나 오르막으로, 때로는 내리막으로. 시간이 지나면 걸음꾼의 발자국이 곧 분포다. 표본이 채워지는 것을 보라.</span></p>
+
+  <div class="grid">
+    <div>
+      <div class="card stage">
+        <div class="card-h"><span class="i18n-en">The chain &amp; its samples</span><span class="i18n-ko">체인과 그 표본</span> <span class="hint">x′ = x + σ·z</span></div>
+        <div class="canvas-hold"><canvas id="chain"></canvas></div>
+        <div class="legend">
+          <span><i style="background:#a78bff"></i><span class="i18n-en">target density</span><span class="i18n-ko">목표 밀도</span></span>
+          <span><i style="background:#5eead4"></i><span class="i18n-en">accepted samples</span><span class="i18n-ko">수락된 표본</span></span>
+          <span><i style="background:#ffc24b"></i><span class="i18n-en">current walker</span><span class="i18n-ko">현재 걸음꾼</span></span>
+        </div>
+      </div>
+      <div class="card stage">
+        <div class="card-h"><span class="i18n-en">Marginal — samples vs truth</span><span class="i18n-ko">주변분포 — 표본 vs 진실</span> <span class="hint"><span class="i18n-en">x-coordinate</span><span class="i18n-ko">x좌표</span></span></div>
+        <div class="canvas-hold"><canvas id="marg"></canvas></div>
+        <div class="axis-cap"><span>x = −2.2</span><span>0</span><span>x = +2.2</span></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <div class="card-h"><span class="i18n-en">Controls</span><span class="i18n-ko">제어판</span></div>
+        <p class="clab"><span class="i18n-en">Target distribution</span><span class="i18n-ko">목표 분포</span></p>
+        <div class="seg" id="tgtSeg">
+          <button class="chip active" data-t="bimodal"><span class="i18n-en">Two modes</span><span class="i18n-ko">두 봉우리</span></button>
+          <button class="chip" data-t="ring"><span class="i18n-en">Ring</span><span class="i18n-ko">고리</span></button>
+          <button class="chip" data-t="banana"><span class="i18n-en">Banana</span><span class="i18n-ko">바나나</span></button>
+        </div>
+        <div class="ctl">
+          <div class="ctl-top"><span class="ctl-name"><span class="i18n-en">Proposal step σ</span><span class="i18n-ko">제안 스텝 σ</span> <span class="sub"><span class="i18n-en">jump size</span><span class="i18n-ko">도약 크기</span></span></span><span class="ctl-val" id="stepV">0.35</span></div>
+          <input type="range" id="step" min="0.03" max="1.6" step="0.01" value="0.35" aria-label="Proposal step" />
+        </div>
+        <div class="btnrow">
+          <button class="btn btn-primary wide" id="run">❚❚ Pause</button>
+          <button class="btn"><span class="i18n-en" id="speedLab">Speed: 1×</span></button>
+          <button class="btn" id="reset"><span class="i18n-en">Reset</span><span class="i18n-ko">초기화</span></button>
+        </div>
+        <div class="noteline" id="noteLine"><span class="i18n-en">Watch the acceptance rate: aim near ~25–50% for good mixing.</span><span class="i18n-ko">수락률을 보세요: 좋은 혼합을 위해 ~25–50% 근처를 목표로.</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-h"><span class="i18n-en">Measurements</span><span class="i18n-ko">측정값</span> <span id="tag" class="sync-tag part">–</span></div>
+        <div class="ro-grid">
+          <div class="ro"><div class="k"><span class="i18n-en">acceptance rate</span><span class="i18n-ko">수락률</span></div><div class="v big" id="roAcc">–</div></div>
+          <div class="ro"><div class="k"><span class="i18n-en">samples</span><span class="i18n-ko">표본 수</span></div><div class="v" id="roN">–</div></div>
+          <div class="ro"><div class="k"><span class="i18n-en">proposals</span><span class="i18n-ko">제안 수</span></div><div class="v" id="roProp">–</div></div>
+          <div class="ro"><div class="k"><span class="i18n-en">step σ</span><span class="i18n-ko">스텝 σ</span></div><div class="v" id="roStep">–</div></div>
+        </div>
+      </div>
+
+      <div class="card try">
+        <div class="card-h"><span class="i18n-en">Things to try</span><span class="i18n-ko">해볼 것들</span></div>
+        <ol>
+          <li><span class="i18n-en"><b>Step too small:</b> drop <span class="kbd">σ</span> low — nearly every move is accepted, but the walker crawls and mixes slowly.</span><span class="i18n-ko"><b>스텝이 너무 작으면:</b> <span class="kbd">σ</span>를 낮추면 거의 모든 이동이 수락되지만, 걸음꾼이 기어가며 느리게 섞인다.</span></li>
+          <li><span class="i18n-en"><b>Step too big:</b> raise <span class="kbd">σ</span> high — most proposals land in low probability and get rejected, so the chain gets stuck.</span><span class="i18n-ko"><b>스텝이 너무 크면:</b> <span class="kbd">σ</span>를 높이면 대부분의 제안이 낮은 확률에 떨어져 기각되고, 체인이 멈춘다.</span></li>
+          <li><span class="i18n-en"><b>Crossing modes:</b> with <span class="kbd">Two modes</span>, a tiny step traps the walker in one mode — bigger jumps are needed to hop between them.</span><span class="i18n-ko"><b>봉우리 넘기:</b> <span class="kbd">두 봉우리</span>에서 작은 스텝은 걸음꾼을 한 봉우리에 가둔다 — 사이를 넘으려면 더 큰 도약이 필요하다.</span></li>
+          <li><span class="i18n-en"><b>Hard geometry:</b> the <span class="kbd">Banana</span> shows why curved targets are tough — a single step size can't fit both the narrow and wide directions.</span><span class="i18n-ko"><b>어려운 기하:</b> <span class="kbd">바나나</span>는 휜 목표가 왜 어려운지 보여준다 — 하나의 스텝 크기로는 좁은 방향과 넓은 방향을 모두 맞출 수 없다.</span></li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <div class="explain">
+    <div class="ex a">
+      <h4><span class="i18n-en">Detailed balance</span><span class="i18n-ko">상세 균형</span></h4>
+      <p><span class="i18n-en">The accept rule <code>min(1, p(x′)/p(x))</code> is chosen so the chain satisfies <b>detailed balance</b> with the target as its stationary distribution. Only the ratio appears, so the unknown normalizing constant cancels — that's why you can sample without ever computing it.</span><span class="i18n-ko">수락 규칙 <code>min(1, p(x′)/p(x))</code>은 체인이 목표를 정상분포로 하는 <b>상세 균형</b>을 만족하도록 선택된다. 비율만 나타나므로 미지의 정규화 상수가 소거된다 — 그래서 그것을 계산하지 않고도 표집할 수 있다.</span></p>
+    </div>
+    <div class="ex b">
+      <h4><span class="i18n-en">Mixing &amp; the sweet spot</span><span class="i18n-ko">혼합과 최적점</span></h4>
+      <p><span class="i18n-en">Tiny steps are almost always accepted but explore slowly; huge steps are almost always rejected. The useful regime is in between — theory suggests an acceptance rate around <code>0.23</code> for high-dimensional targets. This is the exploration–exploitation tradeoff of sampling.</span><span class="i18n-ko">작은 스텝은 거의 항상 수락되지만 탐색이 느리고, 큰 스텝은 거의 항상 기각된다. 유용한 영역은 그 사이다 — 이론은 고차원 목표에서 수락률 <code>0.23</code> 근처를 제안한다. 표집의 탐험–활용 절충이다.</span></p>
+    </div>
+    <div class="ex c">
+      <h4><span class="i18n-en">Where it's used</span><span class="i18n-ko">쓰이는 곳</span></h4>
+      <p><span class="i18n-en">MCMC is how <b>Bayesian inference</b> is done in practice — drawing from posteriors over model parameters when they have no closed form. In biomedicine it powers uncertainty-aware modeling of clinical data, pharmacokinetics, and phylogenetics, wherever you need the full posterior, not just a point estimate.</span><span class="i18n-ko">MCMC는 실전에서 <b>베이지안 추론</b>을 수행하는 방법이다 — 닫힌 형태가 없는 모델 매개변수의 사후분포에서 표집한다. 생의학에서는 임상 데이터의 불확실성 인식 모델링, 약동학, 계통발생학 등 점 추정이 아니라 완전한 사후분포가 필요한 곳을 뒷받침한다.</span></p>
+    </div>
+  </div>
+  <footer><span class="i18n-en">PRISM Lab · prototype · </span><span class="i18n-ko">PRISM Lab · 프로토타입 · </span><a href="https://sswu-prism-lab.github.io" target="_blank" rel="noopener">sswu-prism-lab.github.io</a></footer>
+</div>
+
+<style>#chain{height:342px}#marg{height:150px}</style>
+<script>
+(() => {
+  "use strict";
+  function L(en,ko){ return document.documentElement.getAttribute('data-lang')==='ko' ? ko : en; }
+  const PAL={ dark:{ink:"#e7ecff",muted:"#8493b8",line:"#26314f",grid:a=>`rgba(38,49,79,${a})`,cool:"#5eead4",sharp:"#ff6b5a",blue:"#6ea8ff",warmA:"#ffc24b",test:"#a78bff"},
+    light:{ink:"#141b33",muted:"#5a6488",line:"#d9e0ec",grid:a=>`rgba(150,162,190,${a})`,cool:"#12a08d",sharp:"#e04a37",blue:"#2f6fd6",warmA:"#c98a12",test:"#6d4fe0"} };
+  let C=PAL[(window.__theme==='light')?'light':'dark'];
+  const clamp=(x,a,b)=>x<a?a:x>b?b:x;
+  const reduceMotion=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const VIEW=2.2;
+  const S={ target:"bimodal", step:0.35, speed:1, running:true, x:[0,0], samples:[], path:[], acc:0, prop:0, dens:null };
+  let spare=null;
+  function gauss(){ if(spare!==null){const v=spare;spare=null;return v;} let u=0;do{u=Math.random();}while(u<=1e-12);
+    const w=Math.sqrt(-2*Math.log(u)),a=2*Math.PI*Math.random(); spare=w*Math.sin(a); return w*Math.cos(a); }
+
+  function logp(x,y){
+    if(S.target==="bimodal"){ const s2=2*0.35*0.35; const d1=((x+0.9)**2+(y-0.6)**2), d2=((x-0.95)**2+(y+0.5)**2), d3=((x-0.2)**2+(y+1.0)**2);
+      return Math.log(Math.exp(-d1/s2)+0.8*Math.exp(-d2/s2)+0.5*Math.exp(-d3/s2)+1e-12); }
+    if(S.target==="ring"){ const r=Math.hypot(x,y); return -((r-1.2)**2)/(2*0.16*0.16); }
+    // banana
+    const a=1.1,b=1.0; return -(x*x/(2*1.0) + (y-a*(x*x-b))**2/(2*0.16));
+  }
+  function precomputeDens(){ const G=90; const arr=new Float64Array(G*G); let mx=-1e9;
+    for(let j=0;j<G;j++)for(let i=0;i<G;i++){ const x=-VIEW+2*VIEW*i/(G-1), y=-VIEW+2*VIEW*j/(G-1); const v=logp(x,y); arr[j*G+i]=v; if(v>mx)mx=v; }
+    S.dens={G,arr,mx};
+  }
+  function reset(){ S.x=[0,0]; if(S.target==="ring")S.x=[1.2,0]; if(S.target==="banana")S.x=[0,-0.5];
+    S.samples=[]; S.path=[[...S.x]]; S.acc=0; S.prop=0; }
+  function mhStep(){ const xp=S.x[0]+S.step*gauss(), yp=S.x[1]+S.step*gauss(); S.prop++;
+    const lr=logp(xp,yp)-logp(S.x[0],S.x[1]);
+    if(Math.log(Math.random()+1e-30)<lr){ S.x=[xp,yp]; S.acc++; }
+    S.samples.push([...S.x]); if(S.samples.length>4000)S.samples.shift();
+    S.path.push([...S.x]); if(S.path.length>60)S.path.shift();
+  }
+
+  const cvC=document.getElementById("chain"),cxC=cvC.getContext("2d");
+  const cvM=document.getElementById("marg"),cxM=cvM.getContext("2d");
+  function fit(cv,ctx){const dpr=Math.min(window.devicePixelRatio||1,2),w=cv.clientWidth,h=cv.clientHeight;cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);return{w,h};}
+  function drawChain(){ const {w,h}=fit(cvC,cxC); cxC.clearRect(0,0,w,h);
+    const cx=w/2,cy=h/2,sc=Math.min(w,h)/(2*VIEW); const X=x=>cx+x*sc,Y=y=>cy-y*sc;
+    // density heatmap (violet)
+    const D=S.dens,G=D.G; const cw=w/G,ch=h/G;
+    for(let j=0;j<G;j++)for(let i=0;i<G;i++){ const v=Math.exp(D.arr[j*G+i]-D.mx); if(v<0.02)continue;
+      cxC.fillStyle=`rgba(167,139,255,${clamp(v*0.5,0,0.5)})`;
+      const px=cx+(-VIEW+2*VIEW*i/(G-1))*sc, py=cy-(-VIEW+2*VIEW*j/(G-1))*sc; cxC.fillRect(px-cw/2,py-ch/2,cw+1,ch+1); }
+    // samples
+    cxC.fillStyle=C.cool; for(let k=0;k<S.samples.length;k++){ cxC.globalAlpha=0.10+0.15*(k/S.samples.length); const s=S.samples[k]; cxC.fillRect(X(s[0]),Y(s[1]),1.6,1.6); } cxC.globalAlpha=1;
+    // recent path
+    cxC.strokeStyle=C.warmA;cxC.lineWidth=1.2;cxC.globalAlpha=.7;cxC.beginPath();
+    for(let k=0;k<S.path.length;k++){ const p=S.path[k]; if(k===0)cxC.moveTo(X(p[0]),Y(p[1]));else cxC.lineTo(X(p[0]),Y(p[1])); } cxC.stroke();cxC.globalAlpha=1;
+    // current
+    cxC.fillStyle=C.warmA;cxC.shadowColor=C.warmA;cxC.shadowBlur=8;cxC.beginPath();cxC.arc(X(S.x[0]),Y(S.x[1]),4.5,0,6.283);cxC.fill();cxC.shadowBlur=0;
+  }
+  function drawMarg(){ const {w,h}=fit(cvM,cxM); cxM.clearRect(0,0,w,h);
+    const NB=54,pl=6,pr=6,pt=8,pb=6; const bw=(w-pl-pr)/NB, base=h-pb;
+    // true marginal by integrating density over y
+    const D=S.dens,G=D.G; const tm=new Float64Array(NB); let tmx=0;
+    for(let i=0;i<G;i++){ let s=0; for(let j=0;j<G;j++) s+=Math.exp(D.arr[j*G+i]-D.mx); const x=-VIEW+2*VIEW*i/(G-1); const bi=clamp(Math.floor((x/VIEW*0.5+0.5)*NB),0,NB-1); tm[bi]+=s; }
+    for(let b=0;b<NB;b++)tmx=Math.max(tmx,tm[b]);
+    // sample histogram
+    const sh=new Float64Array(NB); let smx=1; for(const s of S.samples){ const bi=clamp(Math.floor((s[0]/VIEW*0.5+0.5)*NB),0,NB-1); sh[bi]++; } for(let b=0;b<NB;b++)smx=Math.max(smx,sh[b]);
+    for(let b=0;b<NB;b++){ const x=pl+b*bw;
+      const ht=tm[b]/(tmx||1)*(h-pt-pb); cxM.fillStyle=C.test;cxM.globalAlpha=.28;cxM.fillRect(x,base-ht,bw-0.5,ht);cxM.globalAlpha=1;
+      const hs=sh[b]/smx*(h-pt-pb); cxM.fillStyle=C.cool;cxM.globalAlpha=.8;cxM.fillRect(x+bw*0.25,base-hs,bw*0.5,hs);cxM.globalAlpha=1; }
+  }
+  function drawAll(){ drawChain(); drawMarg(); updateRO(); }
+  function updateRO(){ const rate=S.prop?S.acc/S.prop:0;
+    document.getElementById("roAcc").textContent=(rate*100).toFixed(0)+"%";
+    document.getElementById("roN").textContent=S.samples.length;
+    document.getElementById("roProp").textContent=S.prop;
+    document.getElementById("roStep").textContent=S.step.toFixed(2);
+    const tag=document.getElementById("tag");
+    if(rate>0.15&&rate<0.6){tag.textContent=L("mixing well","혼합 양호");tag.className="sync-tag on";}
+    else if(rate>=0.6){tag.textContent=L("step small","스텝 작음");tag.className="sync-tag part";}
+    else {tag.textContent=L("step large","스텝 큼");tag.className="sync-tag off";}
+  }
+  window.__onTheme=t=>{C=PAL[t==='light'?'light':'dark'];drawAll();};
+  window.__onLang=()=>{syncLabel();drawAll();};
+  function syncLabel(){document.getElementById("run").textContent=S.running?L("❚❚ Pause","❚❚ 일시정지"):L("▶ Run","▶ 실행");document.getElementById("speedLab").textContent="Speed: "+S.speed+"×";}
+
+  let raf=null;
+  function loop(){ if(!S.running){raf=null;return;} const per=6*S.speed; for(let k=0;k<per;k++) mhStep(); drawAll(); raf=requestAnimationFrame(loop); }
+  function setRun(on){S.running=on;syncLabel();if(on&&!raf)raf=requestAnimationFrame(loop);else if(!on){raf=null;drawAll();}}
+
+  document.getElementById("step").addEventListener("input",e=>{S.step=parseFloat(e.target.value);document.getElementById("stepV").textContent=S.step.toFixed(2);if(!S.running)drawAll();});
+  document.getElementById("tgtSeg").addEventListener("click",e=>{const b=e.target.closest(".chip");if(!b)return;[...e.currentTarget.children].forEach(c=>c.classList.remove("active"));b.classList.add("active");S.target=b.dataset.t;precomputeDens();reset();drawAll();});
+  document.getElementById("run").onclick=()=>setRun(!S.running);
+  document.getElementById("speedLab").parentElement.onclick=()=>{ S.speed=S.speed===1?4:(S.speed===4?12:1); syncLabel(); };
+  document.getElementById("reset").onclick=()=>{ reset(); drawAll(); };
+  window.addEventListener("resize",()=>{clearTimeout(window.__rt);window.__rt=setTimeout(drawAll,80);});
+
+  precomputeDens(); reset(); drawAll(); syncLabel();
+  if(!reduceMotion) setRun(true); else { S.running=false; syncLabel(); }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<script>
+(function(){
+  function cur(){ try{ return localStorage.getItem('theme') || (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark':'light'); }catch(e){ return 'dark'; } }
+  var t=cur(); window.__theme=t; document.documentElement.setAttribute('data-theme', t);
+  try{ document.documentElement.setAttribute('data-lang', (localStorage.getItem('lang')||'en')); }catch(e){ document.documentElement.setAttribute('data-lang','en'); }
+  window.addEventListener('storage', function(e){ if(e.key==='theme'){ var n=e.newValue||'dark'; window.__theme=n; document.documentElement.setAttribute('data-theme', n); if(window.__onTheme) window.__onTheme(n); } if(e.key==='lang'){ document.documentElement.setAttribute('data-lang', e.newValue||'en'); if(window.__onLang) window.__onLang(); } });
+})();
+</script>
+<title>Self-Attention — PRISM Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+  :root{
+    --void:#15181e; --panel:#1d212a; --panel-2:#171b22; --line:#2e343f;
+    --ink:#e6edf3; --muted:#8b949e;
+    --cool:#5eead4; --sharp:#ff6b5a; --warm-a:#ffc24b; --warm-b:#ff5a3c; --test:#a78bff; --blue:#6ea8ff;
+    --focus:#9cc7ff;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{ background: var(--void); color:var(--ink); font-family:"Inter",system-ui,-apple-system,sans-serif; line-height:1.5;
+    -webkit-font-smoothing:antialiased; padding:24px 20px 48px; }
+  .wrap{max-width:1120px;margin:0 auto}
+  .topbar{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+  .back{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--muted);text-decoration:none;
+    border:1px solid var(--line);padding:6px 12px;border-radius:20px;transition:.14s}
+  .back:hover{color:var(--cool);border-color:var(--cool)}
+  .eyebrow{font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--cool);margin:0 0 10px;display:flex;align-items:center;gap:10px}
+  .eyebrow::before{content:"";width:22px;height:1px;background:var(--cool);opacity:.7}
+  .title{font-family:"Space Grotesk",system-ui,sans-serif;font-weight:700;font-size:clamp(28px,4.6vw,46px);
+    line-height:1.02;margin:0 0 10px;letter-spacing:-.02em}
+  .title .thin{color:var(--muted);font-weight:500}
+  .subtitle{color:var(--muted);max-width:none;margin:0 0 26px;font-size:15px}
+  .subtitle b{color:var(--ink);font-weight:600}
+  .grid{display:grid;grid-template-columns:1.62fr 1fr;gap:18px;align-items:start}
+  @media (max-width:860px){ .grid{grid-template-columns:1fr} }
+  .card{background:linear-gradient(180deg,var(--panel) 0%,var(--panel-2) 100%);
+    border:1px solid var(--line);border-radius:16px;padding:16px}
+  .card + .card{margin-top:14px}
+  .card-h{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--muted);margin:0 0 12px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .card-h .hint{color:#3f7f76;letter-spacing:.02em;text-transform:none;font-size:11px}
+  .stage{padding:14px 12px 10px}
+  .canvas-hold{position:relative;width:100%}
+  canvas{display:block;width:100%;height:auto;border-radius:8px}
+  .legend{display:flex;align-items:center;gap:14px;margin:10px 6px 2px;flex-wrap:wrap;font-family:"JetBrains Mono",monospace;
+    font-size:10.5px;color:var(--muted)}
+  .legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:middle}
+  .legend i.bar{width:14px;height:3px;border-radius:2px}
+  .axis-cap{font-family:"JetBrains Mono",monospace;font-size:10.5px;color:var(--muted);
+    display:flex;justify-content:space-between;margin:2px 6px 0}
+  .seg{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{font-family:"Inter",sans-serif;font-size:12.5px;font-weight:500;color:var(--ink);
+    background:var(--panel-2);border:1px solid var(--line);padding:7px 12px;border-radius:9px;cursor:pointer;transition:.14s}
+  .chip:hover{border-color:#3a486e}
+  .chip.active{background:var(--cool);border-color:var(--cool);color:#04231f;font-weight:600}
+  .clab{font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 7px}
+  .ctl{margin:14px 0 0}
+  .ctl-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px}
+  .ctl-name{font-size:13px;font-weight:500}
+  .ctl-name .sub{color:var(--muted);font-weight:400;font-size:12px}
+  .ctl-val{font-family:"JetBrains Mono",monospace;font-size:13px;color:var(--cool)}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:3px;
+    background:var(--line);outline:none;margin:6px 0 0}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;
+    background:var(--ink);border:2px solid var(--void);cursor:pointer;box-shadow:0 0 0 1px var(--line)}
+  input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--ink);border:2px solid var(--void);cursor:pointer}
+  .btnrow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+  .btnrow .wide{grid-column:1 / -1}
+  .btn{border:1px solid var(--line);background:var(--panel-2);color:var(--ink);font-family:"Inter",sans-serif;
+    font-size:13px;font-weight:500;padding:10px 8px;border-radius:9px;cursor:pointer;transition:.14s}
+  .btn:hover{border-color:#3a486e;background:#152238}
+  .btn:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+  .btn-primary{background:var(--cool);border-color:var(--cool);color:#04231f;font-weight:600}
+  .btn-primary:hover{filter:brightness(1.06)}
+  .btn.on{background:rgba(94,234,212,.14);border-color:var(--cool);color:var(--cool)}
+  .noteline{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--muted);margin-top:11px;min-height:16px}
+  .noteline b{color:var(--cool)}
+  .ro-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .ro{background:var(--panel);padding:10px 12px}
+  .ro .k{font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:.06em;color:var(--muted);text-transform:uppercase}
+  .ro .v{font-family:"JetBrains Mono",monospace;font-size:17px;margin-top:3px}
+  .ro .v.big{font-size:22px;color:var(--cool)}
+  .sync-tag{font-size:12px;padding:2px 8px;border-radius:20px;font-family:"Inter",sans-serif;font-weight:600}
+  .sync-tag.off{background:rgba(255,107,90,.14);color:var(--sharp)}
+  .sync-tag.part{background:rgba(255,194,75,.16);color:var(--warm-a)}
+  .sync-tag.on{background:rgba(94,234,212,.14);color:var(--cool)}
+  .try ol{margin:0;padding-left:20px;color:var(--muted);font-size:13.5px}
+  .try li{margin-bottom:6px}
+  .try li b{color:var(--ink);font-weight:600}
+  .try li .kbd{font-family:"JetBrains Mono",monospace;color:var(--cool);font-size:12.5px}
+  .explain{margin-top:26px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media (max-width:860px){ .explain{grid-template-columns:1fr} }
+  .ex{border-top:2px solid var(--line);padding-top:12px}
+  .ex.a{border-color:var(--blue)} .ex.b{border-color:var(--cool)} .ex.c{border-color:var(--sharp)}
+  .ex h4{font-family:"Space Grotesk",sans-serif;font-size:15px;margin:0 0 7px;font-weight:500}
+  .ex p{margin:0;font-size:13px;color:var(--muted)}
+  .ex code{font-family:"JetBrains Mono",monospace;color:var(--ink);font-size:12.5px;background:var(--panel);padding:1px 5px;border-radius:4px}
+  footer{margin-top:30px;color:var(--muted);font-size:12px;font-family:"JetBrains Mono",monospace;letter-spacing:.04em}
+  footer a{color:var(--cool);text-decoration:none}
+  html[data-theme="light"]{
+    --void:#ffffff; --panel:#f7f9fc; --panel-2:#eef2f8; --line:#e2e7ee;
+    --ink:#141b33; --muted:#5a6488;
+    --cool:#12a08d; --sharp:#e04a37; --warm-a:#c98a12; --warm-b:#cf4a24; --test:#6d4fe0; --blue:#2f6fd6; --focus:#2f6fd6;
+  }
+  html[data-theme="light"] body{ background: var(--void); }
+  html[data-theme="light"] .btn:hover{ border-color:#b9c4da; background:#e9eef7; }
+  html[data-lang="en"] .i18n-ko{ display:none !important; }
+  html[data-lang="ko"] .i18n-en{ display:none !important; }
+  .i18n-ko{ font-family:'Pretendard','Inter',sans-serif; word-break:keep-all; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar"><a class="back" href="index.html"><span class="i18n-en">← Playground</span><span class="i18n-ko">← 놀이터</span></a></div>
+  <p class="eyebrow"><span class="i18n-en">PRISM · Machine Learning Playground</span><span class="i18n-ko">PRISM · 머신러닝 놀이터</span></p>
+  <h1 class="title"><span class="i18n-en">Self-Attention</span><span class="i18n-ko">셀프 어텐션</span><br><span class="thin"><span class="i18n-en">Every token looks at every other and mixes by learned relevance</span><span class="i18n-ko">모든 토큰이 서로를 보고 학습된 관련도로 섞는다</span></span></h1>
+  <p class="subtitle"><span class="i18n-en">Attention lets each token build its new representation by <b>looking at the whole sequence</b> and taking a weighted average of the others. The weights come from compatibility: a <b>query</b> from one token is compared to a <b>key</b> from each token, and <code>softmax(q·k / √d)</code> turns those scores into a distribution. Pick a query and watch where it attends — and how the attention matrix carries the structure of the sequence.</span><span class="i18n-ko">어텐션은 각 토큰이 <b>시퀀스 전체를 바라보며</b> 나머지의 가중 평균을 취해 새 표현을 만들게 한다. 가중치는 적합도에서 나온다: 한 토큰의 <b>쿼리</b>가 각 토큰의 <b>키</b>와 비교되고, <code>softmax(q·k / √d)</code>가 그 점수를 분포로 바꾼다. 쿼리를 골라 어디에 주목하는지, 그리고 어텐션 행렬이 시퀀스의 구조를 어떻게 담는지 보라.</span></p>
+
+  <div class="grid">
+    <div>
+      <div class="card stage">
+        <div class="card-h"><span class="i18n-en">Tokens &amp; attention — where the query looks</span><span class="i18n-ko">토큰 &amp; 어텐션 — 쿼리가 보는 곳</span> <span class="hint"><span class="i18n-en">click a token</span><span class="i18n-ko">토큰 클릭</span></span></div>
+        <div class="canvas-hold"><canvas id="tokens"></canvas></div>
+        <div class="legend">
+          <span><i style="background:#a78bff"></i><span class="i18n-en">query</span><span class="i18n-ko">쿼리</span></span>
+          <span><i style="background:#6ea8ff"></i><span class="i18n-en">keys / values</span><span class="i18n-ko">키 / 값</span></span>
+          <span><i style="background:#5eead4"></i><span class="i18n-en">output (blended)</span><span class="i18n-ko">출력 (혼합)</span></span>
+        </div>
+      </div>
+      <div class="card stage">
+        <div class="card-h"><span class="i18n-en">Attention matrix · softmax(QKᵀ/√d)</span><span class="i18n-ko">어텐션 행렬 · softmax(QKᵀ/√d)</span> <span class="hint"><span class="i18n-en">row = query, column = key</span><span class="i18n-ko">행 = 쿼리, 열 = 키</span></span></div>
+        <div class="canvas-hold"><canvas id="heat"></canvas></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <div class="card-h"><span class="i18n-en">Controls</span><span class="i18n-ko">제어판</span></div>
+        <p class="clab"><span class="i18n-en">Query token</span><span class="i18n-ko">쿼리 토큰</span></p>
+        <div class="seg" id="qSeg"></div>
+        <div class="ctl">
+          <div class="ctl-top"><span class="ctl-name"><span class="i18n-en">Sharpness (1/temperature)</span><span class="i18n-ko">날카로움 (1/온도)</span> <span class="sub"><span class="i18n-en">scaling of q·k</span><span class="i18n-ko">q·k 스케일링</span></span></span><span class="ctl-val" id="bV">3.0</span></div>
+          <input type="range" id="beta" min="0.1" max="9" step="0.1" value="3" aria-label="Sharpness" />
+        </div>
+        <p class="clab" style="margin-top:14px"><span class="i18n-en">Sequence</span><span class="i18n-ko">시퀀스</span></p>
+        <div class="seg" id="seqSeg">
+          <button class="chip active" data-s="topics"><span class="i18n-en">Two topics</span><span class="i18n-ko">두 주제</span></button>
+          <button class="chip" data-s="chain"><span class="i18n-en">Chain</span><span class="i18n-ko">사슬</span></button>
+          <button class="chip" data-s="uniform"><span class="i18n-en">Unrelated</span><span class="i18n-ko">무관</span></button>
+        </div>
+        <div class="noteline" id="noteLine"><span class="i18n-en">Raise sharpness → attention collapses onto the single most-related token.</span><span class="i18n-ko">날카로움을 올리면 → 어텐션이 가장 관련 있는 토큰 하나로 집중됩니다.</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-h"><span class="i18n-en">Measurements</span><span class="i18n-ko">측정값</span> <span id="tag" class="sync-tag part" style="text-transform:none"></span></div>
+        <div class="ro-grid">
+          <div class="ro"><div class="k"><span class="i18n-en">query</span><span class="i18n-ko">쿼리</span></div><div class="v big" id="roQ" style="font-size:18px">–</div></div>
+          <div class="ro"><div class="k"><span class="i18n-en">attends most to</span><span class="i18n-ko">가장 주목</span></div><div class="v" id="roTop" style="font-size:15px">–</div></div>
+          <div class="ro"><div class="k"><span class="i18n-en">top weight</span><span class="i18n-ko">최대 가중치</span></div><div class="v" id="roW">–</div></div>
+          <div class="ro"><div class="k"><span class="i18n-en">attention entropy</span><span class="i18n-ko">어텐션 엔트로피</span></div><div class="v" id="roH">–</div></div>
+          <div class="ro"><div class="k"><span class="i18n-en">effective #attended</span><span class="i18n-ko">실효 주목 수</span></div><div class="v" id="roEff">–</div></div>
+          <div class="ro"><div class="k"><span class="i18n-en">sharpness</span><span class="i18n-ko">날카로움</span></div><div class="v" id="roB">–</div></div>
+        </div>
+      </div>
+
+      <div class="card try">
+        <div class="card-h"><span class="i18n-en">Things to try</span><span class="i18n-ko">해볼 것들</span></div>
+        <ol>
+          <li><span class="i18n-en"><b>Blocks in the matrix:</b> with <span class="kbd">Two topics</span>, the attention matrix shows two bright blocks — tokens attend within their topic.</span><span class="i18n-ko"><b>행렬의 블록:</b> <span class="kbd">두 주제</span>에서는 어텐션 행렬에 두 개의 밝은 블록이 나타난다 — 토큰이 자기 주제 안에서 주목한다.</span></li>
+          <li><span class="i18n-en"><b>Temperature:</b> low <span class="kbd">sharpness</span> spreads attention (soft averaging); high sharpness makes it a hard lookup of one token.</span><span class="i18n-ko"><b>온도:</b> <span class="kbd">날카로움</span>이 낮으면 어텐션이 퍼지고(부드러운 평균), 높으면 한 토큰을 집는 하드 조회가 된다.</span></li>
+          <li><span class="i18n-en"><b>Output is a blend:</b> the teal marker shows where the query's representation moves — toward the tokens it attends to.</span><span class="i18n-ko"><b>출력은 혼합:</b> 청록 마커는 쿼리의 표현이 이동하는 곳을 보여준다 — 주목하는 토큰들 쪽으로.</span></li>
+          <li><span class="i18n-en"><b>Unrelated:</b> switch to <span class="kbd">Unrelated</span> — attention flattens toward uniform, the token learns little from context.</span><span class="i18n-ko"><b>무관:</b> <span class="kbd">무관</span>으로 바꾸면 어텐션이 균등에 가까워지고, 토큰은 맥락에서 배우는 것이 적다.</span></li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <div class="explain">
+    <div class="ex a">
+      <h4><span class="i18n-en">Query, key, value</span><span class="i18n-ko">쿼리, 키, 값</span></h4>
+      <p><span class="i18n-en">Each token emits a <b>query</b> (what am I looking for), a <b>key</b> (what I offer), and a <b>value</b> (what I pass on). Attention weight <code>A_ij = softmax_j(q_i·k_j/√d)</code>, and the output is <code>Σ_j A_ij v_j</code> — a content-addressed, differentiable lookup over the whole sequence.</span><span class="i18n-ko">각 토큰은 <b>쿼리</b>(무엇을 찾는가), <b>키</b>(무엇을 제공하는가), <b>값</b>(무엇을 전달하는가)을 낸다. 어텐션 가중치는 <code>A_ij = softmax_j(q_i·k_j/√d)</code>이고, 출력은 <code>Σ_j A_ij v_j</code> — 시퀀스 전체에 대한 내용 기반의 미분 가능한 조회다.</span></p>
+    </div>
+    <div class="ex b">
+      <h4><span class="i18n-en">Why √d</span><span class="i18n-ko">왜 √d인가</span></h4>
+      <p><span class="i18n-en">Dot products of <code>d</code>-dimensional vectors grow like <code>√d</code>, which would saturate the softmax into a hard argmax. Dividing by <code>√d</code> keeps the scores in a sane range so gradients flow — the sharpness slider here plays that role in reverse.</span><span class="i18n-ko"><code>d</code>차원 벡터의 내적은 <code>√d</code>처럼 커져 softmax를 하드 argmax로 포화시킨다. <code>√d</code>로 나누면 점수가 적정 범위에 머물러 기울기가 흐른다 — 여기 날카로움 슬라이더가 그 역할을 반대로 한다.</span></p>
+    </div>
+    <div class="ex c">
+      <h4><span class="i18n-en">The engine of Transformers</span><span class="i18n-ko">Transformer의 엔진</span></h4>
+      <p><span class="i18n-en">Stacking self-attention builds the Transformer — now used far beyond language: on clinical time series, genomic sequences, and medical images, wherever long-range relationships between elements matter. It is also modern Hopfield associative memory in disguise.</span><span class="i18n-ko">셀프 어텐션을 쌓으면 Transformer가 된다 — 이제 언어를 훨씬 넘어 임상 시계열, 유전체 서열, 의료 영상 등 요소 간 장거리 관계가 중요한 곳 어디에나 쓰인다. 또한 이것은 변장한 현대 Hopfield 연상 기억이기도 하다.</span></p>
+    </div>
+  </div>
+  <footer><span class="i18n-en">PRISM Lab · prototype · </span><span class="i18n-ko">PRISM Lab · 프로토타입 · </span><a href="https://sswu-prism-lab.github.io" target="_blank" rel="noopener">sswu-prism-lab.github.io</a></footer>
+</div>
+
+<style>#tokens{height:300px}#heat{height:172px}</style>
+<script>
+(() => {
+  "use strict";
+  function L(en,ko){ return document.documentElement.getAttribute('data-lang')==='ko' ? ko : en; }
+  const PAL={ dark:{ink:"#e7ecff",muted:"#8493b8",line:"#26314f",grid:a=>`rgba(38,49,79,${a})`,cool:"#5eead4",sharp:"#ff6b5a",blue:"#6ea8ff",test:"#a78bff"},
+    light:{ink:"#141b33",muted:"#5a6488",line:"#d9e0ec",grid:a=>`rgba(150,162,190,${a})`,cool:"#12a08d",sharp:"#e04a37",blue:"#2f6fd6",test:"#6d4fe0"} };
+  let C=PAL[(window.__theme==='light')?'light':'dark'];
+  const clamp=(x,a,b)=>x<a?a:x>b?b:x;
+  // sequences: labels + 2D embeddings
+  const SEQS={
+    topics:{ en:["cat","dog","kitten","the","cloud","rain","sky"], ko:["고양이","개","새끼고양이","그","구름","비","하늘"],
+      emb:[[-0.85,0.5],[-0.95,0.15],[-0.7,0.75],[0.05,-0.85],[0.8,0.35],[0.95,0.05],[0.7,0.7]] },
+    chain:{ en:["t1","t2","t3","t4","t5","t6","t7"], ko:["t1","t2","t3","t4","t5","t6","t7"],
+      emb:[[-0.95,0.1],[-0.62,0.45],[-0.28,0.7],[0.05,0.78],[0.4,0.66],[0.72,0.4],[0.95,0.05]] },
+    uniform:{ en:["a","b","c","d","e","f","g"], ko:["a","b","c","d","e","f","g"],
+      emb:[[0.5,0.86],[0.97,0.24],[0.78,-0.62],[0.0,-1.0],[-0.78,-0.62],[-0.97,0.24],[-0.5,0.86]] }
+  };
+  const S={ seq:"topics", q:0, beta:3.0, A:[] };
+  function toks(){ return SEQS[S.seq]; }
+  function labels(){ const t=toks(); return document.documentElement.getAttribute('data-lang')==='ko'?t.ko:t.en; }
+
+  function attention(){ const e=toks().emb, T=e.length; const A=[];
+    for(let i=0;i<T;i++){ const sc=new Float64Array(T); let mx=-1e9;
+      for(let j=0;j<T;j++){ sc[j]=S.beta*(e[i][0]*e[j][0]+e[i][1]*e[j][1]); if(sc[j]>mx)mx=sc[j]; }
+      let Z=0; for(let j=0;j<T;j++){ sc[j]=Math.exp(sc[j]-mx); Z+=sc[j]; } for(let j=0;j<T;j++)sc[j]/=Z; A.push(sc); }
+    S.A=A;
+  }
+
+  const cvT=document.getElementById("tokens"),cxT=cvT.getContext("2d");
+  const cvH=document.getElementById("heat"),cxH=cvH.getContext("2d");
+  function fit(cv,ctx){const dpr=Math.min(window.devicePixelRatio||1,2),w=cv.clientWidth,h=cv.clientHeight;cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);return{w,h};}
+  const VIEW=1.35;
+  function drawTokens(){ const {w,h}=fit(cvT,cxT); cxT.clearRect(0,0,w,h);
+    const cx=w/2,cy=h/2,sc=Math.min(w,h)/(2*VIEW); const X=x=>cx+x*sc,Y=y=>cy-y*sc;
+    const e=toks().emb,lab=labels(),T=e.length,A=S.A[S.q];
+    // edges from query to keys
+    for(let j=0;j<T;j++){ if(j===S.q)continue; const a=A[j]; if(a<0.02)continue;
+      cxT.strokeStyle=C.test; cxT.globalAlpha=clamp(a*1.4,0.06,0.95); cxT.lineWidth=1+a*7;
+      cxT.beginPath();cxT.moveTo(X(e[S.q][0]),Y(e[S.q][1]));cxT.lineTo(X(e[j][0]),Y(e[j][1]));cxT.stroke(); }
+    cxT.globalAlpha=1;
+    // output (blended) position for query
+    let ox=0,oy=0; for(let j=0;j<T;j++){ ox+=A[j]*e[j][0]; oy+=A[j]*e[j][1]; }
+    cxT.strokeStyle=C.cool;cxT.lineWidth=1.4;cxT.setLineDash([3,3]);cxT.beginPath();cxT.moveTo(X(e[S.q][0]),Y(e[S.q][1]));cxT.lineTo(X(ox),Y(oy));cxT.stroke();cxT.setLineDash([]);
+    cxT.fillStyle=C.cool;cxT.beginPath();cxT.arc(X(ox),Y(oy),5,0,6.283);cxT.fill();
+    cxT.strokeStyle=C.cool;cxT.lineWidth=1.5;cxT.beginPath();cxT.arc(X(ox),Y(oy),8,0,6.283);cxT.stroke();
+    // nodes
+    for(let j=0;j<T;j++){ const isQ=j===S.q; const r=isQ?9:6;
+      cxT.fillStyle=isQ?C.test:C.blue; cxT.beginPath();cxT.arc(X(e[j][0]),Y(e[j][1]),r,0,6.283);cxT.fill();
+      cxT.fillStyle=C.ink;cxT.font=(isQ?'600 ':'')+'12px "Inter",sans-serif';cxT.textAlign="center";cxT.textBaseline="middle";
+      const tx=X(e[j][0]), ty=Y(e[j][1]); const off=e[j][1]>=0?-16:16;
+      cxT.fillStyle=C.ink; cxT.fillText(lab[j],tx,ty+off);
+      if(!isQ){ cxT.fillStyle=C.muted;cxT.font='9.5px "JetBrains Mono",monospace';cxT.fillText(A[j].toFixed(2),tx,ty+off+(e[j][1]>=0?-12:12)); }
+    }
+  }
+  function drawHeat(){ const {w,h}=fit(cvH,cxH); cxH.clearRect(0,0,w,h);
+    const T=toks().emb.length; const pad=30; const cell=Math.min((w-pad-8)/T,(h-pad-6)/T); const gw=cell*T; const px=pad, py=6;
+    const lab=labels();
+    for(let i=0;i<T;i++)for(let j=0;j<T;j++){ const a=S.A[i][j];
+      cxH.fillStyle=`rgba(94,234,212,${0.08+0.9*a})`; cxH.fillRect(px+j*cell,py+i*cell,cell-1,cell-1); }
+    // highlight query row
+    cxH.strokeStyle=C.test;cxH.lineWidth=2;cxH.strokeRect(px-1,py+S.q*cell-1,gw+2,cell+2);
+    // labels
+    cxH.fillStyle=C.muted;cxH.font='9px "JetBrains Mono",monospace';cxH.textAlign="right";cxH.textBaseline="middle";
+    for(let i=0;i<T;i++)cxH.fillText(lab[i].slice(0,4),px-3,py+i*cell+cell/2);
+    cxH.textAlign="center";cxH.textBaseline="top";
+    cxH.save();
+    for(let j=0;j<T;j++){ cxH.fillText(lab[j].slice(0,4),px+j*cell+cell/2,py+gw+2); }
+    cxH.restore();
+  }
+  function drawAll(){ attention(); drawTokens(); drawHeat(); updateRO(); buildQChips(); }
+  function updateRO(){ const A=S.A[S.q],lab=labels(),T=A.length; let top=0; for(let j=1;j<T;j++)if(A[j]>A[top])top=j;
+    let H=0; for(let j=0;j<T;j++) if(A[j]>1e-9) H-=A[j]*Math.log(A[j])/Math.LN2;
+    document.getElementById("roQ").textContent=lab[S.q];
+    document.getElementById("roTop").textContent=lab[top];
+    document.getElementById("roW").textContent=A[top].toFixed(2);
+    document.getElementById("roH").textContent=H.toFixed(2);
+    document.getElementById("roEff").textContent=Math.pow(2,H).toFixed(1);
+    document.getElementById("roB").textContent=S.beta.toFixed(1);
+    const tag=document.getElementById("tag");
+    if(A[top]>0.6){tag.textContent=L("focused","집중");tag.className="sync-tag on";}
+    else if(A[top]>0.3){tag.textContent=L("mixed","혼합");tag.className="sync-tag part";}
+    else{tag.textContent=L("diffuse","분산");tag.className="sync-tag off";}
+  }
+  let lastSeq=null,lastLang=null;
+  function buildQChips(){ const lang=document.documentElement.getAttribute('data-lang'); if(lastSeq===S.seq&&lastLang===lang)return; lastSeq=S.seq;lastLang=lang;
+    const seg=document.getElementById("qSeg"); seg.innerHTML=""; const lab=labels();
+    lab.forEach((l,i)=>{ const b=document.createElement("button"); b.className="chip"+(i===S.q?" active":""); b.textContent=l; b.dataset.i=i;
+      b.onclick=()=>{ S.q=i; [...seg.children].forEach(c=>c.classList.remove("active")); b.classList.add("active"); drawAll(); }; seg.appendChild(b); });
+  }
+  window.__onTheme=t=>{C=PAL[t==='light'?'light':'dark'];drawAll();};
+  window.__onLang=()=>{lastLang=null;drawAll();};
+  window.addEventListener("resize",()=>{clearTimeout(window.__rt);window.__rt=setTimeout(drawAll,80);});
+  document.getElementById("beta").addEventListener("input",e=>{S.beta=parseFloat(e.target.value);document.getElementById("bV").textContent=S.beta.toFixed(1);drawAll();});
+  document.getElementById("seqSeg").addEventListener("click",e=>{const b=e.target.closest(".chip");if(!b)return;[...e.currentTarget.children].forEach(c=>c.classList.remove("active"));b.classList.add("active");S.seq=b.dataset.s;S.q=0;drawAll();});
+  // click token to select query
+  cvT.addEventListener("click",ev=>{ const r=cvT.getBoundingClientRect(); const w=cvT.clientWidth,h=cvT.clientHeight;
+    const cx=w/2,cy=h/2,sc=Math.min(w,h)/(2*VIEW); const mx=(ev.clientX-r.left),my=(ev.clientY-r.top);
+    const e=toks().emb; let best=-1,bd=1e9; for(let j=0;j<e.length;j++){ const px=cx+e[j][0]*sc,py=cy-e[j][1]*sc; const d=Math.hypot(px-mx,py-my); if(d<bd){bd=d;best=j;} }
+    if(bd<26){ S.q=best; lastSeq=null; drawAll(); } });
+
+  buildQChips(); drawAll();
+})();
+</script>
+</body>
+</html>

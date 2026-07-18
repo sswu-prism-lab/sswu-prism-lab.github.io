@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<script>
+(function(){
+  function cur(){ try{ return localStorage.getItem('theme') || (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark':'light'); }catch(e){ return 'dark'; } }
+  var t=cur(); window.__theme=t; document.documentElement.setAttribute('data-theme', t);
+  try{ document.documentElement.setAttribute('data-lang', (localStorage.getItem('lang')||'en')); }catch(e){ document.documentElement.setAttribute('data-lang','en'); }
+  window.addEventListener('storage', function(e){ if(e.key==='theme'){ var n=e.newValue||'dark'; window.__theme=n; document.documentElement.setAttribute('data-theme', n); if(window.__onTheme) window.__onTheme(n); } if(e.key==='lang'){ document.documentElement.setAttribute('data-lang', e.newValue||'en'); if(window.__onLang) window.__onLang(); } });
+})();
+</script>
+<title>Diffusion & Score — PRISM Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+  :root{
+    --void:#15181e; --panel:#1d212a; --panel-2:#171b22; --line:#2e343f;
+    --ink:#e6edf3; --muted:#8b949e;
+    --cool:#5eead4; --sharp:#ff6b5a; --warm-a:#ffc24b; --warm-b:#ff5a3c; --test:#a78bff; --blue:#6ea8ff;
+    --focus:#9cc7ff;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{ background: var(--void); color:var(--ink); font-family:"Inter",system-ui,-apple-system,sans-serif; line-height:1.5;
+    -webkit-font-smoothing:antialiased; padding:24px 20px 48px; }
+  .wrap{max-width:1120px;margin:0 auto}
+  .topbar{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+  .back{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--muted);text-decoration:none;
+    border:1px solid var(--line);padding:6px 12px;border-radius:20px;transition:.14s}
+  .back:hover{color:var(--cool);border-color:var(--cool)}
+  .eyebrow{font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--cool);margin:0 0 10px;display:flex;align-items:center;gap:10px}
+  .eyebrow::before{content:"";width:22px;height:1px;background:var(--cool);opacity:.7}
+  .title{font-family:"Space Grotesk",system-ui,sans-serif;font-weight:700;font-size:clamp(28px,4.6vw,46px);
+    line-height:1.02;margin:0 0 10px;letter-spacing:-.02em}
+  .title .thin{color:var(--muted);font-weight:500}
+  .subtitle{color:var(--muted);max-width:none;margin:0 0 26px;font-size:15px}
+  .subtitle b{color:var(--ink);font-weight:600}
+  .grid{display:grid;grid-template-columns:1.62fr 1fr;gap:18px;align-items:start}
+  @media (max-width:860px){ .grid{grid-template-columns:1fr} }
+  .card{background:linear-gradient(180deg,var(--panel) 0%,var(--panel-2) 100%);
+    border:1px solid var(--line);border-radius:16px;padding:16px}
+  .card + .card{margin-top:14px}
+  .card-h{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--muted);margin:0 0 12px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .card-h .hint{color:#3f7f76;letter-spacing:.02em;text-transform:none;font-size:11px}
+  .stage{padding:14px 12px 10px}
+  .canvas-hold{position:relative;width:100%}
+  canvas{display:block;width:100%;height:auto;border-radius:8px}
+  .legend{display:flex;align-items:center;gap:14px;margin:10px 6px 2px;flex-wrap:wrap;font-family:"JetBrains Mono",monospace;
+    font-size:10.5px;color:var(--muted)}
+  .legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:middle}
+  .legend i.bar{width:14px;height:3px;border-radius:2px}
+  .axis-cap{font-family:"JetBrains Mono",monospace;font-size:10.5px;color:var(--muted);
+    display:flex;justify-content:space-between;margin:2px 6px 0}
+  .seg{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{font-family:"Inter",sans-serif;font-size:12.5px;font-weight:500;color:var(--ink);
+    background:var(--panel-2);border:1px solid var(--line);padding:7px 12px;border-radius:9px;cursor:pointer;transition:.14s}
+  .chip:hover{border-color:#3a486e}
+  .chip.active{background:var(--cool);border-color:var(--cool);color:#04231f;font-weight:600}
+  .clab{font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 7px}
+  .ctl{margin:14px 0 0}
+  .ctl-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px}
+  .ctl-name{font-size:13px;font-weight:500}
+  .ctl-name .sub{color:var(--muted);font-weight:400;font-size:12px}
+  .ctl-val{font-family:"JetBrains Mono",monospace;font-size:13px;color:var(--cool)}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:3px;
+    background:var(--line);outline:none;margin:6px 0 0}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;
+    background:var(--ink);border:2px solid var(--void);cursor:pointer;box-shadow:0 0 0 1px var(--line)}
+  input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--ink);border:2px solid var(--void);cursor:pointer}
+  .btnrow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+  .btnrow .wide{grid-column:1 / -1}
+  .btn{border:1px solid var(--line);background:var(--panel-2);color:var(--ink);font-family:"Inter",sans-serif;
+    font-size:13px;font-weight:500;padding:10px 8px;border-radius:9px;cursor:pointer;transition:.14s}
+  .btn:hover{border-color:#3a486e;background:#152238}
+  .btn:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+  .btn-primary{background:var(--cool);border-color:var(--cool);color:#04231f;font-weight:600}
+  .btn-primary:hover{filter:brightness(1.06)}
+  .btn.on{background:rgba(94,234,212,.14);border-color:var(--cool);color:var(--cool)}
+  .noteline{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--muted);margin-top:11px;min-height:16px}
+  .noteline b{color:var(--cool)}
+  .ro-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .ro{background:var(--panel);padding:10px 12px}
+  .ro .k{font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:.06em;color:var(--muted);text-transform:uppercase}
+  .ro .v{font-family:"JetBrains Mono",monospace;font-size:17px;margin-top:3px}
+  .ro .v.big{font-size:22px;color:var(--cool)}
+  .sync-tag{font-size:12px;padding:2px 8px;border-radius:20px;font-family:"Inter",sans-serif;font-weight:600}
+  .sync-tag.off{background:rgba(255,107,90,.14);color:var(--sharp)}
+  .sync-tag.part{background:rgba(255,194,75,.16);color:var(--warm-a)}
+  .sync-tag.on{background:rgba(94,234,212,.14);color:var(--cool)}
+  .try ol{margin:0;padding-left:20px;color:var(--muted);font-size:13.5px}
+  .try li{margin-bottom:6px}
+  .try li b{color:var(--ink);font-weight:600}
+  .try li .kbd{font-family:"JetBrains Mono",monospace;color:var(--cool);font-size:12.5px}
+  .explain{margin-top:26px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media (max-width:860px){ .explain{grid-template-columns:1fr} }
+  .ex{border-top:2px solid var(--line);padding-top:12px}
+  .ex.a{border-color:var(--blue)} .ex.b{border-color:var(--cool)} .ex.c{border-color:var(--sharp)}
+  .ex h4{font-family:"Space Grotesk",sans-serif;font-size:15px;margin:0 0 7px;font-weight:500}
+  .ex p{margin:0;font-size:13px;color:var(--muted)}
+  .ex code{font-family:"JetBrains Mono",monospace;color:var(--ink);font-size:12.5px;background:var(--panel);padding:1px 5px;border-radius:4px}
+  footer{margin-top:30px;color:var(--muted);font-size:12px;font-family:"JetBrains Mono",monospace;letter-spacing:.04em}
+  footer a{color:var(--cool);text-decoration:none}
+  html[data-theme="light"]{
+    --void:#ffffff; --panel:#f7f9fc; --panel-2:#eef2f8; --line:#e2e7ee;
+    --ink:#141b33; --muted:#5a6488;
+    --cool:#12a08d; --sharp:#e04a37; --warm-a:#c98a12; --warm-b:#cf4a24; --test:#6d4fe0; --blue:#2f6fd6; --focus:#2f6fd6;
+  }
+  html[data-theme="light"] body{ background: var(--void); }
+  html[data-theme="light"] .btn:hover{ border-color:#b9c4da; background:#e9eef7; }
+  html[data-lang="en"] .i18n-ko{ display:none !important; }
+  html[data-lang="ko"] .i18n-en{ display:none !important; }
+  .i18n-ko{ font-family:'Pretendard','Inter',sans-serif; word-break:keep-all; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar"><a class="back" href="index.html"><span class="i18n-en">← Playground</span><span class="i18n-ko">← 놀이터</span></a></div>
+  <p class="eyebrow"><span class="i18n-en">PRISM · Statistical-Mechanics Playground</span><span class="i18n-ko">PRISM · 통계역학 놀이터</span></p>
+  <h1 class="title"><span class="i18n-en">Diffusion &amp; Score</span><span class="i18n-ko">확산과 스코어</span><br><span class="thin"><span class="i18n-en">Learn which way is uphill in probability, then walk noise back into data</span><span class="i18n-ko">확률이 높아지는 방향을 배우고, 잡음을 데이터로 되돌린다</span></span></h1>
+  <p class="subtitle"><span class="i18n-en">A diffusion model never learns the data density directly — it learns the <b>score</b>, the gradient <code>∇ log p(x)</code> that points toward higher probability. To generate a sample you start from pure noise and follow the score downhill in energy with a dash of randomness: <b>annealed Langevin</b> <code>x ← x + ½α·s(x) + √α·z</code>, lowering the noise level as you go. Watch a cloud of noise condense onto the data.</span><span class="i18n-ko">확산 모델은 데이터 밀도를 직접 배우지 않는다 — <b>스코어</b>, 즉 더 높은 확률을 가리키는 기울기 <code>∇ log p(x)</code>를 배운다. 표본을 생성하려면 순수한 잡음에서 시작해 약간의 무작위성과 함께 스코어를 따라 에너지의 골짜기로 내려간다: <b>어닐링된 Langevin</b> <code>x ← x + ½α·s(x) + √α·z</code>, 진행하며 잡음 수준을 낮춘다. 잡음 구름이 데이터로 응결하는 것을 보라.</span></p>
+
+  <div class="grid">
+    <div>
+      <div class="card stage">
+        <div class="card-h"><span class="i18n-en">Score field &amp; particles</span><span class="i18n-ko">스코어 장 &amp; 입자</span> <span class="hint">s(x) = ∇ log p(x)</span></div>
+        <div class="canvas-hold"><canvas id="field"></canvas></div>
+        <div class="legend">
+          <span><i style="background:#8b949e"></i><span class="i18n-en">data</span><span class="i18n-ko">데이터</span></span>
+          <span><i style="background:#5eead4"></i><span class="i18n-en">particles</span><span class="i18n-ko">입자</span></span>
+          <span><i style="background:#6ea8ff" class="bar"></i><span class="i18n-en">score s(x)</span><span class="i18n-ko">스코어 s(x)</span></span>
+        </div>
+      </div>
+      <div class="card stage">
+        <div class="card-h"><span class="i18n-en">Marginal — particles vs data</span><span class="i18n-ko">주변분포 — 입자 vs 데이터</span> <span class="hint"><span class="i18n-en">x-coordinate density</span><span class="i18n-ko">x좌표 밀도</span></span></div>
+        <div class="canvas-hold"><canvas id="marg"></canvas></div>
+        <div class="axis-cap"><span>x = −1.4</span><span>0</span><span>x = +1.4</span></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <div class="card-h"><span class="i18n-en">Controls</span><span class="i18n-ko">제어판</span></div>
+        <p class="clab"><span class="i18n-en">Data distribution</span><span class="i18n-ko">데이터 분포</span></p>
+        <div class="seg" id="dataSeg">
+          <button class="chip active" data-d="moons"><span class="i18n-en">Two moons</span><span class="i18n-ko">초승달</span></button>
+          <button class="chip" data-d="ring"><span class="i18n-en">Ring</span><span class="i18n-ko">고리</span></button>
+          <button class="chip" data-d="blobs"><span class="i18n-en">Clusters</span><span class="i18n-ko">군집</span></button>
+        </div>
+        <div class="ctl">
+          <div class="ctl-top"><span class="ctl-name"><span class="i18n-en">Noise level σ</span><span class="i18n-ko">잡음 수준 σ</span> <span class="sub"><span class="i18n-en">auto-anneals while generating</span><span class="i18n-ko">생성 중 자동 어닐링</span></span></span><span class="ctl-val" id="sigV">1.00</span></div>
+          <input type="range" id="sigma" min="0.05" max="1.3" step="0.01" value="1.0" aria-label="Noise level" />
+        </div>
+        <div class="ctl">
+          <div class="ctl-top"><span class="ctl-name"><span class="i18n-en">Step size α-scale</span><span class="i18n-ko">스텝 크기 α-계수</span></span><span class="ctl-val" id="etaV">0.08</span></div>
+          <input type="range" id="eta" min="0.01" max="0.25" step="0.005" value="0.08" aria-label="Step size" />
+        </div>
+        <div class="ctl">
+          <div class="ctl-top"><span class="ctl-name"><span class="i18n-en">Particles</span><span class="i18n-ko">입자 수</span></span><span class="ctl-val" id="nV">220</span></div>
+          <input type="range" id="npart" min="40" max="500" step="10" value="220" aria-label="Particles" />
+        </div>
+        <div class="btnrow">
+          <button class="btn btn-primary wide" id="run">▶ Generate</button>
+          <button class="btn" id="diffuse"><span class="i18n-en">Diffuse →</span><span class="i18n-ko">확산 →</span></button>
+          <button class="btn" id="reset"><span class="i18n-en">Reset to noise</span><span class="i18n-ko">잡음으로 초기화</span></button>
+        </div>
+        <div class="noteline" id="noteLine"><span class="i18n-en">Press Generate — noise follows the score down to the data manifold.</span><span class="i18n-ko">Generate를 누르세요 — 잡음이 스코어를 따라 데이터 다양체로 내려갑니다.</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-h"><span class="i18n-en">Measurements</span><span class="i18n-ko">측정값</span> <span id="tag" class="sync-tag off">noise</span></div>
+        <div class="ro-grid">
+          <div class="ro"><div class="k"><span class="i18n-en">noise level σ</span><span class="i18n-ko">잡음 수준 σ</span></div><div class="v big" id="roSig">–</div></div>
+          <div class="ro"><div class="k"><span class="i18n-en">Langevin steps</span><span class="i18n-ko">Langevin 스텝</span></div><div class="v" id="roStep">–</div></div>
+          <div class="ro"><div class="k"><span class="i18n-en">mean ‖score‖</span><span class="i18n-ko">평균 ‖스코어‖</span></div><div class="v" id="roScore">–</div></div>
+          <div class="ro"><div class="k"><span class="i18n-en">particles</span><span class="i18n-ko">입자 수</span></div><div class="v" id="roN">–</div></div>
+        </div>
+      </div>
+
+      <div class="card try">
+        <div class="card-h"><span class="i18n-en">Things to try</span><span class="i18n-ko">해볼 것들</span></div>
+        <ol>
+          <li><span class="i18n-en"><b>Annealing matters:</b> at high <span class="kbd">σ</span> the score is smooth and long-range; as it anneals down, fine structure appears. Generation walks from coarse to fine.</span><span class="i18n-ko"><b>어닐링의 중요성:</b> <span class="kbd">σ</span>가 높으면 스코어가 매끄럽고 장거리적이며, 낮아질수록 세부 구조가 드러난다. 생성은 거친 것에서 정밀한 것으로 나아간다.</span></li>
+          <li><span class="i18n-en"><b>Forward vs reverse:</b> hit <span class="kbd">Diffuse →</span> to add noise (data → noise), then <span class="kbd">Generate</span> to reverse it (noise → data).</span><span class="i18n-ko"><b>순방향 대 역방향:</b> <span class="kbd">확산 →</span>으로 잡음을 더하고(데이터 → 잡음), <span class="kbd">Generate</span>로 되돌린다(잡음 → 데이터).</span></li>
+          <li><span class="i18n-en"><b>Step size:</b> too large an <span class="kbd">α</span> and particles overshoot and scatter; too small and they crawl. This is the sampler's stability.</span><span class="i18n-ko"><b>스텝 크기:</b> <span class="kbd">α</span>가 너무 크면 입자가 지나쳐 흩어지고, 너무 작으면 기어간다. 샘플러의 안정성 문제다.</span></li>
+          <li><span class="i18n-en"><b>Modes:</b> switch to <span class="kbd">Clusters</span> — particles split and fill each mode in proportion, the payoff of following the true score.</span><span class="i18n-ko"><b>모드:</b> <span class="kbd">군집</span>으로 바꿔보라 — 입자가 갈라져 각 모드를 비율에 맞게 채운다. 참 스코어를 따르는 보상이다.</span></li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <div class="explain">
+    <div class="ex a">
+      <h4><span class="i18n-en">Score = force field</span><span class="i18n-ko">스코어 = 힘의 장</span></h4>
+      <p><span class="i18n-en">Writing <code>p(x) ∝ e^(−E(x))</code>, the score is <code>∇ log p = −∇E</code> — exactly the physical force pulling toward low energy. A diffusion model trains a network to estimate this field by <b>denoising</b>, then reuses it to sample.</span><span class="i18n-ko"><code>p(x) ∝ e^(−E(x))</code>로 쓰면 스코어는 <code>∇ log p = −∇E</code> — 낮은 에너지로 끌어당기는 물리적 힘 그 자체다. 확산 모델은 <b>노이즈 제거</b>로 이 장을 추정하도록 신경망을 학습한 뒤, 그것을 재사용해 표본을 뽑는다.</span></p>
+    </div>
+    <div class="ex b">
+      <h4><span class="i18n-en">Annealed Langevin</span><span class="i18n-ko">어닐링된 Langevin</span></h4>
+      <p><span class="i18n-en">Sampling is overdamped Langevin dynamics <code>x ← x + ½α·s(x) + √α·z</code>, run from a high noise level down to a low one. The annealing lets the walker cross between modes early and settle into fine detail late — the same trick as simulated annealing.</span><span class="i18n-ko">표집은 과감쇠 Langevin 동역학 <code>x ← x + ½α·s(x) + √α·z</code>이며, 높은 잡음 수준에서 낮은 수준으로 실행한다. 어닐링 덕분에 걸음꾼은 초기에 모드 사이를 건너고 나중에 세부로 자리 잡는다 — 시뮬레이티드 어닐링과 같은 요령이다.</span></p>
+    </div>
+    <div class="ex c">
+      <h4><span class="i18n-en">The bridge to biomedical data</span><span class="i18n-ko">biomedical 데이터로의 다리</span></h4>
+      <p><span class="i18n-en">Score-based diffusion is state-of-the-art for <b>medical image</b> synthesis, MRI/CT <b>reconstruction</b> from undersampled scans, and generating realistic synthetic physiological signals for augmentation — a physics-sampling view of the generative representations PRISM works with.</span><span class="i18n-ko">스코어 기반 확산은 <b>의료 영상</b> 합성, 저표본 스캔으로부터의 MRI/CT <b>재구성</b>, 증강을 위한 사실적 합성 생리 신호 생성에서 최고 수준이다 — PRISM이 다루는 생성적 표현을 물리 표집의 관점에서 본 것이다.</span></p>
+    </div>
+  </div>
+  <footer><span class="i18n-en">PRISM Lab · prototype · </span><span class="i18n-ko">PRISM Lab · 프로토타입 · </span><a href="https://sswu-prism-lab.github.io" target="_blank" rel="noopener">sswu-prism-lab.github.io</a></footer>
+</div>
+
+<style>#field{height:342px}#marg{height:150px}</style>
+<script>
+(() => {
+  "use strict";
+  function L(en,ko){ return document.documentElement.getAttribute('data-lang')==='ko' ? ko : en; }
+  const PAL={ dark:{ink:"#e7ecff",muted:"#8493b8",line:"#26314f",grid:a=>`rgba(38,49,79,${a})`,cool:"#5eead4",sharp:"#ff6b5a",blue:"#6ea8ff",field:"#4a5578",data:"#8493b8"},
+    light:{ink:"#141b33",muted:"#5a6488",line:"#d9e0ec",grid:a=>`rgba(150,162,190,${a})`,cool:"#12a08d",sharp:"#e04a37",blue:"#2f6fd6",field:"#aeb8cc",data:"#8894ac"} };
+  let C=PAL[(window.__theme==='light')?'light':'dark'];
+  const clamp=(x,a,b)=> x<a?a:x>b?b:x;
+  const reduceMotion=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const SIG_MAX=1.25, SIG_MIN=0.06;
+
+  const S={ dataset:"moons", sigma:1.0, eta:0.08, N:220, running:false, mode:"gen", step:0, meanS:0, data:[], part:[] };
+  let spare=null;
+  function gauss(){ if(spare!==null){const v=spare;spare=null;return v;} let u=0;do{u=Math.random();}while(u<=1e-12);
+    const w=Math.sqrt(-2*Math.log(u)),a=2*Math.PI*Math.random(); spare=w*Math.sin(a); return w*Math.cos(a); }
+
+  function makeData(){ const P=[],M=130;
+    if(S.dataset==="moons"){ for(let i=0;i<M;i++){ const a=Math.PI*Math.random(); const up=i<M/2;
+        if(up) P.push([Math.cos(a)-0.5+0.05*gauss(), Math.sin(a)-0.28+0.05*gauss()]);
+        else P.push([1-Math.cos(a)-0.5+0.05*gauss(), -Math.sin(a)+0.28+0.05*gauss()]); } }
+    else if(S.dataset==="ring"){ for(let i=0;i<M;i++){ const a=Math.random()*6.283; P.push([0.9*Math.cos(a)+0.05*gauss(),0.9*Math.sin(a)+0.05*gauss()]); } }
+    else { const cs=[[-0.7,0.5],[0.75,0.55],[0.0,-0.7]]; for(let i=0;i<M;i++){ const c=cs[i%3]; P.push([c[0]+0.16*gauss(),c[1]+0.16*gauss()]); } }
+    S.data=P;
+  }
+  function scatterNoise(){ S.part=[]; for(let i=0;i<S.N;i++) S.part.push([SIG_MAX*gauss(),SIG_MAX*gauss()]); S.sigma=SIG_MAX; S.step=0; setSlider(); }
+  function setSlider(){ document.getElementById("sigma").value=S.sigma; document.getElementById("sigV").textContent=S.sigma.toFixed(2); }
+
+  // score of Gaussian-KDE over data at bandwidth sig
+  function score(x,y,sig){ const inv=1/(2*sig*sig); let wmax=-1e9; const ws=[]; 
+    for(let i=0;i<S.data.length;i++){ const dx=x-S.data[i][0], dy=y-S.data[i][1]; const q=-(dx*dx+dy*dy)*inv; ws.push(q); if(q>wmax)wmax=q; }
+    let Z=0; for(let i=0;i<ws.length;i++){ ws[i]=Math.exp(ws[i]-wmax); Z+=ws[i]; }
+    let sx=0,sy=0; const s2=sig*sig;
+    for(let i=0;i<S.data.length;i++){ const r=ws[i]/Z; sx+=r*(S.data[i][0]-x)/s2; sy+=r*(S.data[i][1]-y)/s2; }
+    return [sx,sy];
+  }
+  function langevinStep(){ const alpha=S.eta*S.sigma*S.sigma; const sa=Math.sqrt(alpha); let tot=0;
+    for(let i=0;i<S.part.length;i++){ const p=S.part[i]; const s=score(p[0],p[1],S.sigma);
+      p[0]+=0.5*alpha*s[0]+sa*gauss(); p[1]+=0.5*alpha*s[1]+sa*gauss();
+      p[0]=clamp(p[0],-1.9,1.9); p[1]=clamp(p[1],-1.9,1.9); tot+=Math.hypot(s[0],s[1]); }
+    S.meanS=tot/S.part.length; S.step++;
+  }
+  function diffuseStep(){ // forward: add noise, raise sigma
+    for(let i=0;i<S.part.length;i++){ S.part[i][0]+=0.09*gauss(); S.part[i][1]+=0.09*gauss(); }
+    S.sigma=Math.min(SIG_MAX,S.sigma+0.03); setSlider();
+  }
+
+  const cvF=document.getElementById("field"),cxF=cvF.getContext("2d");
+  const cvM=document.getElementById("marg"),cxM=cvM.getContext("2d");
+  function fit(cv,ctx){ const dpr=Math.min(window.devicePixelRatio||1,2),w=cv.clientWidth,h=cv.clientHeight;
+    cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);return{w,h}; }
+  const VIEW=1.7;
+  function drawField(){ const {w,h}=fit(cvF,cxF); cxF.clearRect(0,0,w,h);
+    const cx=w/2,cy=h/2,sc=Math.min(w,h)/(2*VIEW); const X=x=>cx+x*sc,Y=y=>cy-y*sc;
+    cxF.strokeStyle=C.grid(.5);cxF.lineWidth=1; cxF.beginPath();cxF.moveTo(X(-VIEW),Y(0));cxF.lineTo(X(VIEW),Y(0));cxF.moveTo(X(0),Y(-VIEW));cxF.lineTo(X(0),Y(VIEW));cxF.stroke();
+    // score arrows
+    const g=11; cxF.strokeStyle=C.field;cxF.fillStyle=C.field;
+    for(let i=0;i<=g;i++)for(let j=0;j<=g;j++){ const x=-VIEW+2*VIEW*i/g,y=-VIEW+2*VIEW*j/g; const s=score(x,y,S.sigma); let m=Math.hypot(s[0],s[1]); if(m<1e-3)continue;
+      const len=Math.min(m*0.05,0.12); const ux=s[0]/m,uy=s[1]/m; const x0=X(x),y0=Y(y),x1=X(x+ux*len),y1=Y(y-0+uy*len);
+      cxF.globalAlpha=.42;cxF.lineWidth=1;cxF.beginPath();cxF.moveTo(x0,y0);cxF.lineTo(X(x+ux*len),Y(y+uy*len));cxF.stroke();
+      const ang=Math.atan2(-(uy),ux); const hx=X(x+ux*len),hy=Y(y+uy*len);
+      cxF.beginPath();cxF.moveTo(hx,hy);cxF.lineTo(hx-4*Math.cos(ang-0.5),hy-4*Math.sin(ang-0.5));cxF.lineTo(hx-4*Math.cos(ang+0.5),hy-4*Math.sin(ang+0.5));cxF.closePath();cxF.fill();
+      cxF.globalAlpha=1;
+    }
+    // data
+    cxF.fillStyle=C.data; cxF.globalAlpha=.5; for(const d of S.data){ cxF.beginPath();cxF.arc(X(d[0]),Y(d[1]),2.1,0,6.283);cxF.fill(); } cxF.globalAlpha=1;
+    // particles
+    cxF.fillStyle=C.cool; for(const p of S.part){ cxF.beginPath();cxF.arc(X(p[0]),Y(p[1]),2.6,0,6.283);cxF.fill(); }
+  }
+  function drawMarg(){ const {w,h}=fit(cvM,cxM); cxM.clearRect(0,0,w,h);
+    const pl=8,pr=8,pt=8,pb=8; const NB=48; const bins=(arr)=>{ const b=new Array(NB).fill(0); for(const p of arr){ const bi=clamp(Math.floor((p[0]/VIEW*0.5+0.5)*NB),0,NB-1); b[bi]++; } return b; };
+    const bd=bins(S.data),bp=bins(S.part); let mx=1; for(let i=0;i<NB;i++){ mx=Math.max(mx,bd[i]/S.data.length,bp[i]/Math.max(S.part.length,1)); }
+    const bw=(w-pl-pr)/NB; const base=h-pb;
+    for(let i=0;i<NB;i++){ const x=pl+i*bw;
+      const hd=bd[i]/S.data.length/mx*(h-pt-pb); cxM.fillStyle=C.data;cxM.globalAlpha=.4;cxM.fillRect(x+0.5,base-hd,bw-1,hd);cxM.globalAlpha=1;
+      const hp=bp[i]/Math.max(S.part.length,1)/mx*(h-pt-pb); cxM.fillStyle=C.cool;cxM.globalAlpha=.8;cxM.fillRect(x+bw*0.25,base-hp,bw*0.5,hp);cxM.globalAlpha=1;
+    }
+  }
+  function drawAll(){ drawField(); drawMarg(); updateRO(); }
+  function updateRO(){ document.getElementById("roSig").textContent=S.sigma.toFixed(2);
+    document.getElementById("roStep").textContent=S.step; document.getElementById("roScore").textContent=S.meanS.toFixed(2);
+    document.getElementById("roN").textContent=S.N;
+    const tag=document.getElementById("tag");
+    if(S.sigma<0.2){tag.textContent=L("data","데이터");tag.className="sync-tag on";}
+    else if(S.sigma<0.7){tag.textContent=L("forming","형성 중");tag.className="sync-tag part";}
+    else{tag.textContent=L("noise","잡음");tag.className="sync-tag off";}
+  }
+  window.__onTheme=t=>{C=PAL[t==='light'?'light':'dark'];drawAll();};
+  window.__onLang=()=>{syncLabel();drawAll();};
+  function syncLabel(){ document.getElementById("run").textContent = S.running&&S.mode==="gen"? L("❚❚ Pause","❚❚ 일시정지"): L("▶ Generate","▶ 생성"); }
+
+  let raf=null;
+  function loop(){ if(!S.running){raf=null;return;}
+    if(S.mode==="gen"){ for(let k=0;k<3;k++) langevinStep(); if(S.sigma>SIG_MIN){ S.sigma=Math.max(SIG_MIN,S.sigma*0.985); setSlider(); } }
+    else if(S.mode==="diff"){ diffuseStep(); if(S.sigma>=SIG_MAX-1e-6){ S.running=false; } }
+    drawAll();
+    if(S.running) raf=requestAnimationFrame(loop); else { raf=null; syncLabel(); }
+  }
+  function setRun(on,mode){ S.running=on; if(mode)S.mode=mode; syncLabel(); if(on&&!raf)raf=requestAnimationFrame(loop); else if(!on)drawAll(); }
+
+  const bind=(id,valId,fmt,fn)=>{ const el=document.getElementById(id); el.addEventListener("input",()=>{ const v=parseFloat(el.value); fn(v); if(valId)document.getElementById(valId).textContent=fmt(v); if(!S.running)drawAll(); }); };
+  bind("sigma","sigV",v=>v.toFixed(2),v=>{S.sigma=v;});
+  bind("eta","etaV",v=>v.toFixed(3),v=>{S.eta=v;});
+  bind("npart","nV",v=>String(v|0),v=>{S.N=v|0; scatterNoise();});
+  document.getElementById("dataSeg").addEventListener("click",e=>{const b=e.target.closest(".chip");if(!b)return;[...e.currentTarget.children].forEach(c=>c.classList.remove("active"));b.classList.add("active");S.dataset=b.dataset.d;makeData();scatterNoise();drawAll();});
+  document.getElementById("run").onclick=()=>{ if(S.running&&S.mode==="gen"){setRun(false);} else { if(S.sigma<SIG_MIN+0.02) scatterNoise(); setRun(true,"gen"); } };
+  document.getElementById("diffuse").onclick=()=>{ setRun(true,"diff"); };
+  document.getElementById("reset").onclick=()=>{ S.running=false; scatterNoise(); syncLabel(); drawAll(); };
+  window.addEventListener("resize",()=>{clearTimeout(window.__rt);window.__rt=setTimeout(drawAll,80);});
+
+  makeData(); scatterNoise(); drawAll(); syncLabel();
+  if(!reduceMotion) setRun(true,"gen");
+})();
+</script>
+</body>
+</html>

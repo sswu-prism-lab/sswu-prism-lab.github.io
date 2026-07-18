@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<script>
+(function(){
+  function cur(){ try{ return localStorage.getItem('theme') || (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark':'light'); }catch(e){ return 'dark'; } }
+  var t=cur(); window.__theme=t; document.documentElement.setAttribute('data-theme', t);
+  try{ document.documentElement.setAttribute('data-lang', (localStorage.getItem('lang')||'en')); }catch(e){ document.documentElement.setAttribute('data-lang','en'); }
+  window.addEventListener('storage', function(e){ if(e.key==='theme'){ var n=e.newValue||'dark'; window.__theme=n; document.documentElement.setAttribute('data-theme', n); if(window.__onTheme) window.__onTheme(n); } if(e.key==='lang'){ document.documentElement.setAttribute('data-lang', e.newValue||'en'); if(window.__onLang) window.__onLang(); } });
+})();
+</script>
+<title>Grokking & Learning Transitions — PRISM Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+  :root{
+    --void:#15181e; --panel:#1d212a; --panel-2:#171b22; --line:#2e343f;
+    --ink:#e6edf3; --muted:#8b949e;
+    --cool:#5eead4; --sharp:#ff6b5a; --warm-a:#ffc24b; --warm-b:#ff5a3c; --test:#a78bff; --blue:#6ea8ff;
+    --focus:#9cc7ff;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{ background: var(--void); color:var(--ink); font-family:"Inter",system-ui,-apple-system,sans-serif; line-height:1.5;
+    -webkit-font-smoothing:antialiased; padding:24px 20px 48px; }
+  .wrap{max-width:1120px;margin:0 auto}
+  .topbar{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+  .back{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--muted);text-decoration:none;
+    border:1px solid var(--line);padding:6px 12px;border-radius:20px;transition:.14s}
+  .back:hover{color:var(--cool);border-color:var(--cool)}
+  .eyebrow{font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--cool);margin:0 0 10px;display:flex;align-items:center;gap:10px}
+  .eyebrow::before{content:"";width:22px;height:1px;background:var(--cool);opacity:.7}
+  .title{font-family:"Space Grotesk",system-ui,sans-serif;font-weight:700;font-size:clamp(28px,4.6vw,46px);
+    line-height:1.02;margin:0 0 10px;letter-spacing:-.02em}
+  .title .thin{color:var(--muted);font-weight:500}
+  .subtitle{color:var(--muted);max-width:none;margin:0 0 26px;font-size:15px}
+  .subtitle b{color:var(--ink);font-weight:600}
+  .grid{display:grid;grid-template-columns:1.62fr 1fr;gap:18px;align-items:start}
+  @media (max-width:860px){ .grid{grid-template-columns:1fr} }
+  .card{background:linear-gradient(180deg,var(--panel) 0%,var(--panel-2) 100%);
+    border:1px solid var(--line);border-radius:16px;padding:16px}
+  .card + .card{margin-top:14px}
+  .card-h{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--muted);margin:0 0 12px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .card-h .hint{color:#3f7f76;letter-spacing:.02em;text-transform:none;font-size:11px}
+  .stage{padding:14px 12px 10px}
+  .canvas-hold{position:relative;width:100%}
+  canvas{display:block;width:100%;height:auto;border-radius:8px}
+  .legend{display:flex;align-items:center;gap:14px;margin:10px 6px 2px;flex-wrap:wrap;font-family:"JetBrains Mono",monospace;
+    font-size:10.5px;color:var(--muted)}
+  .legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:middle}
+  .legend i.bar{width:14px;height:3px;border-radius:2px}
+  .axis-cap{font-family:"JetBrains Mono",monospace;font-size:10.5px;color:var(--muted);
+    display:flex;justify-content:space-between;margin:2px 6px 0}
+  .seg{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{font-family:"Inter",sans-serif;font-size:12.5px;font-weight:500;color:var(--ink);
+    background:var(--panel-2);border:1px solid var(--line);padding:7px 12px;border-radius:9px;cursor:pointer;transition:.14s}
+  .chip:hover{border-color:#3a486e}
+  .chip.active{background:var(--cool);border-color:var(--cool);color:#04231f;font-weight:600}
+  .clab{font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 7px}
+  .ctl{margin:14px 0 0}
+  .ctl-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px}
+  .ctl-name{font-size:13px;font-weight:500}
+  .ctl-name .sub{color:var(--muted);font-weight:400;font-size:12px}
+  .ctl-val{font-family:"JetBrains Mono",monospace;font-size:13px;color:var(--cool)}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:3px;
+    background:var(--line);outline:none;margin:6px 0 0}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;
+    background:var(--ink);border:2px solid var(--void);cursor:pointer;box-shadow:0 0 0 1px var(--line)}
+  input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--ink);border:2px solid var(--void);cursor:pointer}
+  .btnrow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+  .btnrow .wide{grid-column:1 / -1}
+  .btn{border:1px solid var(--line);background:var(--panel-2);color:var(--ink);font-family:"Inter",sans-serif;
+    font-size:13px;font-weight:500;padding:10px 8px;border-radius:9px;cursor:pointer;transition:.14s}
+  .btn:hover{border-color:#3a486e;background:#152238}
+  .btn:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+  .btn-primary{background:var(--cool);border-color:var(--cool);color:#04231f;font-weight:600}
+  .btn-primary:hover{filter:brightness(1.06)}
+  .btn.on{background:rgba(94,234,212,.14);border-color:var(--cool);color:var(--cool)}
+  .noteline{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--muted);margin-top:11px;min-height:16px}
+  .noteline b{color:var(--cool)}
+  .ro-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .ro{background:var(--panel);padding:10px 12px}
+  .ro .k{font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:.06em;color:var(--muted);text-transform:uppercase}
+  .ro .v{font-family:"JetBrains Mono",monospace;font-size:17px;margin-top:3px}
+  .ro .v.big{font-size:22px;color:var(--cool)}
+  .sync-tag{font-size:12px;padding:2px 8px;border-radius:20px;font-family:"Inter",sans-serif;font-weight:600}
+  .sync-tag.off{background:rgba(255,107,90,.14);color:var(--sharp)}
+  .sync-tag.part{background:rgba(255,194,75,.16);color:var(--warm-a)}
+  .sync-tag.on{background:rgba(94,234,212,.14);color:var(--cool)}
+  .try ol{margin:0;padding-left:20px;color:var(--muted);font-size:13.5px}
+  .try li{margin-bottom:6px}
+  .try li b{color:var(--ink);font-weight:600}
+  .try li .kbd{font-family:"JetBrains Mono",monospace;color:var(--cool);font-size:12.5px}
+  .explain{margin-top:26px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media (max-width:860px){ .explain{grid-template-columns:1fr} }
+  .ex{border-top:2px solid var(--line);padding-top:12px}
+  .ex.a{border-color:var(--blue)} .ex.b{border-color:var(--cool)} .ex.c{border-color:var(--sharp)}
+  .ex h4{font-family:"Space Grotesk",sans-serif;font-size:15px;margin:0 0 7px;font-weight:500}
+  .ex p{margin:0;font-size:13px;color:var(--muted)}
+  .ex code{font-family:"JetBrains Mono",monospace;color:var(--ink);font-size:12.5px;background:var(--panel);padding:1px 5px;border-radius:4px}
+  footer{margin-top:30px;color:var(--muted);font-size:12px;font-family:"JetBrains Mono",monospace;letter-spacing:.04em}
+  footer a{color:var(--cool);text-decoration:none}
+  html[data-theme="light"]{
+    --void:#ffffff; --panel:#f7f9fc; --panel-2:#eef2f8; --line:#e2e7ee;
+    --ink:#141b33; --muted:#5a6488;
+    --cool:#12a08d; --sharp:#e04a37; --warm-a:#c98a12; --warm-b:#cf4a24; --test:#6d4fe0; --blue:#2f6fd6; --focus:#2f6fd6;
+  }
+  html[data-theme="light"] body{ background: var(--void); }
+  html[data-theme="light"] .btn:hover{ border-color:#b9c4da; background:#e9eef7; }
+  html[data-lang="en"] .i18n-ko{ display:none !important; }
+  html[data-lang="ko"] .i18n-en{ display:none !important; }
+  .i18n-ko{ font-family:'Pretendard','Inter',sans-serif; word-break:keep-all; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar"><a class="back" href="index.html"><span class="i18n-en">← Playground</span><span class="i18n-ko">← 놀이터</span></a></div>
+  <p class="eyebrow"><span class="i18n-en">PRISM · Statistical-Mechanics Playground</span><span class="i18n-ko">PRISM · 통계역학 놀이터</span></p>
+  <h1 class="title"><span class="i18n-en">Grokking &amp; Learning Transitions</span><span class="i18n-ko">그로킹과 학습 상전이</span><br><span class="thin"><span class="i18n-en">Learning isn't always gradual — it can sit on a plateau, then jump</span><span class="i18n-ko">학습은 늘 점진적이지 않다 — 정체하다가 갑자기 도약한다</span></span></h1>
+  <p class="subtitle"><span class="i18n-en">Loss curves look smooth from far away, but up close learning often happens in <b>sudden steps</b>. A deep network descending its loss lands on <b>saddle points</b>, sits nearly still, then abruptly slides off as it discovers the next feature — a staircase of transitions. <b>Grokking</b> is the dramatic version: training accuracy is solved early, yet <b>generalization</b> arrives much later as a sharp phase transition. Here a deep linear network learns a task one mode at a time — watch the plateaus and the jumps.</span><span class="i18n-ko">손실 곡선은 멀리서 보면 매끄럽지만, 가까이서 보면 학습은 흔히 <b>갑작스러운 단계</b>로 일어난다. 손실을 내려가는 심층 신경망은 <b>안장점</b>에 내려앉아 거의 멈춰 있다가, 다음 특징을 발견하는 순간 급격히 미끄러진다 — 전이의 계단이다. <b>그로킹</b>은 그 극적인 형태다: 훈련 정확도는 일찍 해결되지만 <b>일반화</b>는 훨씬 뒤에 날카로운 상전이로 도착한다. 여기서 심층 선형 신경망이 한 번에 한 모드씩 과제를 배운다 — 정체와 도약을 지켜보라.</span></p>
+
+  <div class="grid">
+    <div>
+      <div class="card stage">
+        <div class="card-h"><span class="i18n-en">Loss over training — plateaus &amp; sudden drops</span><span class="i18n-ko">학습에 따른 손실 — 정체와 급강하</span> <span class="hint"><span class="i18n-en">log scale</span><span class="i18n-ko">로그 스케일</span></span></div>
+        <div class="canvas-hold"><canvas id="loss"></canvas></div>
+        <div class="axis-cap"><span><span class="i18n-en">start</span><span class="i18n-ko">시작</span></span><span><span class="i18n-en">training step →</span><span class="i18n-ko">학습 스텝 →</span></span><span><span class="i18n-en">now</span><span class="i18n-ko">현재</span></span></div>
+      </div>
+      <div class="card stage">
+        <div class="card-h"><span class="i18n-en">Features learned, one mode at a time</span><span class="i18n-ko">한 번에 한 모드씩 학습되는 특징</span> <span class="hint"><span class="i18n-en">bar = learned · outline = target</span><span class="i18n-ko">막대 = 학습됨 · 외곽 = 목표</span></span></div>
+        <div class="canvas-hold"><canvas id="modes"></canvas></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <div class="card-h"><span class="i18n-en">Controls</span><span class="i18n-ko">제어판</span></div>
+        <p class="clab"><span class="i18n-en">Task spectrum</span><span class="i18n-ko">과제 스펙트럼</span></p>
+        <div class="seg" id="specSeg">
+          <button class="chip active" data-s="sep"><span class="i18n-en">Separated</span><span class="i18n-ko">분리형</span></button>
+          <button class="chip" data-s="twostep"><span class="i18n-en">Two steps</span><span class="i18n-ko">2단</span></button>
+          <button class="chip" data-s="many"><span class="i18n-en">Many</span><span class="i18n-ko">다중</span></button>
+        </div>
+        <div class="ctl">
+          <div class="ctl-top"><span class="ctl-name"><span class="i18n-en">Initial scale</span><span class="i18n-ko">초기 스케일</span> <span class="sub"><span class="i18n-en">smaller = longer plateaus</span><span class="i18n-ko">작을수록 긴 정체</span></span></span><span class="ctl-val" id="initV">0.020</span></div>
+          <input type="range" id="init" min="0.003" max="0.1" step="0.001" value="0.02" aria-label="Initial scale" />
+        </div>
+        <div class="ctl">
+          <div class="ctl-top"><span class="ctl-name"><span class="i18n-en">Learning rate</span><span class="i18n-ko">학습률</span></span><span class="ctl-val" id="lrV">0.020</span></div>
+          <input type="range" id="lr" min="0.004" max="0.06" step="0.002" value="0.02" aria-label="Learning rate" />
+        </div>
+        <div class="btnrow">
+          <button class="btn btn-primary wide" id="run">▶ Train</button>
+          <button class="btn wide" id="reset"><span class="i18n-en">Reset (re-initialize)</span><span class="i18n-ko">초기화 (재초기화)</span></button>
+        </div>
+        <div class="noteline" id="noteLine"><span class="i18n-en">Press Train — the loss holds on a plateau, then drops each time a feature is found.</span><span class="i18n-ko">Train을 누르세요 — 손실이 정체하다가 특징을 찾을 때마다 뚝 떨어집니다.</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-h"><span class="i18n-en">Measurements</span><span class="i18n-ko">측정값</span> <span id="tag" class="sync-tag off">–</span></div>
+        <div class="ro-grid">
+          <div class="ro"><div class="k"><span class="i18n-en">loss</span><span class="i18n-ko">손실</span></div><div class="v big" id="roLoss">–</div></div>
+          <div class="ro"><div class="k"><span class="i18n-en">step</span><span class="i18n-ko">스텝</span></div><div class="v" id="roStep">–</div></div>
+          <div class="ro"><div class="k"><span class="i18n-en">features learned</span><span class="i18n-ko">학습된 특징</span></div><div class="v" id="roModes">–</div></div>
+          <div class="ro"><div class="k"><span class="i18n-en">total features</span><span class="i18n-ko">전체 특징</span></div><div class="v" id="roTot">–</div></div>
+        </div>
+      </div>
+
+      <div class="card try">
+        <div class="card-h"><span class="i18n-en">Things to try</span><span class="i18n-ko">해볼 것들</span></div>
+        <ol>
+          <li><span class="i18n-en"><b>Small init, sharp steps:</b> lower the <span class="kbd">Initial scale</span> — plateaus get longer and the drops get more abrupt. This is the saddle-to-saddle regime.</span><span class="i18n-ko"><b>작은 초기값, 날카로운 계단:</b> <span class="kbd">초기 스케일</span>을 낮추면 정체가 길어지고 급강하가 더 뚜렷해진다. 안장-대-안장 영역이다.</span></li>
+          <li><span class="i18n-en"><b>Order by importance:</b> watch the <span class="kbd">features</span> panel — the strongest mode is learned first, then the next, in order of magnitude.</span><span class="i18n-ko"><b>중요도 순서:</b> <span class="kbd">특징</span> 패널을 보라 — 가장 강한 모드가 먼저, 그다음이 크기 순으로 학습된다.</span></li>
+          <li><span class="i18n-en"><b>Two clean steps:</b> pick <span class="kbd">Two steps</span> — two well-separated transitions, the simplest staircase.</span><span class="i18n-ko"><b>깔끔한 2단:</b> <span class="kbd">2단</span>을 고르면 잘 분리된 두 전이 — 가장 단순한 계단이다.</span></li>
+          <li><span class="i18n-en"><b>Reset and rerun:</b> the transition times shift with initialization — the plateau length is set by how weak the mode starts.</span><span class="i18n-ko"><b>초기화 후 재실행:</b> 전이 시점은 초기화에 따라 달라진다 — 정체 길이는 모드가 얼마나 약하게 시작하느냐로 정해진다.</span></li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <div class="explain">
+    <div class="ex a">
+      <h4><span class="i18n-en">Saddle-to-saddle dynamics</span><span class="i18n-ko">안장-대-안장 동역학</span></h4>
+      <p><span class="i18n-en">From small initialization, gradient descent visits a sequence of saddle points of the loss. Near each, the gradient is tiny — a plateau — until one direction grows exponentially and the network snaps to the next saddle. Each snap is a feature (a singular mode) being learned, in order of its strength.</span><span class="i18n-ko">작은 초기값에서 시작하면 경사 하강은 손실의 안장점들을 차례로 방문한다. 각 안장점 근처에서는 기울기가 아주 작아 정체가 생기고, 어느 한 방향이 지수적으로 자라나면 신경망이 다음 안장점으로 튕겨 간다. 각 튕김은 강도 순서대로 하나의 특징(특이 모드)이 학습되는 것이다.</span></p>
+    </div>
+    <div class="ex b">
+      <h4><span class="i18n-en">What grokking adds</span><span class="i18n-ko">그로킹이 더하는 것</span></h4>
+      <p><span class="i18n-en">In grokking, the network first memorizes — training loss is solved fast — but keeps evolving under weight decay until its <b>weight norm</b> crosses into a region where a simple, generalizing solution takes over, and <b>test</b> accuracy jumps long afterward. Same idea as here, but the delayed transition is in generalization, not just the fit.</span><span class="i18n-ko">그로킹에서는 신경망이 먼저 암기해 훈련 손실을 빠르게 해결하지만, 가중치 감쇠 아래 계속 변화하다가 <b>가중치 크기</b>가 단순하고 일반화되는 해가 우세해지는 영역으로 넘어가면 한참 뒤에 <b>테스트</b> 정확도가 도약한다. 여기와 같은 원리지만, 지연된 전이가 단순한 적합이 아니라 일반화에서 일어난다.</span></p>
+    </div>
+    <div class="ex c">
+      <h4><span class="i18n-en">Why it matters</span><span class="i18n-ko">왜 중요한가</span></h4>
+      <p><span class="i18n-en">Sudden transitions mean a flat validation curve doesn't prove a model is done learning — capabilities can emerge abruptly with more training or scale. For biomedical models trained on scarce data, knowing that generalization can arrive late argues for patience, weight decay, and watching more than just the training loss.</span><span class="i18n-ko">갑작스러운 전이는 검증 곡선이 평평하다고 학습이 끝났다는 뜻이 아님을 의미한다 — 능력은 더 많은 학습이나 규모와 함께 급작스레 나타날 수 있다. 희소한 데이터로 학습하는 biomedical 모델에서는, 일반화가 늦게 도착할 수 있음을 아는 것이 인내·가중치 감쇠·훈련 손실만이 아닌 관찰의 필요성을 뒷받침한다.</span></p>
+    </div>
+  </div>
+  <footer><span class="i18n-en">PRISM Lab · prototype · </span><span class="i18n-ko">PRISM Lab · 프로토타입 · </span><a href="https://sswu-prism-lab.github.io" target="_blank" rel="noopener">sswu-prism-lab.github.io</a></footer>
+</div>
+
+<style>#loss{height:300px}#modes{height:170px}</style>
+<script>
+(() => {
+  "use strict";
+  function L(en,ko){ return document.documentElement.getAttribute('data-lang')==='ko' ? ko : en; }
+  const PAL={ dark:{ink:"#e7ecff",muted:"#8493b8",line:"#26314f",grid:a=>`rgba(38,49,79,${a})`,cool:"#5eead4",sharp:"#ff6b5a",blue:"#6ea8ff",warmA:"#ffc24b",test:"#a78bff"},
+    light:{ink:"#141b33",muted:"#5a6488",line:"#d9e0ec",grid:a=>`rgba(150,162,190,${a})`,cool:"#12a08d",sharp:"#e04a37",blue:"#2f6fd6",warmA:"#c98a12",test:"#6d4fe0"} };
+  let C=PAL[(window.__theme==='light')?'light':'dark'];
+  const reduceMotion=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const SPECS={ sep:[3,2,1.2,0.6,0.28], twostep:[3,3,0.35,0.35], many:[3,2.5,2.0,1.55,1.15,0.8,0.5,0.28] };
+
+  const S={ spec:"sep", init:0.02, lr:0.02, running:false, step:0, W1:[],W2:[], d:5, sv:[], hist:[] };
+  let spare=null;
+  function gauss(){ if(spare!==null){const v=spare;spare=null;return v;} let u=0;do{u=Math.random();}while(u<=1e-12);
+    const w=Math.sqrt(-2*Math.log(u)),a=2*Math.PI*Math.random(); spare=w*Math.sin(a); return w*Math.cos(a); }
+
+  function initNet(){ S.sv=SPECS[S.spec].slice(); S.d=S.sv.length; const d=S.d,H=d;
+    S.W1=[];S.W2=[]; for(let h=0;h<H;h++)S.W1.push(Float64Array.from({length:d},()=>gauss()*S.init));
+    for(let i=0;i<d;i++)S.W2.push(Float64Array.from({length:H},()=>gauss()*S.init));
+    S.step=0; S.hist=[]; recordLoss();
+  }
+  function Emat(){ const d=S.d,H=d,M=[]; for(let i=0;i<d;i++){M.push(new Float64Array(d)); for(let j=0;j<d;j++){let s=0;for(let h=0;h<H;h++)s+=S.W2[i][h]*S.W1[h][j];M[i][j]=s;}} return M; }
+  function lossOf(M){ let l=0; for(let i=0;i<S.d;i++)for(let j=0;j<S.d;j++){const t=(i===j?S.sv[i]:0),e=M[i][j]-t;l+=e*e;} return 0.5*l; }
+  function recordLoss(){ S.hist.push(lossOf(Emat())); if(S.hist.length>1600)S.hist.shift(); }
+  function trainStep(){ const d=S.d,H=d,M=Emat();
+    const R=[];for(let i=0;i<d;i++){R.push(new Float64Array(d));for(let j=0;j<d;j++)R[i][j]=M[i][j]-(i===j?S.sv[i]:0);}
+    const gW2=[];for(let i=0;i<d;i++){gW2.push(new Float64Array(H));for(let h=0;h<H;h++){let s=0;for(let j=0;j<d;j++)s+=R[i][j]*S.W1[h][j];gW2[i][h]=s;}}
+    const gW1=[];for(let h=0;h<H;h++){gW1.push(new Float64Array(d));for(let j=0;j<d;j++){let s=0;for(let i=0;i<d;i++)s+=S.W2[i][h]*R[i][j];gW1[h][j]=s;}}
+    for(let i=0;i<d;i++)for(let h=0;h<H;h++)S.W2[i][h]-=S.lr*gW2[i][h];
+    for(let h=0;h<H;h++)for(let j=0;j<d;j++)S.W1[h][j]-=S.lr*gW1[h][j];
+    S.step++;
+  }
+  function learnedDiag(){ const M=Emat(); const out=[]; for(let i=0;i<S.d;i++)out.push(M[i][i]); return out; }
+  function modesLearned(){ const dg=learnedDiag(); let c=0; for(let i=0;i<S.d;i++) if(Math.abs(dg[i]-S.sv[i])<0.15*S.sv[i]+0.05) c++; return c; }
+
+  const cvL=document.getElementById("loss"),cxL=cvL.getContext("2d");
+  const cvM=document.getElementById("modes"),cxM=cvM.getContext("2d");
+  function fit(cv,ctx){const dpr=Math.min(window.devicePixelRatio||1,2),w=cv.clientWidth,h=cv.clientHeight;cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);return{w,h};}
+  function drawLoss(){ const {w,h}=fit(cvL,cxL); cxL.clearRect(0,0,w,h);
+    const pl=44,pr=12,pt=12,pb=16; const n=S.hist.length;
+    let lo=1e9,hi=-1e9; for(const v of S.hist){const l=Math.log10(Math.max(v,1e-6));if(l<lo)lo=l;if(l>hi)hi=l;} if(!isFinite(lo)){lo=-3;hi=1;} lo=Math.min(lo,-2.5);hi=Math.max(hi,lo+1);
+    const X=i=>pl+(n<2?0:i/(n-1))*(w-pl-pr); const Y=v=>{const l=Math.log10(Math.max(v,1e-6));return h-pb-(l-lo)/(hi-lo)*(h-pt-pb);};
+    cxL.font='10px "JetBrains Mono",monospace';cxL.fillStyle=C.muted;cxL.textAlign="right";cxL.textBaseline="middle";
+    for(let e=Math.ceil(lo);e<=Math.floor(hi);e++){const y=h-pb-(e-lo)/(hi-lo)*(h-pt-pb);cxL.strokeStyle=C.grid(.5);cxL.lineWidth=1;cxL.beginPath();cxL.moveTo(pl,y);cxL.lineTo(w-pr,y);cxL.stroke();cxL.fillStyle=C.muted;cxL.fillText("10"+(e>=0?"+"+e:e),pl-5,y);}
+    if(n<2)return;
+    cxL.strokeStyle=C.cool;cxL.lineWidth=2.2;cxL.beginPath();
+    for(let i=0;i<n;i++){const px=X(i),py=Y(S.hist[i]);if(i===0)cxL.moveTo(px,py);else cxL.lineTo(px,py);} cxL.stroke();
+    // head dot
+    cxL.fillStyle=C.cool;cxL.beginPath();cxL.arc(X(n-1),Y(S.hist[n-1]),3.4,0,6.283);cxL.fill();
+  }
+  function drawModes(){ const {w,h}=fit(cvM,cxM); cxM.clearRect(0,0,w,h);
+    const pl=12,pr=12,pt=16,pb=22; const d=S.d; const dg=learnedDiag();
+    const maxv=Math.max(...S.sv)*1.1; const bw=(w-pl-pr)/d*0.62, gap=(w-pl-pr)/d;
+    const base=h-pb; const Y=v=>base-Math.max(v,0)/maxv*(h-pt-pb);
+    for(let i=0;i<d;i++){ const x=pl+i*gap+(gap-bw)/2;
+      // target outline
+      cxM.strokeStyle=C.grid(1.2);cxM.lineWidth=1.3;cxM.strokeRect(x,Y(S.sv[i]),bw,base-Y(S.sv[i]));
+      // learned fill
+      const learned=Math.abs(dg[i]-S.sv[i])<0.15*S.sv[i]+0.05;
+      cxM.fillStyle=learned?C.cool:C.blue;cxM.globalAlpha=learned?0.9:0.65;
+      const yy=Y(Math.max(0,Math.min(dg[i],S.sv[i]*1.2))); cxM.fillRect(x,yy,bw,base-yy);cxM.globalAlpha=1;
+      cxM.fillStyle=C.muted;cxM.font='9.5px "JetBrains Mono",monospace';cxM.textAlign="center";cxM.textBaseline="top";cxM.fillText("σ"+(i+1),x+bw/2,base+4);
+    }
+    cxM.fillStyle=C.muted;cxM.font='9.5px "JetBrains Mono",monospace';cxM.textAlign="left";cxM.textBaseline="top";cxM.fillText(L("mode strength","모드 강도"),pl,2);
+  }
+  function drawAll(){ drawLoss(); drawModes(); updateRO(); }
+  function updateRO(){ const loss=S.hist[S.hist.length-1]||0, ml=modesLearned();
+    document.getElementById("roLoss").textContent=loss<0.001?loss.toExponential(1):loss.toFixed(3);
+    document.getElementById("roStep").textContent=S.step; document.getElementById("roModes").textContent=ml; document.getElementById("roTot").textContent=S.d;
+    const tag=document.getElementById("tag");
+    if(ml>=S.d){tag.textContent=L("solved","완료");tag.className="sync-tag on";}
+    else if(loss>0.01 && S.running){tag.textContent=L("on plateau","정체 중");tag.className="sync-tag part";}
+    else {tag.textContent=L("learning","학습 중");tag.className="sync-tag off";}
+  }
+  window.__onTheme=t=>{C=PAL[t==='light'?'light':'dark'];drawAll();};
+  window.__onLang=()=>{syncLabel();drawAll();};
+  function syncLabel(){document.getElementById("run").textContent=S.running?L("❚❚ Pause","❚❚ 일시정지"):L("▶ Train","▶ 학습");}
+
+  let raf=null;
+  function loop(){ if(!S.running){raf=null;return;} for(let k=0;k<4;k++) trainStep(); recordLoss(); drawAll();
+    if((S.hist[S.hist.length-1]||0)<1e-5){ S.running=false; syncLabel(); }
+    if(S.running)raf=requestAnimationFrame(loop);else raf=null; }
+  function setRun(on){S.running=on;syncLabel();if(on&&!raf)raf=requestAnimationFrame(loop);else if(!on)drawAll();}
+
+  const bind=(id,valId,fmt,fn)=>{const el=document.getElementById(id);el.addEventListener("input",()=>{const v=parseFloat(el.value);fn(v);if(valId)document.getElementById(valId).textContent=fmt(v);});};
+  bind("init","initV",v=>v.toFixed(3),v=>{S.init=v;});
+  bind("lr","lrV",v=>v.toFixed(3),v=>{S.lr=v;});
+  document.getElementById("specSeg").addEventListener("click",e=>{const b=e.target.closest(".chip");if(!b)return;[...e.currentTarget.children].forEach(c=>c.classList.remove("active"));b.classList.add("active");S.spec=b.dataset.s;S.running=false;initNet();syncLabel();drawAll();});
+  document.getElementById("run").onclick=()=>{ if(!S.running && (S.hist[S.hist.length-1]||0)<1e-5) initNet(); setRun(!S.running); };
+  document.getElementById("reset").onclick=()=>{ S.running=false; initNet(); syncLabel(); drawAll(); };
+  window.addEventListener("resize",()=>{clearTimeout(window.__rt);window.__rt=setTimeout(drawAll,80);});
+
+  initNet(); drawAll(); syncLabel();
+  if(!reduceMotion) setRun(true);
+})();
+</script>
+</body>
+</html>

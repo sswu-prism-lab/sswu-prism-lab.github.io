@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<script>
+(function(){
+  function cur(){ try{ return localStorage.getItem('theme') || (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark':'light'); }catch(e){ return 'dark'; } }
+  var t=cur(); window.__theme=t; document.documentElement.setAttribute('data-theme', t);
+  try{ document.documentElement.setAttribute('data-lang', (localStorage.getItem('lang')||'en')); }catch(e){ document.documentElement.setAttribute('data-lang','en'); }
+  window.addEventListener('storage', function(e){ if(e.key==='theme'){ var n=e.newValue||'dark'; window.__theme=n; document.documentElement.setAttribute('data-theme', n); if(window.__onTheme) window.__onTheme(n); } if(e.key==='lang'){ document.documentElement.setAttribute('data-lang', e.newValue||'en'); if(window.__onLang) window.__onLang(); } });
+})();
+</script>
+<title>Information Bottleneck — PRISM Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+  :root{
+    --void:#15181e; --panel:#1d212a; --panel-2:#171b22; --line:#2e343f;
+    --ink:#e6edf3; --muted:#8b949e;
+    --cool:#5eead4; --sharp:#ff6b5a; --warm-a:#ffc24b; --warm-b:#ff5a3c; --test:#a78bff; --blue:#6ea8ff;
+    --focus:#9cc7ff;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{ background: var(--void); color:var(--ink); font-family:"Inter",system-ui,-apple-system,sans-serif; line-height:1.5;
+    -webkit-font-smoothing:antialiased; padding:24px 20px 48px; }
+  .wrap{max-width:1120px;margin:0 auto}
+  .topbar{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+  .back{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--muted);text-decoration:none;
+    border:1px solid var(--line);padding:6px 12px;border-radius:20px;transition:.14s}
+  .back:hover{color:var(--cool);border-color:var(--cool)}
+  .eyebrow{font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--cool);margin:0 0 10px;display:flex;align-items:center;gap:10px}
+  .eyebrow::before{content:"";width:22px;height:1px;background:var(--cool);opacity:.7}
+  .title{font-family:"Space Grotesk",system-ui,sans-serif;font-weight:700;font-size:clamp(28px,4.6vw,46px);
+    line-height:1.02;margin:0 0 10px;letter-spacing:-.02em}
+  .title .thin{color:var(--muted);font-weight:500}
+  .subtitle{color:var(--muted);max-width:none;margin:0 0 26px;font-size:15px}
+  .subtitle b{color:var(--ink);font-weight:600}
+  .grid{display:grid;grid-template-columns:1.62fr 1fr;gap:18px;align-items:start}
+  @media (max-width:860px){ .grid{grid-template-columns:1fr} }
+  .card{background:linear-gradient(180deg,var(--panel) 0%,var(--panel-2) 100%);
+    border:1px solid var(--line);border-radius:16px;padding:16px}
+  .card + .card{margin-top:14px}
+  .card-h{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--muted);margin:0 0 12px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .card-h .hint{color:#3f7f76;letter-spacing:.02em;text-transform:none;font-size:11px}
+  .stage{padding:14px 12px 10px}
+  .canvas-hold{position:relative;width:100%}
+  canvas{display:block;width:100%;height:auto;border-radius:8px}
+  .legend{display:flex;align-items:center;gap:14px;margin:10px 6px 2px;flex-wrap:wrap;font-family:"JetBrains Mono",monospace;
+    font-size:10.5px;color:var(--muted)}
+  .legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:middle}
+  .legend i.bar{width:14px;height:3px;border-radius:2px}
+  .axis-cap{font-family:"JetBrains Mono",monospace;font-size:10.5px;color:var(--muted);
+    display:flex;justify-content:space-between;margin:2px 6px 0}
+  .seg{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{font-family:"Inter",sans-serif;font-size:12.5px;font-weight:500;color:var(--ink);
+    background:var(--panel-2);border:1px solid var(--line);padding:7px 12px;border-radius:9px;cursor:pointer;transition:.14s}
+  .chip:hover{border-color:#3a486e}
+  .chip.active{background:var(--cool);border-color:var(--cool);color:#04231f;font-weight:600}
+  .clab{font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 7px}
+  .ctl{margin:14px 0 0}
+  .ctl-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px}
+  .ctl-name{font-size:13px;font-weight:500}
+  .ctl-name .sub{color:var(--muted);font-weight:400;font-size:12px}
+  .ctl-val{font-family:"JetBrains Mono",monospace;font-size:13px;color:var(--cool)}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:3px;
+    background:var(--line);outline:none;margin:6px 0 0}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;
+    background:var(--ink);border:2px solid var(--void);cursor:pointer;box-shadow:0 0 0 1px var(--line)}
+  input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--ink);border:2px solid var(--void);cursor:pointer}
+  .btnrow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+  .btnrow .wide{grid-column:1 / -1}
+  .btn{border:1px solid var(--line);background:var(--panel-2);color:var(--ink);font-family:"Inter",sans-serif;
+    font-size:13px;font-weight:500;padding:10px 8px;border-radius:9px;cursor:pointer;transition:.14s}
+  .btn:hover{border-color:#3a486e;background:#152238}
+  .btn:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+  .btn-primary{background:var(--cool);border-color:var(--cool);color:#04231f;font-weight:600}
+  .btn-primary:hover{filter:brightness(1.06)}
+  .btn.on{background:rgba(94,234,212,.14);border-color:var(--cool);color:var(--cool)}
+  .noteline{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--muted);margin-top:11px;min-height:16px}
+  .noteline b{color:var(--cool)}
+  .ro-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .ro{background:var(--panel);padding:10px 12px}
+  .ro .k{font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:.06em;color:var(--muted);text-transform:uppercase}
+  .ro .v{font-family:"JetBrains Mono",monospace;font-size:17px;margin-top:3px}
+  .ro .v.big{font-size:22px;color:var(--cool)}
+  .sync-tag{font-size:12px;padding:2px 8px;border-radius:20px;font-family:"Inter",sans-serif;font-weight:600}
+  .sync-tag.off{background:rgba(255,107,90,.14);color:var(--sharp)}
+  .sync-tag.part{background:rgba(255,194,75,.16);color:var(--warm-a)}
+  .sync-tag.on{background:rgba(94,234,212,.14);color:var(--cool)}
+  .try ol{margin:0;padding-left:20px;color:var(--muted);font-size:13.5px}
+  .try li{margin-bottom:6px}
+  .try li b{color:var(--ink);font-weight:600}
+  .try li .kbd{font-family:"JetBrains Mono",monospace;color:var(--cool);font-size:12.5px}
+  .explain{margin-top:26px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media (max-width:860px){ .explain{grid-template-columns:1fr} }
+  .ex{border-top:2px solid var(--line);padding-top:12px}
+  .ex.a{border-color:var(--blue)} .ex.b{border-color:var(--cool)} .ex.c{border-color:var(--sharp)}
+  .ex h4{font-family:"Space Grotesk",sans-serif;font-size:15px;margin:0 0 7px;font-weight:500}
+  .ex p{margin:0;font-size:13px;color:var(--muted)}
+  .ex code{font-family:"JetBrains Mono",monospace;color:var(--ink);font-size:12.5px;background:var(--panel);padding:1px 5px;border-radius:4px}
+  footer{margin-top:30px;color:var(--muted);font-size:12px;font-family:"JetBrains Mono",monospace;letter-spacing:.04em}
+  footer a{color:var(--cool);text-decoration:none}
+  html[data-theme="light"]{
+    --void:#ffffff; --panel:#f7f9fc; --panel-2:#eef2f8; --line:#e2e7ee;
+    --ink:#141b33; --muted:#5a6488;
+    --cool:#12a08d; --sharp:#e04a37; --warm-a:#c98a12; --warm-b:#cf4a24; --test:#6d4fe0; --blue:#2f6fd6; --focus:#2f6fd6;
+  }
+  html[data-theme="light"] body{ background: var(--void); }
+  html[data-theme="light"] .btn:hover{ border-color:#b9c4da; background:#e9eef7; }
+  html[data-lang="en"] .i18n-ko{ display:none !important; }
+  html[data-lang="ko"] .i18n-en{ display:none !important; }
+  .i18n-ko{ font-family:'Pretendard','Inter',sans-serif; word-break:keep-all; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar"><a class="back" href="index.html"><span class="i18n-en">← Playground</span><span class="i18n-ko">← 놀이터</span></a></div>
+  <p class="eyebrow"><span class="i18n-en">PRISM · Statistical-Mechanics Playground</span><span class="i18n-ko">PRISM · 통계역학 놀이터</span></p>
+  <h1 class="title"><span class="i18n-en">Information Bottleneck</span><span class="i18n-ko">정보 병목</span><br><span class="thin"><span class="i18n-en">Keep only the bits of the input that predict the target</span><span class="i18n-ko">표적을 예측하는 정보만 남긴다</span></span></h1>
+  <p class="subtitle"><span class="i18n-en">A good representation <code>T</code> should be a <b>minimal sufficient</b> summary of the input <code>X</code>: throw away everything that doesn't help predict the target <code>Y</code>. The information bottleneck makes this precise — squeeze <code>I(X;T)</code> (how many bits you keep) while holding <code>I(T;Y)</code> (how much you can predict) as high as possible. Compress <code>X</code> here by quantizing it, and trace the tradeoff on the <b>information plane</b>.</span><span class="i18n-ko">좋은 표현 <code>T</code>는 입력 <code>X</code>의 <b>최소 충분</b> 요약이어야 한다: 표적 <code>Y</code> 예측에 도움 안 되는 것은 모두 버린다. 정보 병목은 이를 정밀하게 만든다 — <code>I(X;T)</code>(유지하는 비트 수)를 줄이면서 <code>I(T;Y)</code>(예측 가능한 양)를 최대한 높게 유지한다. 여기서 <code>X</code>를 양자화해 압축하고, <b>정보 평면</b> 위에 트레이드오프를 그린다.</span></p>
+
+  <div class="grid">
+    <div>
+      <div class="card stage">
+        <div class="card-h"><span class="i18n-en">The information plane</span><span class="i18n-ko">정보 평면</span> <span class="hint">I(T;Y) vs I(X;T)</span></div>
+        <div class="canvas-hold"><canvas id="plane"></canvas></div>
+        <div class="axis-cap"><span>I(X;T) = 0 bits</span><span><span class="i18n-en">compression →</span><span class="i18n-ko">압축 →</span></span><span id="planeXmax">→</span></div>
+      </div>
+      <div class="card stage">
+        <div class="card-h"><span class="i18n-en">Encoder T = quantize(X) · target p(Y=1 | x)</span><span class="i18n-ko">인코더 T = 양자화(X) · 표적 p(Y=1 | x)</span> <span class="hint" id="encHint"></span></div>
+        <div class="canvas-hold"><canvas id="enc"></canvas></div>
+        <div class="axis-cap"><span>x = 0</span><span>X</span><span>x = 1</span></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <div class="card-h"><span class="i18n-en">Controls</span><span class="i18n-ko">제어판</span></div>
+        <div class="ctl">
+          <div class="ctl-top"><span class="ctl-name"><span class="i18n-en">Quantization bins K</span><span class="i18n-ko">양자화 구간 수 K</span> <span class="sub"><span class="i18n-en">compression level</span><span class="i18n-ko">압축 수준</span></span></span><span class="ctl-val" id="kV">4</span></div>
+          <input type="range" id="kbins" min="1" max="24" step="1" value="4" aria-label="Bins K" />
+        </div>
+        <p class="clab" style="margin-top:14px"><span class="i18n-en">Target rule p(Y=1 | x)</span><span class="i18n-ko">표적 규칙 p(Y=1 | x)</span></p>
+        <div class="seg" id="ruleSeg">
+          <button class="chip active" data-r="step"><span class="i18n-en">Threshold</span><span class="i18n-ko">임계</span></button>
+          <button class="chip" data-r="bands"><span class="i18n-en">Bands</span><span class="i18n-ko">띠 무늬</span></button>
+        </div>
+        <div class="ctl">
+          <div class="ctl-top"><span class="ctl-name"><span class="i18n-en">Label noise</span><span class="i18n-ko">레이블 잡음</span> <span class="sub"><span class="i18n-en">softens p(Y|x)</span><span class="i18n-ko">p(Y|x)를 부드럽게</span></span></span><span class="ctl-val" id="noiseV">0.15</span></div>
+          <input type="range" id="noise" min="0" max="0.45" step="0.01" value="0.15" aria-label="Label noise" />
+        </div>
+        <div class="ctl" id="bandsCtl" style="display:none">
+          <div class="ctl-top"><span class="ctl-name"><span class="i18n-en">Bands</span><span class="i18n-ko">띠 개수</span></span><span class="ctl-val" id="bV">3</span></div>
+          <input type="range" id="bands" min="1" max="6" step="1" value="3" aria-label="Bands" />
+        </div>
+        <div class="noteline" id="noteLine"><span class="i18n-en">Slide K: more bins keep more bits (right) and predict more (up), with diminishing returns.</span><span class="i18n-ko">K를 조절하세요: 구간이 많을수록 더 많은 비트(오른쪽)와 더 큰 예측(위쪽)을 얻지만, 수익은 점점 줄어듭니다.</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-h"><span class="i18n-en">Measurements (bits)</span><span class="i18n-ko">측정값 (비트)</span> <span id="tag" class="sync-tag part">–</span></div>
+        <div class="ro-grid">
+          <div class="ro"><div class="k">I(T;Y) <span class="i18n-en">prediction</span><span class="i18n-ko">예측</span></div><div class="v big" id="roITY">–</div></div>
+          <div class="ro"><div class="k">I(X;T) <span class="i18n-en">bits kept</span><span class="i18n-ko">유지 비트</span></div><div class="v" id="roIXT">–</div></div>
+          <div class="ro"><div class="k">I(X;Y) <span class="i18n-en">ceiling</span><span class="i18n-ko">상한</span></div><div class="v" id="roIXY">–</div></div>
+          <div class="ro"><div class="k"><span class="i18n-en">captured</span><span class="i18n-ko">포착률</span></div><div class="v" id="roFrac">–</div></div>
+          <div class="ro"><div class="k">H(Y)</div><div class="v" id="roHY">–</div></div>
+          <div class="ro"><div class="k">K</div><div class="v" id="roK">–</div></div>
+        </div>
+      </div>
+
+      <div class="card try">
+        <div class="card-h"><span class="i18n-en">Things to try</span><span class="i18n-ko">해볼 것들</span></div>
+        <ol>
+          <li><span class="i18n-en"><b>Just enough bits:</b> for <span class="kbd">Threshold</span>, <span class="kbd">K = 2</span> already captures almost all of <code>I(X;Y)</code> — one bit is nearly sufficient.</span><span class="i18n-ko"><b>딱 필요한 비트:</b> <span class="kbd">임계</span> 규칙에서는 <span class="kbd">K = 2</span>만으로 <code>I(X;Y)</code>의 거의 전부를 포착한다 — 1비트면 거의 충분하다.</span></li>
+          <li><span class="i18n-en"><b>Structure needs resolution:</b> switch to <span class="kbd">Bands</span> — now you need <code>K ≥ 2×bands</code> before <code>I(T;Y)</code> climbs. Too-coarse bins blur the signal.</span><span class="i18n-ko"><b>구조엔 해상도가 필요:</b> <span class="kbd">띠 무늬</span>로 바꾸면 <code>K ≥ 2×띠수</code>가 되어야 <code>I(T;Y)</code>가 오른다. 너무 거친 구간은 신호를 뭉갠다.</span></li>
+          <li><span class="i18n-en"><b>Noise lowers the ceiling:</b> raise <span class="kbd">Label noise</span> — <code>I(X;Y)</code> itself drops; no representation can predict what isn't there.</span><span class="i18n-ko"><b>잡음이 상한을 낮춘다:</b> <span class="kbd">레이블 잡음</span>을 올리면 <code>I(X;Y)</code> 자체가 내려간다; 없는 정보는 어떤 표현도 예측할 수 없다.</span></li>
+          <li><span class="i18n-en"><b>Diminishing returns:</b> the curve is concave — the first bits buy the most prediction. That knee is the useful representation.</span><span class="i18n-ko"><b>한계 수익 체감:</b> 곡선은 오목하다 — 첫 비트들이 가장 많은 예측을 산다. 그 무릎이 쓸모 있는 표현이다.</span></li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <div class="explain">
+    <div class="ex a">
+      <h4><span class="i18n-en">Compress, but stay predictive</span><span class="i18n-ko">압축하되 예측력은 유지</span></h4>
+      <p><span class="i18n-en">The bottleneck objective is <code>min I(X;T) − β·I(T;Y)</code>. The first term is a rate (bits through the channel <code>X→T</code>); the second is how well <code>T</code> predicts <code>Y</code>. The knob <code>β</code> slides you along the optimal frontier from maximal compression to maximal prediction.</span><span class="i18n-ko">병목 목적함수는 <code>min I(X;T) − β·I(T;Y)</code>이다. 첫 항은 채널 <code>X→T</code>를 지나는 비트율, 둘째 항은 <code>T</code>가 <code>Y</code>를 얼마나 잘 예측하는가이다. 손잡이 <code>β</code>는 최대 압축에서 최대 예측까지 최적 경계면을 따라 이동시킨다.</span></p>
+    </div>
+    <div class="ex b">
+      <h4><span class="i18n-en">A thermodynamic analogy</span><span class="i18n-ko">열역학적 유비</span></h4>
+      <p><span class="i18n-en"><code>I(X;T) − β·I(T;Y)</code> is a free energy: <code>I(X;T)</code> plays the role of energy (cost of bits) and <code>β</code> an inverse temperature. Optimal encoders satisfy a self-consistent Boltzmann-like equation — representation learning as a physics variational problem.</span><span class="i18n-ko"><code>I(X;T) − β·I(T;Y)</code>는 자유 에너지다: <code>I(X;T)</code>는 에너지(비트 비용), <code>β</code>는 역온도 역할을 한다. 최적 인코더는 자기무모순적인 Boltzmann형 방정식을 만족한다 — 물리 변분 문제로서의 표현 학습이다.</span></p>
+    </div>
+    <div class="ex c">
+      <h4><span class="i18n-en">The bridge to biomedical data</span><span class="i18n-ko">biomedical 데이터로의 다리</span></h4>
+      <p><span class="i18n-en">Efficient coding says the brain compresses sensory input to what matters — the same principle behind feature selection in high-dimensional <b>neuroimaging</b> and <b>omics</b>, where samples are few and most measured dimensions are noise. The IB gives a principled target for the representation.</span><span class="i18n-ko">효율적 부호화는 뇌가 감각 입력을 중요한 것으로 압축한다고 말한다 — 표본은 적고 측정 차원 대부분이 잡음인 고차원 <b>신경영상</b>·<b>오믹스</b>의 특징 선택 뒤에 있는 바로 그 원리다. IB는 표현에 대한 원리적 목표를 제공한다.</span></p>
+    </div>
+  </div>
+  <footer><span class="i18n-en">PRISM Lab · prototype · </span><span class="i18n-ko">PRISM Lab · 프로토타입 · </span><a href="https://sswu-prism-lab.github.io" target="_blank" rel="noopener">sswu-prism-lab.github.io</a></footer>
+</div>
+
+<style>#plane{height:322px}#enc{height:150px}</style>
+<script>
+(() => {
+  "use strict";
+  function L(en,ko){ return document.documentElement.getAttribute('data-lang')==='ko' ? ko : en; }
+  const PAL={ dark:{ink:"#e7ecff",muted:"#8493b8",line:"#26314f",grid:a=>`rgba(38,49,79,${a})`,cool:"#5eead4",sharp:"#ff6b5a",blue:"#6ea8ff",warmA:"#ffc24b"},
+    light:{ink:"#141b33",muted:"#5a6488",line:"#d9e0ec",grid:a=>`rgba(150,162,190,${a})`,cool:"#12a08d",sharp:"#e04a37",blue:"#2f6fd6",warmA:"#c98a12"} };
+  let C=PAL[(window.__theme==='light')?'light':'dark'];
+  const clamp=(x,a,b)=>x<a?a:x>b?b:x;
+  const G=400;
+  const S={ K:4, rule:"step", noise:0.15, bands:3 };
+
+  function py1(x){ // p(Y=1|x)
+    let base; if(S.rule==="step") base = x>=0.5?1:0; else base = 0.5+0.5*Math.sign(Math.sin(2*Math.PI*S.bands*x));
+    return S.noise + (1-2*S.noise)*base; // mix toward 0.5 by noise
+  }
+  const log2=x=> x<=0?0:Math.log(x)/Math.LN2;
+  const Hb=p=> (p<=0||p>=1)?0 : -(p*log2(p)+(1-p)*log2(1-p));
+
+  function stats(K){
+    // uniform x grid, p(x)=1/G
+    // p(y=1) overall, H(Y|X), then binning into K equal bins
+    let pY1=0, HYgX=0;
+    for(let i=0;i<G;i++){ const x=(i+0.5)/G; const p=py1(x); pY1+=p; HYgX+=Hb(p); }
+    pY1/=G; HYgX/=G;
+    const HY=Hb(pY1);
+    const IXY=HY-HYgX;
+    // bins
+    let HYgT=0; const cnt=new Array(K).fill(0), sum=new Array(K).fill(0);
+    for(let i=0;i<G;i++){ const x=(i+0.5)/G; const b=clamp(Math.floor(x*K),0,K-1); cnt[b]++; sum[b]+=py1(x); }
+    for(let b=0;b<K;b++){ if(cnt[b]===0)continue; const pt=cnt[b]/G, pyt=sum[b]/cnt[b]; HYgT+=pt*Hb(pyt); }
+    const ITY=HY-HYgT;
+    const IXT=log2(K); // equal bins, uniform → H(T)=log2 K
+    return {ITY,IXT,IXY,HY,binP:sum.map((s,b)=>cnt[b]?s/cnt[b]:0.5),cnt};
+  }
+
+  const cvP=document.getElementById("plane"),cxP=cvP.getContext("2d");
+  const cvE=document.getElementById("enc"),cxE=cvE.getContext("2d");
+  function fit(cv,ctx){const dpr=Math.min(window.devicePixelRatio||1,2),w=cv.clientWidth,h=cv.clientHeight;cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);return{w,h};}
+  const KMAX=24, IXTMAX=log2(KMAX);
+
+  function drawPlane(){ const {w,h}=fit(cvP,cxP); cxP.clearRect(0,0,w,h);
+    const pl=40,pr=16,pt=14,pb=22; const cur=stats(S.K);
+    const yMax=Math.max(cur.IXY*1.15,0.3);
+    const X=v=>pl+v/IXTMAX*(w-pl-pr); const Y=v=>h-pb-v/yMax*(h-pt-pb);
+    // grid + axes
+    cxP.strokeStyle=C.grid(.6);cxP.lineWidth=1; cxP.font='10px "JetBrains Mono",monospace';cxP.fillStyle=C.muted;cxP.textAlign="right";cxP.textBaseline="middle";
+    for(let g=0;g<=4;g++){ const v=cur.IXY*g/4; const y=Y(v); cxP.beginPath();cxP.moveTo(pl,y);cxP.lineTo(w-pr,y);cxP.stroke(); cxP.fillText(v.toFixed(2),pl-5,y); }
+    // ceiling I(X;Y)
+    cxP.strokeStyle=C.sharp;cxP.setLineDash([5,4]);cxP.lineWidth=1.4;cxP.beginPath();cxP.moveTo(pl,Y(cur.IXY));cxP.lineTo(w-pr,Y(cur.IXY));cxP.stroke();cxP.setLineDash([]);
+    cxP.fillStyle=C.sharp;cxP.textAlign="left";cxP.textBaseline="bottom";cxP.fillText("I(X;Y)",pl+4,Y(cur.IXY)-3);
+    // per-K points (faint) + achievable frontier (running max of I(T;Y) as bits grow)
+    let run=0; cxP.strokeStyle=C.blue;cxP.lineWidth=2.2;cxP.beginPath(); let started=false;
+    for(let k=1;k<=KMAX;k++){ const s=stats(k); run=Math.max(run,s.ITY); const px=X(s.IXT),py=Y(run);
+      if(!started){cxP.moveTo(px,py);started=true;}else cxP.lineTo(px,py); }
+    cxP.stroke();
+    cxP.fillStyle=C.blue; for(let k=1;k<=KMAX;k++){ const s=stats(k); cxP.globalAlpha=.45;cxP.beginPath();cxP.arc(X(s.IXT),Y(s.ITY),2,0,6.283);cxP.fill(); } cxP.globalAlpha=1;
+    // current point
+    cxP.fillStyle=C.cool;cxP.shadowColor=C.cool;cxP.shadowBlur=9;cxP.beginPath();cxP.arc(X(cur.IXT),Y(cur.ITY),5,0,6.283);cxP.fill();cxP.shadowBlur=0;
+    cxP.fillStyle=C.cool;cxP.font='600 11px "JetBrains Mono",monospace';cxP.textAlign="left";cxP.textBaseline="middle";cxP.fillText("K="+S.K,X(cur.IXT)+9,Y(cur.ITY));
+    // y label
+    cxP.save();cxP.translate(12,(pt+h-pb)/2);cxP.rotate(-Math.PI/2);cxP.fillStyle=C.muted;cxP.textAlign="center";cxP.fillText("I(T;Y)  ("+L("prediction","예측")+")",0,0);cxP.restore();
+  }
+  function drawEnc(){ const {w,h}=fit(cvE,cxE); cxE.clearRect(0,0,w,h);
+    const pl=8,pr=8,pt=10,pb=10; const X=x=>pl+x*(w-pl-pr); const Y=p=>h-pb-p*(h-pt-pb);
+    // bin fills colored by p(y=1|bin)
+    const cur=stats(S.K);
+    for(let b=0;b<S.K;b++){ const x0=X(b/S.K),x1=X((b+1)/S.K); const p=cur.binP[b];
+      const r=Math.round(255*p+110*(1-p)), g=Math.round(107*p+168*(1-p)), bl=Math.round(90*p+255*(1-p)); // red(y=1)..blue(y=0)
+      cxE.fillStyle=`rgba(${r},${g},${bl},0.16)`; cxE.fillRect(x0,pt,x1-x0,h-pt-pb);
+      cxE.strokeStyle=C.grid(1);cxE.lineWidth=1;cxE.beginPath();cxE.moveTo(x0,pt);cxE.lineTo(x0,h-pb);cxE.stroke();
+    }
+    // p(y=1|x) curve
+    cxE.strokeStyle=C.warmA;cxE.lineWidth=2;cxE.beginPath();
+    for(let i=0;i<=200;i++){ const x=i/200; const px=X(x),py=Y(py1(x)); if(i===0)cxE.moveTo(px,py);else cxE.lineTo(px,py); }
+    cxE.stroke();
+    cxE.fillStyle=C.muted;cxE.font='9.5px "JetBrains Mono",monospace';cxE.textAlign="left";cxE.textBaseline="top";cxE.fillText("p(Y=1)=1",pl+2,pt);cxE.textBaseline="bottom";cxE.fillText("p(Y=1)=0",pl+2,h-pb);
+  }
+  function drawAll(){ drawPlane(); drawEnc(); updateRO(); }
+  function updateRO(){ const s=stats(S.K);
+    document.getElementById("roITY").textContent=s.ITY.toFixed(3);
+    document.getElementById("roIXT").textContent=s.IXT.toFixed(2);
+    document.getElementById("roIXY").textContent=s.IXY.toFixed(3);
+    document.getElementById("roFrac").textContent=(s.IXY>1e-4?(100*s.ITY/s.IXY):0).toFixed(0)+"%";
+    document.getElementById("roHY").textContent=s.HY.toFixed(3);
+    document.getElementById("roK").textContent=S.K;
+    const tag=document.getElementById("tag"),f=s.IXY>1e-4?s.ITY/s.IXY:0;
+    if(f>0.95){tag.textContent=L("sufficient","충분");tag.className="sync-tag on";}
+    else if(f>0.6){tag.textContent=L("lossy","손실");tag.className="sync-tag part";}
+    else{tag.textContent=L("too coarse","너무 거침");tag.className="sync-tag off";}
+    document.getElementById("planeXmax").textContent="I(X;T) = "+IXTMAX.toFixed(1)+" bits";
+    document.getElementById("encHint").textContent = S.K+" "+L("bins","구간");
+  }
+  window.__onTheme=t=>{C=PAL[t==='light'?'light':'dark'];drawAll();};
+  window.__onLang=()=>{drawAll();};
+  window.addEventListener("resize",()=>{clearTimeout(window.__rt);window.__rt=setTimeout(drawAll,80);});
+
+  const bind=(id,valId,fmt,fn)=>{const el=document.getElementById(id);el.addEventListener("input",()=>{const v=parseFloat(el.value);fn(v);if(valId)document.getElementById(valId).textContent=fmt(v);drawAll();});};
+  bind("kbins","kV",v=>String(v|0),v=>{S.K=v|0;});
+  bind("noise","noiseV",v=>v.toFixed(2),v=>{S.noise=v;});
+  bind("bands","bV",v=>String(v|0),v=>{S.bands=v|0;});
+  document.getElementById("ruleSeg").addEventListener("click",e=>{const b=e.target.closest(".chip");if(!b)return;[...e.currentTarget.children].forEach(c=>c.classList.remove("active"));b.classList.add("active");S.rule=b.dataset.r;document.getElementById("bandsCtl").style.display=S.rule==="bands"?"":"none";drawAll();});
+  drawAll();
+})();
+</script>
+</body>
+</html>
