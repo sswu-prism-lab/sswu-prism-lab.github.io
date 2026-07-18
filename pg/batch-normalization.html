@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<script>
+(function(){
+  function g(k,d){ try{ return localStorage.getItem(k)||d; }catch(e){ return d; } }
+  var root=document.documentElement;
+  root.setAttribute('data-theme', g('theme', (window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light'));
+  root.setAttribute('data-lang', g('lang','en'));
+  window.addEventListener('storage', function(e){
+    if(e.key==='theme'){ root.setAttribute('data-theme', e.newValue||'dark'); if(window.__onTheme) window.__onTheme(); }
+    if(e.key==='lang'){ root.setAttribute('data-lang', e.newValue||'en'); if(window.__onLang) window.__onLang(); }
+  });
+})();
+</script>
+
+<title>Batch Normalization — PRISM Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<style>
+* { box-sizing: border-box; }
+:root {
+  color-scheme: light;
+  --bg:#ffffff; --panel:#f7f9fc; --panel-2:#eef2f8; --ink:#141b33; --muted:#5a6488;
+  --border:#e2e7ee; --grid:#eef2f8; --axis:#c9d0c8;
+  --bn:#22a06b; --c-raw:#94a0b8; --c-norm:#22a06b; --c-nobn:#e0533d;
+  --c-mub:#2563eb; --c-sigb:#e08a00; --c-outmu:#2563eb; --c-outsig:#22a06b;
+  --shadow: 0 1px 2px rgba(28,36,49,.05);
+}
+[data-theme="dark"] {
+  color-scheme: dark;
+  --bg:#15181e; --panel:#1d212a; --panel-2:#171b22; --ink:#e6edf3; --muted:#8b949e;
+  --border:#2e343f; --grid:#252b36; --axis:#3a4250;
+  --bn:#4ade80; --c-raw:#6b7688; --c-norm:#4ade80; --c-nobn:#f87171;
+  --c-mub:#60a5fa; --c-sigb:#fbbf24; --c-outmu:#60a5fa; --c-outsig:#4ade80;
+  --shadow: none;
+}
+html, body { margin:0; padding:0; }
+body {
+  background:var(--bg); color:var(--ink);
+  padding:26px 20px 44px;
+  font:14px/1.5 "Inter", system-ui, -apple-system, 'Noto Sans KR', sans-serif;
+  accent-color: var(--bn);
+}
+:focus-visible { outline:2px solid var(--bn); outline-offset:2px; }
+
+/* ---------- bilingual ---------- */
+html[data-lang="en"] .i18n-ko{ display:none !important; }
+html[data-lang="ko"] .i18n-en{ display:none !important; }
+.i18n-ko{ font-family:'Pretendard','Inter',sans-serif; word-break:keep-all; }
+
+/* ---------- site chrome ---------- */
+.wrap{max-width:1120px;margin:0 auto}
+.topbar{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.back{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--muted);text-decoration:none;
+  border:1px solid var(--border);padding:6px 12px;border-radius:20px;transition:.14s}
+.back:hover{color:var(--bn);border-color:currentColor}
+.eyebrow{font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--muted);margin:0 0 10px;display:flex;align-items:center;gap:10px}
+.eyebrow::before{content:"";width:22px;height:1px;background:currentColor;opacity:.7}
+.title{font-family:"Space Grotesk",system-ui,sans-serif;font-weight:700;font-size:clamp(28px,4.6vw,44px);
+  line-height:1.04;margin:0 0 10px;letter-spacing:-.02em;color:var(--ink)}
+.title .thin{color:var(--muted);font-weight:500;font-size:.4em}
+.site-sub{color:var(--muted);max-width:70ch;margin:0 0 24px;font-size:15px}
+footer{margin-top:30px;color:var(--muted);font-size:12px;font-family:"JetBrains Mono",monospace;letter-spacing:.04em}
+footer a{color:var(--muted);text-decoration:underline}
+
+/* ---------- layout ---------- */
+main { padding:0; }
+.tab { display:grid; grid-template-columns:264px minmax(0,1fr); gap:14px; align-items:start; }
+.panel { background:var(--panel); border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow); }
+.stage { display:flex; flex-direction:column; gap:12px; min-width:0; }
+
+/* ---------- side controls ---------- */
+.side { padding:14px; display:flex; flex-direction:column; gap:14px; }
+.grp { display:flex; flex-direction:column; gap:8px; }
+.grp + .grp { border-top:1px dashed var(--border); padding-top:13px; }
+.grp-t { font-size:10.5px; font-weight:700; letter-spacing:.09em; text-transform:uppercase; color:var(--muted); }
+.sl { display:flex; flex-direction:column; gap:3px; font-size:12.5px; }
+.sl > span { display:flex; justify-content:space-between; align-items:baseline; gap:8px; }
+.val { font:600 12px "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+input[type=range] { width:100%; margin:0; height:22px; }
+.hint { margin:0; font-size:11.5px; color:var(--muted); }
+.btnrow { display:flex; gap:6px; flex-wrap:wrap; }
+.btn { border:1px solid var(--border); background:var(--panel); color:var(--ink); font:inherit; font-size:12.5px; padding:6px 11px; border-radius:8px; cursor:pointer; transition:background .12s; }
+.btn:hover { background:var(--bg); }
+.btn.go { border-color:var(--bn); color:var(--bn); font-weight:600; }
+.btn.go.running { background:var(--bn); color:var(--bg); }
+.btn.ghost { color:var(--muted); }
+.segs { display:flex; gap:4px; }
+.seg { flex:1; border:1px solid var(--border); background:var(--bg); color:var(--muted); font:inherit; font-size:12px; padding:5px 4px; border-radius:7px; cursor:pointer; text-align:center; transition:background .12s, color .12s, border-color .12s; }
+.seg:hover { color:var(--ink); }
+.seg.active { background:var(--ink); color:var(--bg); border-color:var(--ink); font-weight:600; }
+
+/* ---------- plot ---------- */
+.plot { padding:10px 12px 8px; }
+canvas { display:block; width:100%; }
+#histCv { height:300px; }
+#depthCv { height:236px; }
+.legend { display:flex; flex-wrap:wrap; gap:4px 14px; padding:8px 2px 2px; font-size:11.5px; color:var(--muted); }
+.legend span { display:inline-flex; align-items:center; gap:5px; }
+.swbar { display:inline-block; width:12px; height:11px; border-radius:2px; background:currentColor; }
+.swtick { display:inline-block; width:14px; height:0; border-top:2px solid currentColor; }
+.swdash { display:inline-block; width:14px; height:0; border-top:2px dashed currentColor; }
+.losscap { margin:6px 2px 2px; font-size:11.5px; color:var(--muted); text-align:center; }
+
+/* ---------- cards ---------- */
+.cards { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:10px; }
+.card { background:var(--panel); border:1px solid var(--border); border-top:3px solid var(--border); border-radius:12px; padding:10px 12px 9px; box-shadow:var(--shadow); }
+.card.mub { border-top-color:var(--c-mub); }
+.card.sigb { border-top-color:var(--c-sigb); }
+.card.outmu { border-top-color:var(--c-outmu); }
+.card.outsig { border-top-color:var(--c-outsig); }
+.card .k { font:700 12px "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing:.04em; }
+.card.mub .k { color:var(--c-mub); }
+.card.sigb .k { color:var(--c-sigb); }
+.card.outmu .k { color:var(--c-outmu); }
+.card.outsig .k { color:var(--c-outsig); }
+.card .nm { font-size:12px; color:var(--muted); margin-bottom:6px; }
+.card .big { font:600 20px "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; white-space:nowrap; }
+.card .note { margin:6px 0 0; font-size:11px; color:var(--muted); border-top:1px dashed var(--border); padding-top:5px; }
+
+/* ---------- fold panels ---------- */
+.fold summary { cursor:pointer; padding:9px 13px; font-size:12.5px; font-weight:600; color:var(--muted); list-style:none; display:flex; align-items:center; gap:7px; }
+.fold summary::-webkit-details-marker { display:none; }
+.fold summary::before { content:'\25B8'; font-size:10px; transition:transform .12s; }
+.fold[open] summary::before { transform:rotate(90deg); }
+.fold-body { padding:2px 16px 12px; font-size:13px; }
+.fold-body p { margin:4px 0 8px; }
+.fold ol { margin:0; padding-left:20px; display:flex; flex-direction:column; gap:8px; }
+.katex-display { margin:.5em 0; padding:2px 0; overflow-x:auto; overflow-y:hidden; }
+.katex { font-size:1.0em; }
+
+@media (max-width:760px) {
+  .tab { grid-template-columns:1fr; }
+  .cards { grid-template-columns:1fr 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition:none !important; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar"><a class="back" href="index.html"><span class="i18n-en">← Playground</span><span class="i18n-ko">← 놀이터</span></a></div>
+  <p class="eyebrow"><span class="i18n-en">PRISM · Machine Learning Playground</span><span class="i18n-ko">PRISM · 머신러닝 놀이터</span></p>
+  <h1 class="title"><span class="i18n-en">Batch Normalization</span><span class="i18n-ko">배치 정규화</span><br><span class="thin"><span class="i18n-en">Re-center and re-scale activations layer by layer — see how BN keeps signals alive through a deep network and smooths training</span><span class="i18n-ko">층마다 활성화를 다시 중심화하고 다시 스케일링 — BN이 깊은 신경망에서 신호를 살아있게 유지하고 학습을 매끄럽게 하는 과정 보기</span></span></h1>
+
+<main>
+<section class="tab">
+  <aside class="panel side">
+    <div class="grp">
+      <div class="grp-t"><span class="i18n-en">Input batch</span><span class="i18n-ko">입력 배치</span></div>
+      <div class="segs" id="shapeRow">
+        <button class="seg active" data-shape="gauss"><span class="i18n-en">Gaussian</span><span class="i18n-ko">가우시안</span></button>
+        <button class="seg" data-shape="skew"><span class="i18n-en">Skewed</span><span class="i18n-ko">치우침</span></button>
+        <button class="seg" data-shape="bi"><span class="i18n-en">Bimodal</span><span class="i18n-ko">이봉</span></button>
+      </div>
+      <label class="sl"><span><span class="i18n-en">Input mean μ_in</span><span class="i18n-ko">입력 평균 μ_in</span> <b id="muinV" class="val">1.5</b></span>
+        <input type="range" id="muinS" min="-3" max="3" step="0.1" value="1.5"></label>
+      <label class="sl"><span><span class="i18n-en">Input std σ_in</span><span class="i18n-ko">입력 표준편차 σ_in</span> <b id="siginV" class="val">1.0</b></span>
+        <input type="range" id="siginS" min="0.2" max="2.5" step="0.1" value="1.0"></label>
+      <p class="hint"><span class="i18n-en">A batch of raw activations before normalization.</span><span class="i18n-ko">정규화 이전의 원본 활성값 배치입니다.</span></p>
+    </div>
+
+    <div class="grp">
+      <div class="grp-t"><span class="i18n-en">BN affine (γ, β, ε)</span><span class="i18n-ko">BN 아핀 변환 (γ, β, ε)</span></div>
+      <label class="sl"><span><span class="i18n-en">Scale γ</span><span class="i18n-ko">스케일 γ</span> <b id="gamV" class="val">1.00</b></span>
+        <input type="range" id="gamS" min="-2" max="2" step="0.05" value="1"></label>
+      <label class="sl"><span><span class="i18n-en">Shift β</span><span class="i18n-ko">이동 β</span> <b id="betV" class="val">0.0</b></span>
+        <input type="range" id="betS" min="-3" max="3" step="0.1" value="0"></label>
+      <label class="sl"><span><span class="i18n-en">Epsilon ε</span><span class="i18n-ko">엡실론 ε</span> <b id="epsV" class="val">0.001</b></span>
+        <input type="range" id="epsS" min="0.001" max="2" step="0.001" value="0.001"></label>
+      <p class="hint"><span class="i18n-en">BN standardizes to mean 0 / var 1, then γ, β restore any mean and scale.</span><span class="i18n-ko">BN은 평균 0 / 분산 1로 표준화한 뒤, γ, β가 임의의 평균과 스케일을 복원합니다.</span></p>
+    </div>
+
+    <div class="grp">
+      <div class="grp-t"><span class="i18n-en">Depth propagation</span><span class="i18n-ko">깊이 전파</span></div>
+      <label class="sl"><span><span class="i18n-en">Layers L</span><span class="i18n-ko">층 수 L</span> <b id="LV" class="val">20</b></span>
+        <input type="range" id="LS" min="2" max="40" step="1" value="20"></label>
+      <label class="sl"><span><span class="i18n-en">Weight gain</span><span class="i18n-ko">가중치 이득</span> <b id="gainV" class="val">1.00</b></span>
+        <input type="range" id="gainS" min="0.4" max="2.0" step="0.05" value="1.0"></label>
+      <div class="segs" id="nlRow">
+        <button class="seg active" data-nl="tanh"><span class="i18n-en">tanh</span><span class="i18n-ko">tanh</span></button>
+        <button class="seg" data-nl="relu"><span class="i18n-en">ReLU</span><span class="i18n-ko">ReLU</span></button>
+      </div>
+      <div class="btnrow">
+        <button id="goBtn" class="btn go"><span class="i18n-en">▶ Propagate</span><span class="i18n-ko">▶ 전파하기</span></button>
+        <button id="resampleBtn" class="btn ghost"><span class="i18n-en">Resample</span><span class="i18n-ko">재추출</span></button>
+      </div>
+      <p class="hint"><span class="i18n-en">Fixed random weights, gain-scaled. BN uses γ=1, β=0 to hold std at 1.</span><span class="i18n-ko">고정 랜덤 가중치를 이득으로 스케일합니다. 깊이 전파의 BN은 std를 1로 유지하기 위해 γ=1, β=0을 사용합니다.</span></p>
+    </div>
+  </aside>
+
+  <div class="stage">
+    <div class="panel plot">
+      <canvas id="histCv"></canvas>
+      <div class="legend">
+        <span><i class="swbar" style="color:var(--c-raw)"></i><span class="i18n-en">Raw batch x</span><span class="i18n-ko">원본 배치 x</span></span>
+        <span><i class="swbar" style="color:var(--bn)"></i><span class="i18n-en">BN output y = γx̂ + β</span><span class="i18n-ko">BN 출력 y = γx̂ + β</span></span>
+        <span><i class="swdash" style="color:var(--c-raw)"></i><span class="i18n-en">μ_B (raw mean)</span><span class="i18n-ko">μ_B (원본 평균)</span></span>
+      </div>
+    </div>
+
+    <div class="panel plot">
+      <canvas id="depthCv"></canvas>
+      <div class="legend">
+        <span><i class="swtick" style="color:var(--c-nobn)"></i><span class="i18n-en">without BN</span><span class="i18n-ko">BN 없음</span></span>
+        <span><i class="swtick" style="color:var(--bn)"></i><span class="i18n-en">with BN</span><span class="i18n-ko">BN 적용</span></span>
+        <span><i class="swdash" style="color:var(--muted)"></i><span class="i18n-en">std = 1</span><span class="i18n-ko">std = 1</span></span>
+      </div>
+      <p class="losscap"><span class="i18n-en">Per-layer activation std (log scale) as signal propagates through depth.</span><span class="i18n-ko">신호가 깊이를 따라 전파될 때의 층별 활성 표준편차 (로그 스케일).</span></p>
+    </div>
+
+    <div class="cards">
+      <div class="card mub">
+        <div class="k">μ_B</div>
+        <div class="nm"><span class="i18n-en">Batch mean (raw)</span><span class="i18n-ko">배치 평균 (원본)</span></div>
+        <div class="big" id="mubV">—</div>
+        <p class="note"><span class="i18n-en">Mean of x before BN; subtracted to re-center.</span><span class="i18n-ko">BN 이전 x의 평균; 중심화를 위해 빼줍니다.</span></p>
+      </div>
+      <div class="card sigb">
+        <div class="k">σ_B</div>
+        <div class="nm"><span class="i18n-en">Batch std (raw)</span><span class="i18n-ko">배치 표준편차 (원본)</span></div>
+        <div class="big" id="sigbV">—</div>
+        <p class="note"><span class="i18n-en">Std of x before BN; divides to re-scale.</span><span class="i18n-ko">BN 이전 x의 표준편차; 재스케일을 위해 나눕니다.</span></p>
+      </div>
+      <div class="card outmu">
+        <div class="k">out μ</div>
+        <div class="nm"><span class="i18n-en">Mean of y</span><span class="i18n-ko">y의 평균</span></div>
+        <div class="big" id="outmuV">—</div>
+        <p class="note"><span class="i18n-en">Mean of BN output ≈ β (x̂ has mean 0).</span><span class="i18n-ko">BN 출력의 평균 ≈ β (x̂의 평균은 0).</span></p>
+      </div>
+      <div class="card outsig">
+        <div class="k">out σ</div>
+        <div class="nm"><span class="i18n-en">Std of y</span><span class="i18n-ko">y의 표준편차</span></div>
+        <div class="big" id="outsigV">—</div>
+        <p class="note"><span class="i18n-en">Std of BN output ≈ |γ| (x̂ has std 1).</span><span class="i18n-ko">BN 출력의 표준편차 ≈ |γ| (x̂의 표준편차는 1).</span></p>
+      </div>
+    </div>
+
+    <details class="panel fold">
+      <summary><span class="i18n-en">Formulas</span><span class="i18n-ko">공식</span></summary>
+      <div class="fold-body">
+        <p><span class="i18n-en">Batch normalization standardizes each feature over the mini-batch of size m, then restores freedom with learnable γ, β:</span><span class="i18n-ko">배치 정규화는 크기 m의 미니배치에 대해 각 특성을 표준화한 뒤, 학습 가능한 γ, β로 표현의 자유도를 복원합니다:</span></p>
+        $$\mu_B=\frac1m\sum_{i=1}^m x_i,\qquad \sigma_B^2=\frac1m\sum_{i=1}^m (x_i-\mu_B)^2$$
+        <p><span class="i18n-en">Normalize to zero mean / unit variance (ε guards against dividing by zero), then apply the affine transform:</span><span class="i18n-ko">평균 0 / 분산 1로 정규화한 뒤(ε는 0으로 나눔을 방지), 아핀 변환을 적용합니다:</span></p>
+        $$\hat x_i=\frac{x_i-\mu_B}{\sqrt{\sigma_B^2+\epsilon}},\qquad y_i=\gamma\,\hat x_i+\beta$$
+        <p><span class="i18n-en">So the output mean is exactly β and its std is |γ|·σ_B/√(σ_B²+ε) ≈ |γ| — normalization removes the input's mean and scale, and γ, β put back whatever the network needs.</span><span class="i18n-ko">따라서 출력 평균은 정확히 β이고 표준편차는 |γ|·σ_B/√(σ_B²+ε) ≈ |γ| 입니다 — 정규화가 입력의 평균과 스케일을 제거하면, γ, β가 신경망에 필요한 값을 다시 부여합니다.</span></p>
+      </div>
+    </details>
+
+    <details class="panel fold">
+      <summary><span class="i18n-en">What to watch</span><span class="i18n-ko">관찰 포인트</span></summary>
+      <div class="fold-body">
+        <ol>
+          <li><span class="i18n-en">BN standardizes each feature over the batch to <b>mean 0 / var 1</b>, then γ, β let the network re-learn any mean and scale it needs — so it never loses representational power. Watch <b>out μ track β</b> and <b>out σ track |γ|</b> in the cards.</span><span class="i18n-ko">BN은 배치에 대해 각 특성을 <b>평균 0 / 분산 1</b>로 표준화하고, 이어서 γ, β가 필요한 어떤 평균과 스케일도 다시 학습하게 해줍니다 — 따라서 표현력을 결코 잃지 않습니다. 카드에서 <b>out μ가 β를</b>, <b>out σ가 |γ|를</b> 따라가는 것을 확인하세요.</span></li>
+          <li><span class="i18n-en">Without BN, activation std compounds <b>multiplicatively</b> with depth: gain &gt; 1 → <b>exploding</b>, gain &lt; 1 → <b>vanishing</b> (a straight line in log scale). With BN every layer is renormalized, so the std curve stays <b>flat near 1</b> and gradients stay healthy.</span><span class="i18n-ko">BN이 없으면 활성 표준편차가 깊이에 따라 <b>곱셈적으로</b> 누적됩니다: 이득 &gt; 1 → <b>폭발</b>, 이득 &lt; 1 → <b>소실</b> (로그 스케일에서 직선). BN이 있으면 매 층이 재정규화되므로 표준편차 곡선이 <b>1 근처에서 평평하게</b> 유지되고 그래디언트가 건강하게 유지됩니다.</span></li>
+          <li><span class="i18n-en">Intuition: BN <b>smooths the loss landscape</b> and reduces sensitivity to weight initialization and learning rate — the modern view of <i>why</i> BN helps optimization, beyond the original "internal covariate shift" story.</span><span class="i18n-ko">직관: BN은 <b>손실 지형을 매끄럽게</b> 만들고 가중치 초기화와 학습률에 대한 민감도를 낮춥니다 — 원래의 "내부 공변량 이동" 설명을 넘어, BN이 최적화에 도움이 되는 <i>이유</i>에 대한 현대적 관점입니다.</span></li>
+        </ol>
+      </div>
+    </details>
+  </div>
+</section>
+</main>
+  <footer>PRISM Lab · <span class="i18n-en">prototype</span><span class="i18n-ko">프로토타입</span> · <a href="https://sswu-prism-lab.github.io" target="_blank" rel="noopener">sswu-prism-lab.github.io</a></footer>
+</div>
+
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script>
+'use strict';
+/* Batch Normalization playground.
+   (A) Single-layer BN on a batch: x -> x_hat=(x-muB)/sqrt(sigB^2+eps) -> y=gamma*x_hat+beta.
+   (B) Depth propagation: per-layer activation std with BN vs without BN. */
+
+/* ---------- helpers ---------- */
+function $(id){ return document.getElementById(id); }
+function cssv(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+function L(en,ko){ return document.documentElement.getAttribute('data-lang')==='ko' ? ko : en; }
+function fmt(v, dg){
+  if(dg===undefined) dg=3;
+  if(v===null||v===undefined||!isFinite(v)) return '—';
+  var a=Math.abs(v);
+  if(a!==0 && (a>=1e4||a<1e-3)) return v.toExponential(1);
+  return v.toFixed(dg);
+}
+function hexRGB(hex){
+  hex=hex.replace('#','');
+  if(hex.length===3) hex=hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+  return [parseInt(hex.substr(0,2),16), parseInt(hex.substr(2,2),16), parseInt(hex.substr(4,2),16)];
+}
+function hexA(hex,a){ var c=hexRGB(hex); return 'rgba('+c[0]+','+c[1]+','+c[2]+','+a+')'; }
+function setupCanvas(cv){
+  var dpr=window.devicePixelRatio||1;
+  var w=cv.clientWidth, h=cv.clientHeight;
+  if(w===0||h===0) return null;
+  var W=Math.round(w*dpr), H=Math.round(h*dpr);
+  if(cv.width!==W||cv.height!==H){ cv.width=W; cv.height=H; }
+  var ctx=cv.getContext('2d');
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  return { ctx:ctx, w:w, h:h };
+}
+/* seeded RNG so plots stay deterministic across theme / language redraws */
+function mulberry32(a){
+  return function(){
+    a|=0; a=a+0x6D2B79F5|0;
+    var t=Math.imul(a^a>>>15, 1|a);
+    t=t+Math.imul(t^t>>>7, 61|t)^t;
+    return ((t^t>>>14)>>>0)/4294967296;
+  };
+}
+function srandn(rng){
+  var u=0,v=0;
+  while(u===0) u=rng();
+  while(v===0) v=rng();
+  return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);
+}
+function stdOf(arr){
+  var n=arr.length, m=0;
+  for(var i=0;i<n;i++) m+=arr[i];
+  m/=n;
+  var s=0; for(i=0;i<n;i++){ var d=arr[i]-m; s+=d*d; }
+  return Math.sqrt(s/n);
+}
+var MONO='11px "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace';
+
+/* ---------- state ---------- */
+var M_A=2000;          /* batch size for view A */
+var N_UNITS=96;        /* hidden width for depth sim */
+var L_MAX=40;
+var state={
+  shape:'gauss', muin:1.5, sigin:1.0,
+  gamma:1.0, beta:0.0, eps:0.001,
+  Layers:20, gain:1.0, nl:'tanh',
+  seed:12345,
+  baseA:null,          /* Float64Array unit-normalized base samples for view A */
+  xr:null, yr:null,    /* raw + BN output batches */
+  domA:[-4,4],
+  statA:{ mub:NaN, sigb:NaN, outmu:NaN, outsig:NaN },
+  W:null,              /* array of L_MAX Float32Array(n*n) base weights */
+  depth:{ noBN:[1], withBN:[1] },
+  reveal:20, running:false
+};
+
+/* ---------- view A: build batch + BN ---------- */
+function genBaseA(){
+  var rng=mulberry32((state.seed*2654435761)>>>0);
+  var m=M_A, b=new Float64Array(m), i;
+  if(state.shape==='gauss'){
+    for(i=0;i<m;i++) b[i]=srandn(rng);
+  } else if(state.shape==='skew'){
+    /* Exponential(1) has mean 1, var 1 -> shift to mean 0 */
+    for(i=0;i<m;i++){ var u=rng(); if(u===0)u=1e-12; b[i]=(-Math.log(u))-1; }
+  } else { /* bimodal, standardized to unit variance */
+    for(i=0;i<m;i++){ var c=(rng()<0.5?-1.2:1.2); b[i]=(c+0.5*srandn(rng))/1.3; }
+  }
+  state.baseA=b;
+}
+function computeA(){
+  if(!state.baseA) genBaseA();
+  var m=M_A, base=state.baseA;
+  var xr=new Float64Array(m), i, x, sx=0;
+  for(i=0;i<m;i++){ x=state.muin+state.sigin*base[i]; xr[i]=x; sx+=x; }
+  var mub=sx/m;
+  var vv=0; for(i=0;i<m;i++){ var d=xr[i]-mub; vv+=d*d; } vv/=m;
+  var sigb=Math.sqrt(vv);
+  var inv=1/Math.sqrt(vv+state.eps);
+  var yr=new Float64Array(m), sy=0;
+  for(i=0;i<m;i++){ var xh=(xr[i]-mub)*inv; yr[i]=state.gamma*xh+state.beta; sy+=yr[i]; }
+  var muy=sy/m, vy=0;
+  for(i=0;i<m;i++){ var e=yr[i]-muy; vy+=e*e; } vy/=m;
+  state.xr=xr; state.yr=yr;
+  state.statA={ mub:mub, sigb:sigb, outmu:muy, outsig:Math.sqrt(vy) };
+  /* domain covering both, padded */
+  var lo=Infinity, hi=-Infinity;
+  for(i=0;i<m;i++){ if(xr[i]<lo)lo=xr[i]; if(xr[i]>hi)hi=xr[i]; if(yr[i]<lo)lo=yr[i]; if(yr[i]>hi)hi=yr[i]; }
+  var pad=(hi-lo)*0.06+1e-6;
+  state.domA=[lo-pad, hi+pad];
+}
+
+/* ---------- depth: build weights + propagate ---------- */
+function buildWeights(){
+  var rng=mulberry32((state.seed^0x9e3779b1)>>>0);
+  var n=N_UNITS;
+  state.W=new Array(L_MAX);
+  for(var l=0;l<L_MAX;l++){
+    var Wm=new Float32Array(n*n);
+    for(var t=0;t<n*n;t++) Wm[t]=srandn(rng);
+    state.W[l]=Wm;
+  }
+}
+function computeDepth(){
+  if(!state.W) buildWeights();
+  var n=N_UNITS, Ln=state.Layers, gain=state.gain, eps=state.eps;
+  var phi = state.nl==='relu' ? function(x){ return x>0?x:0; } : Math.tanh;
+  var rng=mulberry32((state.seed^0x1234abcd)>>>0);
+  var noh=new Float64Array(n), bnh=new Float64Array(n), i;
+  for(i=0;i<n;i++){ var v=srandn(rng); noh[i]=v; bnh[i]=v; }
+  var noBN=[stdOf(noh)], withBN=[stdOf(bnh)];
+  var scal=gain/Math.sqrt(n);
+  for(var l=0;l<Ln;l++){
+    var W=state.W[l];
+    var no2=new Float64Array(n), bn2=new Float64Array(n), j, k, base;
+    for(j=0;j<n;j++){
+      var sN=0, sB=0; base=j*n;
+      for(k=0;k<n;k++){ var w=W[base+k]*scal; sN+=w*noh[k]; sB+=w*bnh[k]; }
+      no2[j]=phi(sN); bn2[j]=phi(sB);
+    }
+    /* BN: normalize the layer output to mean 0 / unit std (gamma=1, beta=0) */
+    var m=0; for(j=0;j<n;j++) m+=bn2[j]; m/=n;
+    var vv=0; for(j=0;j<n;j++){ var d=bn2[j]-m; vv+=d*d; } vv/=n;
+    var inv=1/Math.sqrt(vv+eps);
+    for(j=0;j<n;j++) bn2[j]=(bn2[j]-m)*inv;
+    noh=no2; bnh=bn2;
+    noBN.push(stdOf(noh)); withBN.push(stdOf(bnh));
+  }
+  state.depth={ noBN:noBN, withBN:withBN };
+  if(!state.running) state.reveal=Ln;
+}
+
+/* ---------- draw view A: histograms ---------- */
+function drawHist(){
+  var cv=$('histCv'), st=setupCanvas(cv);
+  if(!st) return;
+  var ctx=st.ctx, w=st.w, h=st.h;
+  var Mg={ l:40, r:12, t:14, b:26 };
+  var pw=w-Mg.l-Mg.r, ph=h-Mg.t-Mg.b;
+  ctx.clearRect(0,0,w,h);
+
+  var lo=state.domA[0], hi=state.domA[1], span=hi-lo;
+  var bins=44, bw=span/bins;
+  var cRaw=new Float64Array(bins), cY=new Float64Array(bins), i, b;
+  var xr=state.xr, yr=state.yr, m=M_A;
+  for(i=0;i<m;i++){
+    b=Math.floor((xr[i]-lo)/bw); if(b>=0&&b<bins) cRaw[b]++;
+    b=Math.floor((yr[i]-lo)/bw); if(b>=0&&b<bins) cY[b]++;
+  }
+  var maxD=0;
+  for(i=0;i<bins;i++){ if(cRaw[i]>maxD)maxD=cRaw[i]; if(cY[i]>maxD)maxD=cY[i]; }
+  maxD=maxD/(m*bw); if(maxD<=0) maxD=1;
+  var yTop=maxD*1.12;
+
+  function SX(x){ return Mg.l+(x-lo)/span*pw; }
+  function SY(d){ return Mg.t+ph-(d/yTop)*ph; }
+
+  /* grid + frame */
+  ctx.strokeStyle=cssv('--grid'); ctx.lineWidth=1; ctx.beginPath();
+  for(var gx=Math.ceil(lo);gx<=hi;gx++){ ctx.moveTo(SX(gx),Mg.t); ctx.lineTo(SX(gx),Mg.t+ph); }
+  ctx.stroke();
+  ctx.strokeStyle=cssv('--axis'); ctx.strokeRect(Mg.l,Mg.t,pw,ph);
+
+  /* bars */
+  function bars(counts, col, alpha){
+    ctx.fillStyle=hexA(col, alpha);
+    for(var k=0;k<bins;k++){
+      var d=counts[k]/(m*bw); if(d<=0) continue;
+      var x0=SX(lo+k*bw), x1=SX(lo+(k+1)*bw), yy=SY(d);
+      ctx.fillRect(x0, yy, Math.max(1,x1-x0-0.6), Mg.t+ph-yy);
+    }
+  }
+  bars(cRaw, cssv('--c-raw'), 0.55);
+  bars(cY,   cssv('--bn'),    0.55);
+
+  /* mean markers */
+  function vline(xv, col, dash){
+    if(xv<lo||xv>hi) return;
+    ctx.strokeStyle=col; ctx.lineWidth=1.6; ctx.setLineDash(dash);
+    ctx.beginPath(); ctx.moveTo(SX(xv),Mg.t); ctx.lineTo(SX(xv),Mg.t+ph); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+  vline(state.statA.mub, cssv('--c-raw'), [5,4]);
+  vline(state.statA.outmu, cssv('--bn'), [5,4]);
+
+  /* x ticks */
+  ctx.fillStyle=cssv('--muted'); ctx.font=MONO; ctx.textAlign='center';
+  for(gx=Math.ceil(lo);gx<=hi;gx++){ if(gx%1===0) ctx.fillText(String(gx), SX(gx), h-9); }
+
+  /* labels */
+  ctx.font='600 12px "Inter", system-ui, sans-serif'; ctx.textAlign='left';
+  ctx.fillStyle=cssv('--c-raw');
+  ctx.fillText(L('raw batch x','원본 배치 x'), Mg.l+8, Mg.t+16);
+  ctx.fillStyle=cssv('--bn');
+  ctx.fillText(L('BN output y','BN 출력 y'), Mg.l+8, Mg.t+34);
+  ctx.font=MONO; ctx.fillStyle=cssv('--muted'); ctx.textAlign='right';
+  ctx.fillText(L('activation value →','활성값 →'), Mg.l+pw, h-9);
+  ctx.save();
+  ctx.translate(Mg.l+11, Mg.t+8); ctx.rotate(-Math.PI/2); ctx.textAlign='right';
+  ctx.fillText(L('density →','밀도 →'), 0, 0);
+  ctx.restore();
+}
+
+/* ---------- draw view B: depth propagation ---------- */
+function drawDepth(){
+  var cv=$('depthCv'), st=setupCanvas(cv);
+  if(!st) return;
+  var ctx=st.ctx, w=st.w, h=st.h;
+  var Mg={ l:48, r:14, t:14, b:26 };
+  var pw=w-Mg.l-Mg.r, ph=h-Mg.t-Mg.b;
+  ctx.clearRect(0,0,w,h);
+
+  var Ln=state.Layers, ymin=-6, ymax=6;
+  function X(l){ return Mg.l+(Ln<=0?0:l/Ln)*pw; }
+  function Ylg(lg){ lg=Math.max(ymin,Math.min(ymax,lg)); return Mg.t+ph-(lg-ymin)/(ymax-ymin)*ph; }
+  function lg(v){ return Math.log(Math.max(v,1e-7))/Math.LN10; }
+
+  /* grid + labels for powers of 10 */
+  ctx.font=MONO; ctx.textAlign='right';
+  for(var e=ymin;e<=ymax;e+=2){
+    var yy=Ylg(e);
+    ctx.strokeStyle=cssv('--grid'); ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(Mg.l,yy); ctx.lineTo(Mg.l+pw,yy); ctx.stroke();
+    ctx.fillStyle=cssv('--muted');
+    ctx.fillText('1e'+(e>0?'+':'')+e, Mg.l-5, yy+4);
+  }
+  ctx.strokeStyle=cssv('--axis'); ctx.strokeRect(Mg.l,Mg.t,pw,ph);
+
+  /* std = 1 reference */
+  ctx.strokeStyle=cssv('--muted'); ctx.globalAlpha=0.7; ctx.lineWidth=1; ctx.setLineDash([4,4]);
+  ctx.beginPath(); ctx.moveTo(Mg.l,Ylg(0)); ctx.lineTo(Mg.l+pw,Ylg(0)); ctx.stroke();
+  ctx.setLineDash([]); ctx.globalAlpha=1;
+
+  var front=Math.max(0,Math.min(Ln, Math.floor(state.reveal)));
+  function curve(arr, col){
+    ctx.save(); ctx.beginPath(); ctx.rect(Mg.l,Mg.t,pw,ph); ctx.clip();
+    ctx.strokeStyle=col; ctx.lineWidth=2.2; ctx.beginPath();
+    for(var l=0;l<=front;l++){ var px=X(l), py=Ylg(lg(arr[l])); if(l===0) ctx.moveTo(px,py); else ctx.lineTo(px,py); }
+    ctx.stroke();
+    ctx.fillStyle=col; ctx.beginPath();
+    ctx.arc(X(front), Ylg(lg(arr[front])), 3, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+  curve(state.depth.noBN, cssv('--c-nobn'));
+  curve(state.depth.withBN, cssv('--bn'));
+
+  /* labels */
+  ctx.font='600 11px "Inter", system-ui, sans-serif'; ctx.textAlign='left';
+  ctx.fillStyle=cssv('--c-nobn');
+  ctx.fillText(L('without BN','BN 없음'), Mg.l+8, Mg.t+14);
+  ctx.fillStyle=cssv('--bn');
+  ctx.fillText(L('with BN (std ≈ 1)','BN 적용 (std ≈ 1)'), Mg.l+8, Mg.t+30);
+  ctx.font=MONO; ctx.fillStyle=cssv('--muted'); ctx.textAlign='right';
+  ctx.fillText(L('layer depth →','층 깊이 →'), Mg.l+pw, h-9);
+}
+
+/* ---------- render ---------- */
+function render(){
+  var s=state.statA;
+  $('mubV').textContent=fmt(s.mub);
+  $('sigbV').textContent=fmt(s.sigb);
+  $('outmuV').textContent=fmt(s.outmu);
+  $('outsigV').textContent=fmt(s.outsig);
+  drawHist();
+  drawDepth();
+}
+
+/* ---------- propagate animation ---------- */
+var raf=null;
+function frame(){
+  if(!state.running) return;
+  state.reveal+=0.6;
+  if(state.reveal>=state.Layers){ state.reveal=state.Layers; drawDepth(); stopAnim(); return; }
+  drawDepth();
+  raf=requestAnimationFrame(frame);
+}
+function startAnim(){
+  if(state.running) return;
+  state.running=true; state.reveal=0;
+  $('goBtn').classList.add('running');
+  raf=requestAnimationFrame(frame);
+}
+function stopAnim(){
+  state.running=false; state.reveal=state.Layers;
+  $('goBtn').classList.remove('running');
+  if(raf) cancelAnimationFrame(raf);
+}
+function toggleAnim(){ if(state.running) stopAnim(); else startAnim(); }
+
+/* ---------- controls ---------- */
+function wire(){
+  document.querySelectorAll('#shapeRow .seg').forEach(function(bt){
+    bt.addEventListener('click', function(){
+      document.querySelectorAll('#shapeRow .seg').forEach(function(x){ x.classList.remove('active'); });
+      bt.classList.add('active');
+      state.shape=bt.dataset.shape; genBaseA(); computeA(); render();
+    });
+  });
+  document.querySelectorAll('#nlRow .seg').forEach(function(bt){
+    bt.addEventListener('click', function(){
+      document.querySelectorAll('#nlRow .seg').forEach(function(x){ x.classList.remove('active'); });
+      bt.classList.add('active');
+      state.nl=bt.dataset.nl; stopAnim(); computeDepth(); render();
+    });
+  });
+  $('muinS').addEventListener('input', function(){ state.muin=+this.value; $('muinV').textContent=(+this.value).toFixed(1); computeA(); render(); });
+  $('siginS').addEventListener('input', function(){ state.sigin=+this.value; $('siginV').textContent=(+this.value).toFixed(1); computeA(); render(); });
+  $('gamS').addEventListener('input', function(){ state.gamma=+this.value; $('gamV').textContent=(+this.value).toFixed(2); computeA(); render(); });
+  $('betS').addEventListener('input', function(){ state.beta=+this.value; $('betV').textContent=(+this.value).toFixed(1); computeA(); render(); });
+  $('epsS').addEventListener('input', function(){ state.eps=+this.value; $('epsV').textContent=(+this.value).toFixed(3); computeA(); computeDepth(); render(); });
+  $('LS').addEventListener('input', function(){ state.Layers=+this.value; $('LV').textContent=this.value; stopAnim(); computeDepth(); render(); });
+  $('gainS').addEventListener('input', function(){ state.gain=+this.value; $('gainV').textContent=(+this.value).toFixed(2); computeDepth(); render(); });
+  $('goBtn').addEventListener('click', toggleAnim);
+  $('resampleBtn').addEventListener('click', function(){
+    stopAnim();
+    state.seed=(state.seed*1103515245+12345)>>>0;
+    genBaseA(); buildWeights(); computeA(); computeDepth(); render();
+  });
+  window.addEventListener('resize', render);
+}
+
+/* ---------- KaTeX ---------- */
+var mathDone=false;
+function tryMath(){
+  if(mathDone||!window.renderMathInElement) return;
+  mathDone=true;
+  window.renderMathInElement(document.body,{
+    delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}],
+    throwOnError:false
+  });
+}
+document.addEventListener('DOMContentLoaded', tryMath);
+window.addEventListener('load', tryMath);
+
+/* ---------- init + sync hooks ---------- */
+try{
+  wire();
+  genBaseA(); computeA();
+  buildWeights(); computeDepth();
+  render();
+}catch(err){ /* keep page alive */ if(window.console) console.error(err); }
+
+window.__onLang=function(){ render(); };                 /* redraw canvases with new-language labels */
+window.__onTheme=function(){ render(); };                /* colors read live from CSS via cssv() */
+</script>
+</body>
+</html>

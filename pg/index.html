@@ -60,6 +60,8 @@
   .c-logo{border-top-color:#8b7cff}
   .c-bold{border-top-color:#ff8a5c} .c-conn{border-top-color:#4fd1a0}
   .c-diff{border-top-color:#6ea8ff} .c-elbo{border-top-color:#ffc24b} .c-perc{border-top-color:#d16ba5}
+  .c-ib{border-top-color:#6ea8ff} .c-rg{border-top-color:#8b7cff} .c-ntk{border-top-color:#5eead4} .c-grok{border-top-color:#5eead4}
+  a.c-elbo:hover{border-color:#ffc24b} a.c-perc:hover{border-color:#d16ba5}
   a.c-flat:hover{border-color:var(--warm-a)} a.c-kura:hover{border-color:var(--cool)}
   a.c-logo:hover{border-color:#8b7cff}
   a.c-ising:hover{border-color:var(--sharp)}
@@ -126,6 +128,7 @@
   .c-ker{border-top-color:#a78bfa} .c-bn{border-top-color:#4ade80} .c-vi{border-top-color:#f472b6}
   a.c-ce:hover{border-color:#c084fc} a.c-bvt:hover{border-color:#f0883e}
   a.c-vi:hover{border-color:#f472b6}
+  a.c-gd:hover{border-color:#4ade80} a.c-bn:hover{border-color:#4ade80}
 
   /* ---------- i18n ---------- */
   html[data-lang="en"] .i18n-ko{ display:none !important; }
@@ -141,7 +144,7 @@
     Move a slider to feel phase transitions, free energy, and synchronization first-hand. Click a card to enter.</span><span class="i18n-ko">물리적 직관과 학습 알고리즘을 잇는 <b>인터랙티브 데모</b> 모음입니다.
     슬라이더를 움직여 상전이, 자유 에너지, 동기화를 직접 느껴보세요. 카드를 클릭해 들어가세요.</span>
   </p>
-  <h2 class="section-h first"><span class="i18n-en">Physics-inspired Representation Learning</span><span class="i18n-ko">물리학 기반 표현 학습</span> <span class="n"><span class="i18n-en">9 live · 3 soon</span><span class="i18n-ko">9개 공개 · 3개 준비 중</span></span></h2>
+  <h2 class="section-h first"><span class="i18n-en">Physics-inspired Representation Learning</span><span class="i18n-ko">물리학 기반 표현 학습</span> <span class="n"><span class="i18n-en">11 live · 5 soon</span><span class="i18n-ko">11개 공개 · 5개 준비 중</span></span></h2>
   <p class="section-sub"><span class="i18n-en">Statistical-mechanics intuition behind representation and learning — feel phase transitions, free energy, and synchronization first-hand.</span><span class="i18n-ko">표현과 학습의 이면에 있는 통계역학적 직관 — 상전이, 자유 에너지, 동기화를 직접 느껴보세요.</span></p>
 
   <div class="deck">
@@ -355,6 +358,44 @@
       </div>
     </a>
 
+<a class="card-demo c-elbo" href="variational-free-energy.html">
+      <div class="glyph">
+        <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M34,16 L70,32 L70,48 L34,64 Z" fill="#ffc24b" fill-opacity="0.22" stroke="#ffc24b" stroke-width="1.4"/>
+          <circle cx="100" cy="32" r="3.2" fill="#ffc24b"/><circle cx="100" cy="48" r="3.2" fill="#ffc24b"/>
+          <path d="M166,16 L130,32 L130,48 L166,64 Z" fill="#ffc24b" fill-opacity="0.22" stroke="#ffc24b" stroke-width="1.4"/>
+          <line x1="70" y1="34" x2="97" y2="33" stroke="#8493b8" stroke-width="1"/><line x1="70" y1="46" x2="97" y2="47" stroke="#8493b8" stroke-width="1"/>
+          <line x1="103" y1="33" x2="130" y2="34" stroke="#8493b8" stroke-width="1"/><line x1="103" y1="47" x2="130" y2="46" stroke="#8493b8" stroke-width="1"/>
+        </svg>
+      </div>
+      <div class="body">
+        <div class="tags"><span><span class="i18n-en">VAE</span><span class="i18n-ko">VAE</span></span><span><span class="i18n-en">Free energy</span><span class="i18n-ko">자유 에너지</span></span></div>
+        <h3><span class="i18n-en">Variational Free Energy</span><span class="i18n-ko">변분 자유 에너지</span></h3>
+        <p><span class="i18n-en">The ELBO as a free energy: reconstruction pulls one way, the KL prior the other. Tune the balance and watch the latent space organize or collapse.</span><span class="i18n-ko">자유 에너지로서의 ELBO: 재구성은 한쪽으로, KL 사전분포는 다른 쪽으로 당깁니다. 균형을 조절하며 잠재 공간이 조직화되거나 붕괴하는 것을 지켜보세요.</span></p>
+        <div class="go"><span class="i18n-en">Open →</span><span class="i18n-ko">열기 →</span></div>
+      </div>
+    </a>
+
+<a class="card-demo c-perc" href="perceptron-capacity.html">
+      <div class="glyph">
+        <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <line x1="74" y1="12" x2="126" y2="68" stroke="#d16ba5" stroke-width="2.2" stroke-linecap="round"/>
+          <g fill="#ff6b5a">
+            <circle cx="128" cy="26" r="3.2"/><circle cx="146" cy="34" r="3.2"/><circle cx="140" cy="20" r="3.2"/><circle cx="158" cy="44" r="3.2"/>
+          </g>
+          <g fill="#5eead4">
+            <circle cx="72" cy="56" r="3.2"/><circle cx="54" cy="46" r="3.2"/><circle cx="60" cy="62" r="3.2"/><circle cx="44" cy="36" r="3.2"/>
+          </g>
+        </svg>
+      </div>
+      <div class="body">
+        <div class="tags"><span><span class="i18n-en">Replica</span><span class="i18n-ko">레플리카</span></span><span><span class="i18n-en">Capacity</span><span class="i18n-ko">용량</span></span></div>
+        <h3><span class="i18n-en">Perceptron Capacity</span><span class="i18n-ko">퍼셉트론 용량</span></h3>
+        <p><span class="i18n-en">How many random patterns can a single neuron separate? Watch the Gardner storage limit <code>αc ≈ 2</code> emerge as you load in more.</span><span class="i18n-ko">하나의 뉴런이 무작위 패턴을 몇 개나 분리할 수 있을까요? 패턴을 더 많이 넣을수록 Gardner 저장 한계 <code>αc ≈ 2</code>가 나타나는 것을 지켜보세요.</span></p>
+        <div class="go"><span class="i18n-en">Open →</span><span class="i18n-ko">열기 →</span></div>
+      </div>
+    </a>
+
     <!-- ===== SOON: Diffusion & Score ===== -->
     <div class="card-demo c-diff soon">
       <div class="glyph">
@@ -378,49 +419,85 @@
       </div>
     </div>
 
-    <!-- ===== SOON: Variational Free Energy ===== -->
-    <div class="card-demo c-elbo soon">
+    <div class="card-demo c-ib soon">
       <div class="glyph">
         <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <path d="M34,16 L70,32 L70,48 L34,64 Z" fill="#ffc24b" fill-opacity="0.22" stroke="#ffc24b" stroke-width="1.4"/>
-          <circle cx="100" cy="32" r="3.2" fill="#ffc24b"/><circle cx="100" cy="48" r="3.2" fill="#ffc24b"/>
-          <path d="M166,16 L130,32 L130,48 L166,64 Z" fill="#ffc24b" fill-opacity="0.22" stroke="#ffc24b" stroke-width="1.4"/>
-          <line x1="70" y1="34" x2="97" y2="33" stroke="#8493b8" stroke-width="1"/><line x1="70" y1="46" x2="97" y2="47" stroke="#8493b8" stroke-width="1"/>
-          <line x1="103" y1="33" x2="130" y2="34" stroke="#8493b8" stroke-width="1"/><line x1="103" y1="47" x2="130" y2="46" stroke="#8493b8" stroke-width="1"/>
+          <g fill="#6ea8ff" fill-opacity="0.8"><circle cx="40" cy="26" r="2.4"/><circle cx="30" cy="44" r="2.4"/><circle cx="48" cy="54" r="2.4"/><circle cx="36" cy="34" r="2.4"/></g>
+          <path d="M64,40 h30 m-8,-4 l8,4 l-8,4" stroke="#8493b8" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          <rect x="104" y="30" width="20" height="20" rx="3" stroke="#6ea8ff" stroke-width="1.6" fill="#6ea8ff" fill-opacity="0.14"/>
+          <path d="M134,40 h30 m-8,-4 l8,4 l-8,4" stroke="#8493b8" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          <g fill="#5eead4"><circle cx="176" cy="40" r="3"/></g>
         </svg>
       </div>
       <div class="body">
-        <div class="tags"><span><span class="i18n-en">VAE</span><span class="i18n-ko">VAE</span></span><span><span class="i18n-en">Free energy</span><span class="i18n-ko">자유 에너지</span></span></div>
-        <h3><span class="i18n-en">Variational Free Energy</span><span class="i18n-ko">변분 자유 에너지</span></h3>
-        <p><span class="i18n-en">The ELBO as a free energy: reconstruction pulls one way, the KL prior the other. Tune the balance and watch the latent space organize or collapse.</span><span class="i18n-ko">자유 에너지로서의 ELBO: 재구성은 한쪽으로, KL 사전분포는 다른 쪽으로 당깁니다. 균형을 조절하며 잠재 공간이 조직화되거나 붕괴하는 것을 지켜보세요.</span></p>
+        <div class="tags"><span><span class="i18n-en">Information</span><span class="i18n-ko">정보</span></span><span><span class="i18n-en">Compression</span><span class="i18n-ko">압축</span></span></div>
+        <h3><span class="i18n-en">Information Bottleneck</span><span class="i18n-ko">정보 병목</span></h3>
+        <p><span class="i18n-en">Squeeze a representation to keep only what predicts the target — trace the compression–prediction tradeoff and the information-plane curve.</span><span class="i18n-ko">표적을 예측하는 정보만 남기도록 표현을 압축합니다 — 압축–예측 트레이드오프와 정보 평면(information plane) 곡선을 따라가 보세요.</span></p>
         <div class="go"><span class="i18n-en">Coming soon</span><span class="i18n-ko">준비 중</span></div>
       </div>
     </div>
 
-    <!-- ===== SOON: Perceptron Capacity ===== -->
-    <div class="card-demo c-perc soon">
+    <div class="card-demo c-rg soon">
       <div class="glyph">
         <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <line x1="74" y1="12" x2="126" y2="68" stroke="#d16ba5" stroke-width="2.2" stroke-linecap="round"/>
-          <g fill="#ff6b5a">
-            <circle cx="128" cy="26" r="3.2"/><circle cx="146" cy="34" r="3.2"/><circle cx="140" cy="20" r="3.2"/><circle cx="158" cy="44" r="3.2"/>
-          </g>
-          <g fill="#5eead4">
-            <circle cx="72" cy="56" r="3.2"/><circle cx="54" cy="46" r="3.2"/><circle cx="60" cy="62" r="3.2"/><circle cx="44" cy="36" r="3.2"/>
-          </g>
+          <g stroke="#8b7cff" stroke-width="1" opacity=".55">
+            <rect x="26" y="18" width="8" height="8"/><rect x="34" y="18" width="8" height="8"/><rect x="26" y="26" width="8" height="8"/><rect x="34" y="26" width="8" height="8"/>
+            <rect x="26" y="46" width="8" height="8"/><rect x="34" y="46" width="8" height="8"/><rect x="26" y="54" width="8" height="8"/><rect x="34" y="54" width="8" height="8"/></g>
+          <path d="M64,40 h26 m-8,-4 l8,4 l-8,4" stroke="#8493b8" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          <g stroke="#8b7cff" stroke-width="1.2"><rect x="104" y="24" width="14" height="14"/><rect x="118" y="24" width="14" height="14"/><rect x="104" y="38" width="14" height="14"/><rect x="118" y="38" width="14" height="14"/></g>
+          <path d="M142,40 h24 m-8,-4 l8,4 l-8,4" stroke="#8493b8" stroke-width="1.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          <rect x="172" y="32" width="16" height="16" fill="#8b7cff" fill-opacity="0.5"/>
         </svg>
       </div>
       <div class="body">
-        <div class="tags"><span><span class="i18n-en">Replica</span><span class="i18n-ko">레플리카</span></span><span><span class="i18n-en">Capacity</span><span class="i18n-ko">용량</span></span></div>
-        <h3><span class="i18n-en">Perceptron Capacity</span><span class="i18n-ko">퍼셉트론 용량</span></h3>
-        <p><span class="i18n-en">How many random patterns can a single neuron separate? Watch the Gardner storage limit <code>αc ≈ 2</code> emerge as you load in more.</span><span class="i18n-ko">하나의 뉴런이 무작위 패턴을 몇 개나 분리할 수 있을까요? 패턴을 더 많이 넣을수록 Gardner 저장 한계 <code>αc ≈ 2</code>가 나타나는 것을 지켜보세요.</span></p>
+        <div class="tags"><span><span class="i18n-en">Coarse-graining</span><span class="i18n-ko">거친 눈금화</span></span><span><span class="i18n-en">Scale</span><span class="i18n-ko">스케일</span></span></div>
+        <h3><span class="i18n-en">Renormalization ↔ Deep Learning</span><span class="i18n-ko">재규격화 ↔ 딥러닝</span></h3>
+        <p><span class="i18n-en">Coarse-grain a system block by block and watch relevant features survive while details wash out — the RG view of why depth builds abstraction.</span><span class="i18n-ko">시스템을 블록 단위로 거칠게 묶으며 관련 특징은 살아남고 세부는 씻겨 나가는 것을 지켜보세요 — 깊이가 추상을 쌓는 이유에 대한 재규격화군(RG)의 관점입니다.</span></p>
         <div class="go"><span class="i18n-en">Coming soon</span><span class="i18n-ko">준비 중</span></div>
       </div>
     </div>
+
+    <div class="card-demo c-ntk soon">
+      <div class="glyph">
+        <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <g stroke="#5eead4" stroke-width="1.1" opacity=".6">
+            <line x1="40" y1="20" x2="90" y2="30"/><line x1="40" y1="40" x2="90" y2="30"/><line x1="40" y1="60" x2="90" y2="30"/>
+            <line x1="40" y1="20" x2="90" y2="52"/><line x1="40" y1="40" x2="90" y2="52"/><line x1="40" y1="60" x2="90" y2="52"/></g>
+          <g fill="#5eead4"><circle cx="40" cy="20" r="3.4"/><circle cx="40" cy="40" r="3.4"/><circle cx="40" cy="60" r="3.4"/><circle cx="90" cy="30" r="3.4"/><circle cx="90" cy="52" r="3.4"/></g>
+          <path d="M118,58 C138,58 140,22 160,22" stroke="#ffc24b" stroke-width="2.2" fill="none"/>
+          <line x1="112" y1="62" x2="168" y2="62" stroke="#33415e" stroke-width="1"/>
+        </svg>
+      </div>
+      <div class="body">
+        <div class="tags"><span><span class="i18n-en">Wide nets</span><span class="i18n-ko">넓은 신경망</span></span><span><span class="i18n-en">Kernel</span><span class="i18n-ko">커널</span></span></div>
+        <h3><span class="i18n-en">Neural Tangent Kernel</span><span class="i18n-ko">신경 접선 커널</span></h3>
+        <p><span class="i18n-en">In the infinite-width limit a network trains like a fixed kernel machine — watch a wide net linearize and its NTK stay frozen during training.</span><span class="i18n-ko">무한 너비 극한에서 신경망은 고정된 커널 기계처럼 학습합니다 — 넓은 신경망이 선형화되고 학습 중 NTK가 얼어붙어 유지되는 것을 지켜보세요.</span></p>
+        <div class="go"><span class="i18n-en">Coming soon</span><span class="i18n-ko">준비 중</span></div>
+      </div>
+    </div>
+
+    <div class="card-demo c-grok soon">
+      <div class="glyph">
+        <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <line x1="24" y1="64" x2="184" y2="64" stroke="#33415e" stroke-width="1"/>
+          <path d="M28,30 C60,30 66,30 92,30 C110,30 116,30 156,30" stroke="#ff6b5a" stroke-width="2" fill="none" opacity=".85"/>
+          <path d="M28,60 C70,60 92,60 104,58 C120,55 122,20 140,18 C160,16 172,16 182,16" stroke="#5eead4" stroke-width="2.4" fill="none"/>
+          <line x1="112" y1="12" x2="112" y2="66" stroke="#8b949e" stroke-width="1" stroke-dasharray="3 3" opacity=".5"/>
+        </svg>
+      </div>
+      <div class="body">
+        <div class="tags"><span><span class="i18n-en">Phase transition</span><span class="i18n-ko">상전이</span></span><span><span class="i18n-en">Delayed</span><span class="i18n-ko">지연 일반화</span></span></div>
+        <h3><span class="i18n-en">Grokking / Learning Transitions</span><span class="i18n-ko">그로킹 / 학습 상전이</span></h3>
+        <p><span class="i18n-en">Train long past perfect memorization and watch test accuracy suddenly jump — generalization arriving as a delayed phase transition.</span><span class="i18n-ko">완벽한 암기를 한참 지나서까지 학습하면 테스트 정확도가 갑자기 뛰어오르는 것을 지켜보세요 — 지연된 상전이로서 도착하는 일반화입니다.</span></p>
+        <div class="go"><span class="i18n-en">Coming soon</span><span class="i18n-ko">준비 중</span></div>
+      </div>
+    </div>
+
+
 
   </div>
 
-  <h2 class="section-h"><span class="i18n-en">Concepts of Machine · Deep Learning</span><span class="i18n-ko">머신러닝 · 딥러닝 개념</span> <span class="n"><span class="i18n-en">11 live · 6 soon</span><span class="i18n-ko">11개 공개 · 6개 준비 중</span></span></h2>
+  <h2 class="section-h"><span class="i18n-en">Concepts of Machine · Deep Learning</span><span class="i18n-ko">머신러닝 · 딥러닝 개념</span> <span class="n"><span class="i18n-en">13 live · 4 soon</span><span class="i18n-ko">13개 공개 · 4개 준비 중</span></span></h2>
   <p class="section-sub"><span class="i18n-en">Core machine-learning and deep-learning ideas, hands-on — estimation, clustering, kernels, representations, and uncertainty.</span><span class="i18n-ko">머신러닝과 딥러닝의 핵심 아이디어를 직접 다뤄봅니다 — 추정, 군집화, 커널, 표현, 불확실성.</span></p>
 
   <div class="deck">
@@ -623,6 +700,40 @@
       </div>
     </a>
 
+    <a class="card-demo c-gd" href="gradient-descent.html">
+      <div class="glyph">
+        <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M18 22 C55 30 80 70 100 70 C120 70 145 30 182 22" stroke="#8b949e" stroke-width="1.8" fill="none" opacity=".7"/>
+          <g fill="#4ade80">
+            <circle cx="34" cy="30" r="3"/><circle cx="48" cy="44" r="3"/><circle cx="64" cy="58" r="3"/><circle cx="82" cy="67" r="3"/><circle cx="100" cy="69" r="3"/>
+          </g>
+        </svg>
+      </div>
+      <div class="body">
+        <div class="tags"><span><span class="i18n-en">Optimization</span><span class="i18n-ko">최적화</span></span><span><span class="i18n-en">Momentum</span><span class="i18n-ko">모멘텀</span></span></div>
+        <h3><span class="i18n-en">Gradient Descent &amp; Optimizers</span><span class="i18n-ko">경사 하강법 &amp; 최적화</span></h3>
+        <p><span class="i18n-en">Roll down a loss landscape with SGD, momentum, and Adam — feel how the learning rate and curvature shape the path to a minimum.</span><span class="i18n-ko">SGD, 모멘텀, Adam으로 손실 지형을 굴러 내려가세요 — 학습률과 곡률이 최솟값까지의 경로를 어떻게 결정하는지 느껴보세요.</span></p>
+        <div class="go"><span class="i18n-en">Open →</span><span class="i18n-ko">열기 →</span></div>
+      </div>
+    </a>
+
+    <a class="card-demo c-bn" href="batch-normalization.html">
+      <div class="glyph">
+        <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M18 62 C36 60 44 32 60 32 C72 32 74 62 92 62" stroke="#8b949e" stroke-width="1.8" fill="none" opacity=".6"/>
+          <path d="M102 40 l18 0 m-6 -4 l6 4 l-6 4" stroke="#4ade80" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          <line x1="162" y1="16" x2="162" y2="66" stroke="#8b949e" stroke-width="1" stroke-dasharray="3 3" opacity=".5"/>
+          <path d="M130 62 C150 62 152 22 162 22 C172 22 174 62 194 62" stroke="#4ade80" stroke-width="2.4" fill="none"/>
+        </svg>
+      </div>
+      <div class="body">
+        <div class="tags"><span><span class="i18n-en">Deep nets</span><span class="i18n-ko">심층 신경망</span></span><span><span class="i18n-en">Training</span><span class="i18n-ko">학습</span></span></div>
+        <h3><span class="i18n-en">Batch Normalization</span><span class="i18n-ko">배치 정규화</span></h3>
+        <p><span class="i18n-en">Re-center and re-scale activations layer by layer — why normalization smooths the loss landscape and speeds up training.</span><span class="i18n-ko">활성화를 층마다 다시 중심화하고 다시 스케일링합니다 — 정규화가 손실 지형을 매끄럽게 하고 학습을 가속하는 이유입니다.</span></p>
+        <div class="go"><span class="i18n-en">Open →</span><span class="i18n-ko">열기 →</span></div>
+      </div>
+    </a>
+
     <div class="card-demo c-bp soon">
       <div class="glyph">
         <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -646,22 +757,6 @@
       </div>
     </div>
 
-    <div class="card-demo c-gd soon">
-      <div class="glyph">
-        <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <path d="M18 22 C55 30 80 70 100 70 C120 70 145 30 182 22" stroke="#8b949e" stroke-width="1.8" fill="none" opacity=".7"/>
-          <g fill="#4ade80">
-            <circle cx="34" cy="30" r="3"/><circle cx="48" cy="44" r="3"/><circle cx="64" cy="58" r="3"/><circle cx="82" cy="67" r="3"/><circle cx="100" cy="69" r="3"/>
-          </g>
-        </svg>
-      </div>
-      <div class="body">
-        <div class="tags"><span><span class="i18n-en">Optimization</span><span class="i18n-ko">최적화</span></span><span><span class="i18n-en">Momentum</span><span class="i18n-ko">모멘텀</span></span></div>
-        <h3><span class="i18n-en">Gradient Descent &amp; Optimizers</span><span class="i18n-ko">경사 하강법 &amp; 최적화</span></h3>
-        <p><span class="i18n-en">Roll down a loss landscape with SGD, momentum, and Adam — feel how the learning rate and curvature shape the path to a minimum.</span><span class="i18n-ko">SGD, 모멘텀, Adam으로 손실 지형을 굴러 내려가세요 — 학습률과 곡률이 최솟값까지의 경로를 어떻게 결정하는지 느껴보세요.</span></p>
-        <div class="go"><span class="i18n-en">Coming soon</span><span class="i18n-ko">준비 중</span></div>
-      </div>
-    </div>
 
     <div class="card-demo c-cod soon">
       <div class="glyph">
@@ -717,22 +812,6 @@
       </div>
     </div>
 
-    <div class="card-demo c-bn soon">
-      <div class="glyph">
-        <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <path d="M18 62 C36 60 44 32 60 32 C72 32 74 62 92 62" stroke="#8b949e" stroke-width="1.8" fill="none" opacity=".6"/>
-          <path d="M102 40 l18 0 m-6 -4 l6 4 l-6 4" stroke="#4ade80" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-          <line x1="162" y1="16" x2="162" y2="66" stroke="#8b949e" stroke-width="1" stroke-dasharray="3 3" opacity=".5"/>
-          <path d="M130 62 C150 62 152 22 162 22 C172 22 174 62 194 62" stroke="#4ade80" stroke-width="2.4" fill="none"/>
-        </svg>
-      </div>
-      <div class="body">
-        <div class="tags"><span><span class="i18n-en">Deep nets</span><span class="i18n-ko">심층 신경망</span></span><span><span class="i18n-en">Training</span><span class="i18n-ko">학습</span></span></div>
-        <h3><span class="i18n-en">Batch Normalization</span><span class="i18n-ko">배치 정규화</span></h3>
-        <p><span class="i18n-en">Re-center and re-scale activations layer by layer — why normalization smooths the loss landscape and speeds up training.</span><span class="i18n-ko">활성화를 층마다 다시 중심화하고 다시 스케일링합니다 — 정규화가 손실 지형을 매끄럽게 하고 학습을 가속하는 이유입니다.</span></p>
-        <div class="go"><span class="i18n-en">Coming soon</span><span class="i18n-ko">준비 중</span></div>
-      </div>
-    </div>
 
   </div>
 

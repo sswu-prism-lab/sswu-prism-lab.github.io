@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<script>
+(function(){
+  function g(k,d){ try{ return localStorage.getItem(k)||d; }catch(e){ return d; } }
+  var root=document.documentElement;
+  root.setAttribute('data-theme', g('theme', (window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light'));
+  root.setAttribute('data-lang', g('lang','en'));
+  window.addEventListener('storage', function(e){
+    if(e.key==='theme'){ root.setAttribute('data-theme', e.newValue||'dark'); if(window.__onTheme) window.__onTheme(); }
+    if(e.key==='lang'){ root.setAttribute('data-lang', e.newValue||'en'); if(window.__onLang) window.__onLang(); }
+  });
+})();
+</script>
+
+<title>Variational Free Energy — PRISM Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<style>
+* { box-sizing: border-box; }
+:root {
+  color-scheme: light;
+  --bg:#ffffff; --panel:#f7f9fc; --panel-2:#eef2f8; --ink:#141b33; --muted:#5a6488;
+  --border:#e2e7ee; --grid:#eef2f8; --axis:#c9d0c8;
+  --vfe:#e0a500; --vi:#e0a500; --c-elbo:#e0a500; --c-kl:#e0700d; --c-ent:#2563eb; --c-exp:#0f9d6b;
+  --c-q:#e0a500; --c-true:#9aa5b1;
+  --shadow: 0 1px 2px rgba(28,36,49,.05);
+}
+[data-theme="dark"] {
+  color-scheme: dark;
+  --bg:#15181e; --panel:#1d212a; --panel-2:#171b22; --ink:#e6edf3; --muted:#8b949e;
+  --border:#2e343f; --grid:#252b36; --axis:#3a4250;
+  --vfe:#ffc24b; --vi:#ffc24b; --c-elbo:#ffc24b; --c-kl:#fb923c; --c-ent:#60a5fa; --c-exp:#34d399;
+  --c-q:#ffc24b; --c-true:#64748b;
+  --shadow: none;
+}
+html, body { margin:0; padding:0; }
+body {
+  background:var(--bg); color:var(--ink);
+  padding:26px 20px 44px;
+  font:14px/1.5 "Inter", system-ui, -apple-system, 'Noto Sans KR', sans-serif;
+  accent-color: var(--vfe);
+}
+:focus-visible { outline:2px solid var(--vfe); outline-offset:2px; }
+
+/* ---------- bilingual ---------- */
+html[data-lang="en"] .i18n-ko{ display:none !important; }
+html[data-lang="ko"] .i18n-en{ display:none !important; }
+.i18n-ko{ font-family:'Pretendard','Inter',sans-serif; word-break:keep-all; }
+
+/* ---------- site chrome ---------- */
+.wrap{max-width:1120px;margin:0 auto}
+.topbar{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.back{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--muted);text-decoration:none;
+  border:1px solid var(--border);padding:6px 12px;border-radius:20px;transition:.14s}
+.back:hover{color:var(--vfe);border-color:currentColor}
+.eyebrow{font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--muted);margin:0 0 10px;display:flex;align-items:center;gap:10px}
+.eyebrow::before{content:"";width:22px;height:1px;background:currentColor;opacity:.7}
+.title{font-family:"Space Grotesk",system-ui,sans-serif;font-weight:700;font-size:clamp(28px,4.6vw,44px);
+  line-height:1.04;margin:0 0 10px;letter-spacing:-.02em;color:var(--ink)}
+.title .thin{color:var(--muted);font-weight:500;font-size:.4em}
+.site-sub{color:var(--muted);max-width:70ch;margin:0 0 24px;font-size:15px}
+footer{margin-top:30px;color:var(--muted);font-size:12px;font-family:"JetBrains Mono",monospace;letter-spacing:.04em}
+footer a{color:var(--muted);text-decoration:underline}
+
+/* ---------- layout ---------- */
+main { padding:0; }
+.tab { display:grid; grid-template-columns:264px minmax(0,1fr); gap:14px; align-items:start; }
+.panel { background:var(--panel); border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow); }
+.stage { display:flex; flex-direction:column; gap:12px; min-width:0; }
+
+/* ---------- side controls ---------- */
+.side { padding:14px; display:flex; flex-direction:column; gap:14px; }
+.grp { display:flex; flex-direction:column; gap:8px; }
+.grp + .grp { border-top:1px dashed var(--border); padding-top:13px; }
+.grp-t { font-size:10.5px; font-weight:700; letter-spacing:.09em; text-transform:uppercase; color:var(--muted); }
+.sl { display:flex; flex-direction:column; gap:3px; font-size:12.5px; }
+.sl > span { display:flex; justify-content:space-between; align-items:baseline; gap:8px; }
+.val { font:600 12px "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+input[type=range] { width:100%; margin:0; height:22px; }
+.hint { margin:0; font-size:11.5px; color:var(--muted); }
+.btnrow { display:flex; gap:6px; flex-wrap:wrap; }
+.btn { border:1px solid var(--border); background:var(--panel); color:var(--ink); font:inherit; font-size:12.5px; padding:6px 11px; border-radius:8px; cursor:pointer; transition:background .12s; }
+.btn:hover { background:var(--bg); }
+.btn.go { border-color:var(--vfe); color:var(--vfe); font-weight:600; }
+.btn.go.running { background:var(--vfe); color:var(--bg); }
+.btn.ghost { color:var(--muted); }
+.segs { display:flex; gap:4px; }
+.seg { flex:1; border:1px solid var(--border); background:var(--bg); color:var(--muted); font:inherit; font-size:12px; padding:5px 4px; border-radius:7px; cursor:pointer; text-align:center; transition:background .12s, color .12s, border-color .12s; }
+.seg:hover { color:var(--ink); }
+.seg.active { background:var(--ink); color:var(--bg); border-color:var(--ink); font-weight:600; }
+
+/* ---------- plot ---------- */
+.plot { padding:10px 12px 8px; }
+canvas { display:block; width:100%; }
+#mainCv { height:340px; }
+#traceCv { height:150px; }
+.legend { display:flex; flex-wrap:wrap; gap:4px 14px; padding:8px 2px 2px; font-size:11.5px; color:var(--muted); }
+.legend span { display:inline-flex; align-items:center; gap:5px; }
+.swbar { display:inline-block; width:12px; height:11px; border-radius:2px; background:currentColor; }
+.swtick { display:inline-block; width:14px; height:0; border-top:2px solid currentColor; }
+.swx { display:inline-block; width:12px; text-align:center; font-weight:700; line-height:11px; }
+.losscap { margin:6px 2px 2px; font-size:11.5px; color:var(--muted); text-align:center; }
+
+/* ---------- cards ---------- */
+.cards { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:10px; }
+.card { background:var(--panel); border:1px solid var(--border); border-top:3px solid var(--border); border-radius:12px; padding:10px 12px 9px; box-shadow:var(--shadow); }
+.card.elbo { border-top-color:var(--c-elbo); }
+.card.kl { border-top-color:var(--c-kl); }
+.card.ent { border-top-color:var(--c-ent); }
+.card.exp { border-top-color:var(--c-exp); }
+.card .k { font:700 12px "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing:.04em; }
+.card.elbo .k { color:var(--c-elbo); }
+.card.kl .k { color:var(--c-kl); }
+.card.ent .k { color:var(--c-ent); }
+.card.exp .k { color:var(--c-exp); }
+.card .nm { font-size:12px; color:var(--muted); margin-bottom:6px; }
+.card .big { font:600 20px "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; white-space:nowrap; }
+.card .note { margin:6px 0 0; font-size:11px; color:var(--muted); border-top:1px dashed var(--border); padding-top:5px; }
+
+/* ---------- fold panels ---------- */
+.fold summary { cursor:pointer; padding:9px 13px; font-size:12.5px; font-weight:600; color:var(--muted); list-style:none; display:flex; align-items:center; gap:7px; }
+.fold summary::-webkit-details-marker { display:none; }
+.fold summary::before { content:'\25B8'; font-size:10px; transition:transform .12s; }
+.fold[open] summary::before { transform:rotate(90deg); }
+.fold-body { padding:2px 16px 12px; font-size:13px; }
+.fold-body p { margin:4px 0 8px; }
+.fold ol { margin:0; padding-left:20px; display:flex; flex-direction:column; gap:8px; }
+.katex-display { margin:.5em 0; padding:2px 0; overflow-x:auto; overflow-y:hidden; }
+.katex { font-size:1.0em; }
+
+@media (max-width:760px) {
+  .tab { grid-template-columns:1fr; }
+  .cards { grid-template-columns:1fr 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition:none !important; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar"><a class="back" href="index.html"><span class="i18n-en">← Playground</span><span class="i18n-ko">← 놀이터</span></a></div>
+  <p class="eyebrow"><span class="i18n-en">PRISM · Machine Learning Playground</span><span class="i18n-ko">PRISM · 머신러닝 놀이터</span></p>
+  <h1 class="title"><span class="i18n-en">Variational Free Energy</span><span class="i18n-ko">변분 자유 에너지</span><br><span class="thin"><span class="i18n-en">The ELBO as a physical free energy F = ⟨E⟩ − T·S — trade reconstruction against entropy and watch the latent organize</span><span class="i18n-ko">물리적 자유 에너지 F = ⟨E⟩ − T·S 로서의 ELBO — 재구성과 엔트로피를 맞바꾸며 잠재 표현이 조직화되는 것을 관찰하기</span></span></h1>
+
+<main>
+<section class="tab">
+  <aside class="panel side">
+    <div class="grp">
+      <div class="grp-t"><span class="i18n-en">Energy landscape</span><span class="i18n-ko">에너지 지형</span></div>
+      <div class="segs" id="landRow">
+        <button class="seg active" data-land="single"><span class="i18n-en">Single well</span><span class="i18n-ko">단일 우물</span></button>
+        <button class="seg" data-land="double"><span class="i18n-en">Double well</span><span class="i18n-ko">이중 우물</span></button>
+        <button class="seg" data-land="asym"><span class="i18n-en">Asymmetric</span><span class="i18n-ko">비대칭</span></button>
+      </div>
+      <p class="hint"><span class="i18n-en">E(z) = −log p̃(z). The double well breaks symmetry; the tilt favors one side.</span><span class="i18n-ko">E(z) = −log p̃(z). 이중 우물은 대칭을 깨고, 기울기는 한쪽을 선호합니다.</span></p>
+    </div>
+
+    <div class="grp">
+      <div class="grp-t"><span class="i18n-en">Temperature</span><span class="i18n-ko">온도</span></div>
+      <label class="sl"><span><span class="i18n-en">T (entropy weight)</span><span class="i18n-ko">T (엔트로피 가중치)</span> <b id="tV" class="val">1.00</b></span>
+        <input type="range" id="tS" min="0.05" max="3.0" step="0.05" value="1.0"></label>
+      <p class="hint"><span class="i18n-en">Low T → energy wins (q collapses). High T → entropy wins (q spreads). Same knob as β in a β-VAE.</span><span class="i18n-ko">낮은 T → 에너지 우세 (q 붕괴). 높은 T → 엔트로피 우세 (q 확산). β-VAE의 β와 같은 조절값입니다.</span></p>
+    </div>
+
+    <div class="grp">
+      <div class="grp-t"><span class="i18n-en">Minimize F</span><span class="i18n-ko">F 최소화</span></div>
+      <label class="sl"><span><span class="i18n-en">Learning rate</span><span class="i18n-ko">학습률</span> <b id="lrV" class="val">0.03</b></span>
+        <input type="range" id="lrS" min="0.005" max="0.08" step="0.005" value="0.03"></label>
+      <div class="btnrow">
+        <button id="goBtn" class="btn go"><span class="i18n-en">▶ Minimize F</span><span class="i18n-ko">▶ F 최소화</span></button>
+        <button id="resetBtn" class="btn ghost"><span class="i18n-en">Reset q</span><span class="i18n-ko">q 초기화</span></button>
+      </div>
+      <p class="hint"><span class="i18n-en">Gradient descent on F over (μ, log σ) via Gauss quadrature. Equivalent to maximizing the ELBO.</span><span class="i18n-ko">가우스 구적법으로 (μ, log σ)에 대해 F를 경사하강합니다. ELBO 최대화와 동등합니다.</span></p>
+    </div>
+  </aside>
+
+  <div class="stage">
+    <div class="panel plot">
+      <canvas id="mainCv"></canvas>
+      <div class="legend">
+        <span><i class="swtick" style="color:var(--ink)"></i><span class="i18n-en">Energy E(z)</span><span class="i18n-ko">에너지 E(z)</span></span>
+        <span><i class="swbar" style="color:var(--vfe)"></i><span class="i18n-en">Posterior q = N(μ, σ²)</span><span class="i18n-ko">사후분포 q = N(μ, σ²)</span></span>
+        <span><i class="swx" style="color:var(--vfe)">&times;</i><span class="i18n-en">q mean μ on E</span><span class="i18n-ko">E 위의 q 평균 μ</span></span>
+      </div>
+    </div>
+
+    <div class="panel plot">
+      <canvas id="traceCv"></canvas>
+      <div class="legend">
+        <span><i class="swtick" style="color:var(--vfe)"></i><span class="i18n-en">F = ⟨E⟩ − T·S</span><span class="i18n-ko">F = ⟨E⟩ − T·S</span></span>
+        <span><i class="swtick" style="color:var(--c-exp)"></i><span class="i18n-en">⟨E⟩ (energy)</span><span class="i18n-ko">⟨E⟩ (에너지)</span></span>
+        <span><i class="swtick" style="color:var(--c-ent)"></i><span class="i18n-en">−T·S (entropy)</span><span class="i18n-ko">−T·S (엔트로피)</span></span>
+      </div>
+      <p class="losscap"><span class="i18n-en">Free energy over iterations — F decreases as ⟨E⟩ and −T·S trade off.</span><span class="i18n-ko">반복에 따른 자유 에너지 — ⟨E⟩와 −T·S가 맞바뀌며 F가 감소합니다.</span></p>
+    </div>
+
+    <div class="cards">
+      <div class="card elbo">
+        <div class="k">F</div>
+        <div class="nm"><span class="i18n-en">Variational free energy</span><span class="i18n-ko">변분 자유 에너지</span></div>
+        <div class="big" id="fV">—</div>
+        <p class="note"><span class="i18n-en">⟨E⟩ − T·S = −ELBO; minimized at equilibrium.</span><span class="i18n-ko">⟨E⟩ − T·S = −ELBO; 평형에서 최소화.</span></p>
+      </div>
+      <div class="card exp">
+        <div class="k">⟨E⟩</div>
+        <div class="nm"><span class="i18n-en">Expected energy</span><span class="i18n-ko">기대 에너지</span></div>
+        <div class="big" id="eeV">—</div>
+        <p class="note"><span class="i18n-en">E_q[E(z)] — the "reconstruction" / fit term.</span><span class="i18n-ko">E_q[E(z)] — "재구성" / 적합 항.</span></p>
+      </div>
+      <div class="card ent">
+        <div class="k">S[q]</div>
+        <div class="nm"><span class="i18n-en">Entropy of q</span><span class="i18n-ko">q의 엔트로피</span></div>
+        <div class="big" id="sV">—</div>
+        <p class="note"><span class="i18n-en">½ log(2π e σ²) — disorder / spread of q.</span><span class="i18n-ko">½ log(2π e σ²) — q의 무질서도 / 퍼짐.</span></p>
+      </div>
+      <div class="card kl">
+        <div class="k">T·S</div>
+        <div class="nm"><span class="i18n-en">Entropy term</span><span class="i18n-ko">엔트로피 항</span></div>
+        <div class="big" id="tsV">—</div>
+        <p class="note"><span class="i18n-en">Temperature × disorder — the KL/prior regularizer.</span><span class="i18n-ko">온도 × 무질서도 — KL/사전분포 정규화 항.</span></p>
+      </div>
+    </div>
+
+    <details class="panel fold">
+      <summary><span class="i18n-en">Formulas</span><span class="i18n-ko">공식</span></summary>
+      <div class="fold-body">
+        <p><span class="i18n-en">Treat the (unnormalized) target as a Boltzmann distribution p̃(z) = e^(−E(z)). The variational free energy of a Gaussian q balances expected energy against entropy:</span><span class="i18n-ko">정규화되지 않은 목표분포를 볼츠만 분포 p̃(z) = e^(−E(z))로 봅니다. 가우시안 q의 변분 자유 에너지는 기대 에너지와 엔트로피를 저울질합니다:</span></p>
+        $$F(q)=\langle E(z)\rangle_q - T\,S[q],\qquad E(z)=-\log \tilde p(z)$$
+        <p><span class="i18n-en">For a 1D Gaussian q = N(μ, σ²) the entropy is closed-form, and ⟨E⟩ is estimated by quadrature over z ~ q:</span><span class="i18n-ko">1차원 가우시안 q = N(μ, σ²)의 엔트로피는 닫힌 형식이며, ⟨E⟩는 z ~ q에 대한 구적법으로 추정합니다:</span></p>
+        $$S[q]=\tfrac12\log\!\big(2\pi e\,\sigma^2\big),\qquad \langle E\rangle_q=\mathbb{E}_{z\sim q}\big[E(z)\big]$$
+        <p><span class="i18n-en">Minimizing F is exactly maximizing the ELBO: ⟨E⟩ plays the role of reconstruction, and T·S the KL-to-prior / entropy regularizer:</span><span class="i18n-ko">F의 최소화는 정확히 ELBO의 최대화입니다: ⟨E⟩는 재구성 역할을, T·S는 사전분포로의 KL / 엔트로피 정규화 역할을 합니다:</span></p>
+        $$\min_{q} F \;\Longleftrightarrow\; \max_{q}\ \mathrm{ELBO}=\mathbb{E}_{q}\!\left[\log p(x\mid z)\right]-\mathrm{KL}\!\left(q\Vert p\right)$$
+      </div>
+    </details>
+
+    <details class="panel fold">
+      <summary><span class="i18n-en">What to watch</span><span class="i18n-ko">관찰 포인트</span></summary>
+      <div class="fold-body">
+        <ol>
+          <li><span class="i18n-en"><b>Low T</b>: F is dominated by ⟨E⟩. The posterior <b>collapses</b> to the deepest well and shrinks to a sharp point estimate — the same posterior collapse a β-VAE suffers when the reconstruction term overwhelms the prior.</span><span class="i18n-ko"><b>낮은 T</b>: F는 ⟨E⟩가 지배합니다. 사후분포는 가장 깊은 우물로 <b>붕괴</b>하며 날카로운 점추정으로 수축합니다 — 재구성 항이 사전분포를 압도할 때 β-VAE가 겪는 사후 붕괴와 동일합니다.</span></li>
+          <li><span class="i18n-en"><b>High T</b>: the entropy term wins, so q <b>spreads wide</b> — a broad, uncertain posterior, exactly like the KL-to-prior term dominating in a β-VAE with large β.</span><span class="i18n-ko"><b>높은 T</b>: 엔트로피 항이 우세하여 q가 <b>넓게 퍼집니다</b> — 넓고 불확실한 사후분포로, β가 큰 β-VAE에서 사전분포로의 KL 항이 지배하는 상황과 정확히 같습니다.</span></li>
+          <li><span class="i18n-en">On the <b>double well</b>, sweep T down: past a <b>critical temperature</b> the broad symmetric solution splits and μ slides off-center into one well — a <b>spontaneous symmetry breaking / phase transition</b>. Above it, the symmetric broad q is the free-energy minimum; below it, symmetry breaks.</span><span class="i18n-ko"><b>이중 우물</b>에서 T를 낮춰 보세요: <b>임계 온도</b>를 지나면 넓은 대칭 해가 갈라지며 μ가 중심에서 벗어나 한쪽 우물로 미끄러집니다 — <b>자발적 대칭 깨짐 / 상전이</b>입니다. 그 위에서는 대칭적인 넓은 q가 자유 에너지 최소이고, 그 아래에서는 대칭이 깨집니다.</span></li>
+          <li><span class="i18n-en"><b>Connection to the ELBO</b>: maximizing the ELBO <b>is</b> minimizing this variational free energy. ⟨E⟩ ↔ reconstruction, T·S ↔ the KL/entropy regularizer, and T ↔ β. The physics and the VAE objective are the same equation.</span><span class="i18n-ko"><b>ELBO와의 연결</b>: ELBO를 최대화하는 것은 <b>곧</b> 이 변분 자유 에너지를 최소화하는 것입니다. ⟨E⟩ ↔ 재구성, T·S ↔ KL/엔트로피 정규화, T ↔ β. 물리학과 VAE 목적함수는 같은 방정식입니다.</span></li>
+        </ol>
+      </div>
+    </details>
+  </div>
+</section>
+</main>
+  <footer>PRISM Lab · <span class="i18n-en">prototype</span><span class="i18n-ko">프로토타입</span> · <a href="https://sswu-prism-lab.github.io" target="_blank" rel="noopener">sswu-prism-lab.github.io</a></footer>
+</div>
+
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script>
+'use strict';
+/* Variational Free Energy — 1D.
+   Target p̃(z)=e^{-E(z)} unnormalized.  q=N(mu,sigma^2).
+   F(q) = <E>_q - T*S[q],  S = 0.5*log(2*pi*e*sigma^2).
+   Minimize F by gradient descent on (mu, s=log sigma); Gauss quadrature over z~q. */
+
+/* ---------- helpers ---------- */
+function $(id){ return document.getElementById(id); }
+function cssv(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+function L(en,ko){ return document.documentElement.getAttribute('data-lang')==='ko' ? ko : en; }
+function fmt(v, dg){
+  if(dg===undefined) dg=3;
+  if(v===null||v===undefined||!isFinite(v)) return '—';
+  var a=Math.abs(v);
+  if(a!==0 && (a>=1e4||a<1e-3)) return v.toExponential(1);
+  return v.toFixed(dg);
+}
+function randn(){
+  var u=0,v=0;
+  while(u===0) u=Math.random();
+  while(v===0) v=Math.random();
+  return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);
+}
+function hexRGB(hex){
+  hex=hex.replace('#','');
+  if(hex.length===3) hex=hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+  return [parseInt(hex.substr(0,2),16), parseInt(hex.substr(2,2),16), parseInt(hex.substr(4,2),16)];
+}
+function hexA(hex,a){ var c=hexRGB(hex); return 'rgba('+c[0]+','+c[1]+','+c[2]+','+a+')'; }
+function setupCanvas(cv){
+  var dpr=window.devicePixelRatio||1;
+  var w=cv.clientWidth, h=cv.clientHeight;
+  if(w===0||h===0) return null;
+  var W=Math.round(w*dpr), H=Math.round(h*dpr);
+  if(cv.width!==W||cv.height!==H){ cv.width=W; cv.height=H; }
+  var ctx=cv.getContext('2d');
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  return { ctx:ctx, w:w, h:h };
+}
+var MONO='11px "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace';
+var HALF_LOG_2PIE=0.5*Math.log(2*Math.PI*Math.E);
+
+/* ---------- energy landscapes  E(z), E'(z) ---------- */
+/* double well: E = A*(z^2 - M2)^2 -> minima at z = ±sqrt(M2); tilt adds T0*z */
+var M0=1.8, M2=M0*M0, A=0.15, TILT=0.7;
+var LAND={
+  single:{ E:function(z){ return 0.5*z*z; },            dE:function(z){ return z; } },
+  double:{ E:function(z){ var t=z*z-M2; return A*t*t; }, dE:function(z){ return 4*A*z*(z*z-M2); } },
+  asym:{   E:function(z){ var t=z*z-M2; return A*t*t + TILT*z; }, dE:function(z){ return 4*A*z*(z*z-M2)+TILT; } }
+};
+function Ef(z){ return LAND[state.land].E(z); }
+function dEf(z){ return LAND[state.land].dE(z); }
+
+/* display y-range per landscape (for the curve) */
+var YR={ single:[-0.4,8], double:[-0.7,6], asym:[-2.4,6] };
+
+/* ---------- deterministic Gauss quadrature over standard normal ε ---------- */
+var GQ=(function(){
+  var N=161, lo=-7, hi=7, dx=(hi-lo)/(N-1);
+  var eps=new Float64Array(N), wt=new Float64Array(N), sum=0;
+  for(var i=0;i<N;i++){ var e=lo+i*dx; eps[i]=e; var p=Math.exp(-0.5*e*e); wt[i]=p; sum+=p; }
+  for(i=0;i<N;i++) wt[i]/=sum;
+  return { N:N, eps:eps, wt:wt };
+})();
+
+/* returns expected energy and the two gradient accumulators under q=N(mu,sigma) */
+function expectations(mu,sig){
+  var meanE=0, gMu=0, gS=0;
+  for(var i=0;i<GQ.N;i++){
+    var e=GQ.eps[i], w=GQ.wt[i];
+    var z=mu+sig*e;
+    var Ev=Ef(z), dv=dEf(z);
+    meanE+=w*Ev;              /* <E>_q                              */
+    gMu  +=w*dv;              /* d<E>/dmu = E_q[E'(z)]              */
+    gS   +=w*dv*(sig*e);      /* d<E>/d(log sigma) = E_q[E'(z)(z-mu)] */
+  }
+  return { meanE:meanE, gMu:gMu, gS:gS };
+}
+function entropyOf(sig){ return HALF_LOG_2PIE + Math.log(sig); } /* 0.5 log(2πe σ²) */
+
+/* ---------- state ---------- */
+var state={
+  land:'single', T:1.0, lr:0.03,
+  mu:0, s:0,                 /* s = log sigma */
+  adam:null, step:0, running:false,
+  trace:[],                  /* [{F, E, mTS}]  mTS = -T*S  */
+  last:{ F:NaN, meanE:NaN, S:NaN, TS:NaN }
+};
+var SMIN=Math.log(0.05), SMAX=Math.log(4.0);
+var MAXSTEPS=520;
+
+function resetQ(){
+  /* start narrow and slightly off-center (random sign) so the centered fixed point
+     can spontaneously break on the double well when energy beats entropy */
+  var sign=Math.random()<0.5?-1:1;
+  state.mu=sign*(0.18+Math.random()*0.12);
+  state.s=Math.log(0.8);
+  state.adam={ m:[0,0], v:[0,0], t:0 };
+  state.step=0; state.trace=[];
+}
+
+/* one Adam descent step on F over theta=[mu, s] */
+function optStep(){
+  var sig=Math.exp(state.s);
+  var ex=expectations(state.mu, sig);
+  var gradMu=ex.gMu;          /* dF/dmu = d<E>/dmu (S independent of mu) */
+  var gradS =ex.gS - state.T; /* dF/ds = d<E>/ds - T*dS/ds, dS/ds = 1    */
+  var grad=[gradMu, gradS], theta=[state.mu, state.s];
+  var ad=state.adam, lr=state.lr, b1=0.9, b2=0.999, eps=1e-8;
+  ad.t++;
+  var bc1=1-Math.pow(b1,ad.t), bc2=1-Math.pow(b2,ad.t);
+  for(var i=0;i<2;i++){
+    ad.m[i]=b1*ad.m[i]+(1-b1)*grad[i];
+    ad.v[i]=b2*ad.v[i]+(1-b2)*grad[i]*grad[i];
+    var mh=ad.m[i]/bc1, vh=ad.v[i]/bc2;
+    theta[i]-=lr*mh/(Math.sqrt(vh)+eps);   /* descent */
+  }
+  state.mu=theta[0];
+  state.s =Math.max(SMIN, Math.min(SMAX, theta[1]));
+}
+
+/* current metrics from (mu,s,T) */
+function metrics(){
+  var sig=Math.exp(state.s);
+  var ex=expectations(state.mu, sig);
+  var S=entropyOf(sig);
+  var TS=state.T*S;
+  var F=ex.meanE - TS;
+  return { F:F, meanE:ex.meanE, S:S, TS:TS };
+}
+
+/* ---------- main plot: energy landscape + posterior bump ---------- */
+var DOMX={ min:-4, max:4 };
+function drawMain(){
+  var cv=$('mainCv'), st=setupCanvas(cv);
+  if(!st) return;
+  var ctx=st.ctx, w=st.w, h=st.h;
+  var Mg={ l:38, r:14, t:14, b:26 };
+  var pw=w-Mg.l-Mg.r, ph=h-Mg.t-Mg.b;
+  ctx.clearRect(0,0,w,h);
+
+  var yr=YR[state.land], ylo=yr[0], yhi=yr[1];
+  function SX(x){ return Mg.l+(x-DOMX.min)/(DOMX.max-DOMX.min)*pw; }
+  function SY(y){ return Mg.t+ph-(y-ylo)/(yhi-ylo)*ph; }
+
+  /* grid */
+  ctx.strokeStyle=cssv('--grid'); ctx.lineWidth=1; ctx.globalAlpha=.8; ctx.beginPath();
+  for(var gx=DOMX.min;gx<=DOMX.max+1e-6;gx+=1){ ctx.moveTo(SX(gx),Mg.t); ctx.lineTo(SX(gx),Mg.t+ph); }
+  ctx.stroke(); ctx.globalAlpha=1;
+  ctx.strokeStyle=cssv('--axis'); ctx.strokeRect(Mg.l,Mg.t,pw,ph);
+  /* zero-energy line */
+  if(ylo<0 && yhi>0){
+    ctx.strokeStyle=cssv('--axis'); ctx.globalAlpha=.6; ctx.setLineDash([3,3]);
+    ctx.beginPath(); ctx.moveTo(Mg.l,SY(0)); ctx.lineTo(Mg.l+pw,SY(0)); ctx.stroke();
+    ctx.setLineDash([]); ctx.globalAlpha=1;
+  }
+
+  /* x ticks */
+  ctx.fillStyle=cssv('--muted'); ctx.font=MONO; ctx.textAlign='center';
+  for(gx=DOMX.min;gx<=DOMX.max+1e-6;gx+=2) ctx.fillText(String(gx), SX(gx), h-9);
+
+  var mu=state.mu, sig=Math.exp(state.s);
+
+  /* posterior q bump (filled), scaled so its peak occupies ~44% of plot height */
+  var peak=1/(sig*Math.sqrt(2*Math.PI));
+  var bumpH=0.44*ph;
+  ctx.save();
+  ctx.beginPath(); ctx.rect(Mg.l,Mg.t,pw,ph); ctx.clip();
+  ctx.beginPath();
+  var NB=200, base=Mg.t+ph;
+  ctx.moveTo(SX(DOMX.min), base);
+  for(var b=0;b<=NB;b++){
+    var xz=DOMX.min+(b/NB)*(DOMX.max-DOMX.min);
+    var pv=Math.exp(-0.5*((xz-mu)/sig)*((xz-mu)/sig))/(sig*Math.sqrt(2*Math.PI));
+    var yy=base-(pv/peak)*bumpH;
+    ctx.lineTo(SX(xz), yy);
+  }
+  ctx.lineTo(SX(DOMX.max), base);
+  ctx.closePath();
+  ctx.fillStyle=hexA(cssv('--vfe'),0.20); ctx.fill();
+  ctx.strokeStyle=cssv('--vfe'); ctx.lineWidth=2; ctx.stroke();
+  ctx.restore();
+
+  /* energy curve E(z) */
+  ctx.save();
+  ctx.beginPath(); ctx.rect(Mg.l,Mg.t,pw,ph); ctx.clip();
+  ctx.strokeStyle=cssv('--ink'); ctx.lineWidth=2.4; ctx.beginPath();
+  var NE=260, started=false;
+  for(var i=0;i<=NE;i++){
+    var x=DOMX.min+(i/NE)*(DOMX.max-DOMX.min);
+    var ev=Ef(x);
+    var px=SX(x), py=SY(ev);
+    if(!started){ ctx.moveTo(px,py); started=true; } else ctx.lineTo(px,py);
+  }
+  ctx.stroke();
+  ctx.restore();
+
+  /* mu marker: vertical line + × on the energy curve */
+  ctx.save();
+  ctx.beginPath(); ctx.rect(Mg.l,Mg.t,pw,ph); ctx.clip();
+  var mxp=SX(mu);
+  ctx.strokeStyle=hexA(cssv('--vfe'),0.55); ctx.lineWidth=1.4; ctx.setLineDash([4,3]);
+  ctx.beginPath(); ctx.moveTo(mxp,Mg.t); ctx.lineTo(mxp,Mg.t+ph); ctx.stroke();
+  ctx.setLineDash([]);
+  var eyp=SY(Ef(mu));
+  ctx.strokeStyle=cssv('--vfe'); ctx.lineWidth=2.4; ctx.beginPath();
+  ctx.moveTo(mxp-5,eyp-5); ctx.lineTo(mxp+5,eyp+5);
+  ctx.moveTo(mxp-5,eyp+5); ctx.lineTo(mxp+5,eyp-5); ctx.stroke();
+  ctx.restore();
+
+  /* labels */
+  ctx.font='600 12px "Inter", system-ui, sans-serif';
+  ctx.textAlign='left'; ctx.fillStyle=cssv('--ink');
+  ctx.fillText(L('Energy E(z)','에너지 E(z)'), Mg.l+8, Mg.t+16);
+  ctx.fillStyle=cssv('--vfe');
+  ctx.fillText(L('Posterior q','사후분포 q'), Mg.l+8, Mg.t+34);
+  ctx.font=MONO; ctx.fillStyle=cssv('--muted');
+  ctx.textAlign='right';
+  ctx.fillText(L('latent z →','잠재변수 z →'), Mg.l+pw, Mg.t+ph-6);
+  ctx.save();
+  ctx.translate(Mg.l+11, Mg.t+8); ctx.rotate(-Math.PI/2);
+  ctx.textAlign='right'; ctx.fillText(L('E →','E →'), 0, 0);
+  ctx.restore();
+}
+
+/* ---------- trace plot: F, <E>, -T·S over iterations ---------- */
+function drawTrace(){
+  var cv=$('traceCv'), st=setupCanvas(cv);
+  if(!st) return;
+  var ctx=st.ctx, w=st.w, h=st.h;
+  var Mg={ l:46, r:12, t:12, b:22 };
+  var pw=w-Mg.l-Mg.r, ph=h-Mg.t-Mg.b;
+  ctx.clearRect(0,0,w,h);
+
+  var tr=state.trace;
+  var ymin=Infinity, ymax=-Infinity;
+  for(var i=0;i<tr.length;i++){
+    var d=tr[i];
+    if(d.F<ymin)ymin=d.F; if(d.F>ymax)ymax=d.F;
+    if(d.E<ymin)ymin=d.E; if(d.E>ymax)ymax=d.E;
+    if(d.mTS<ymin)ymin=d.mTS; if(d.mTS>ymax)ymax=d.mTS;
+  }
+  if(!isFinite(ymin)||!isFinite(ymax)){ ymin=-2; ymax=2; }
+  if(ymax-ymin<1e-3){ ymin-=1; ymax+=1; }
+  var pad=(ymax-ymin)*0.12; ymin-=pad; ymax+=pad;
+
+  var n=Math.max(tr.length,2);
+  function X(i){ return Mg.l+(n<=1?0:i/(n-1))*pw; }
+  function Y(v){ v=Math.max(ymin,Math.min(ymax,v)); return Mg.t+ph-(v-ymin)/(ymax-ymin)*ph; }
+
+  /* grid + zero line */
+  ctx.strokeStyle=cssv('--grid'); ctx.lineWidth=1; ctx.beginPath();
+  for(var gk=1;gk<4;gk++){ var yy=Mg.t+ph*gk/4; ctx.moveTo(Mg.l,yy); ctx.lineTo(Mg.l+pw,yy); }
+  ctx.stroke();
+  ctx.strokeStyle=cssv('--axis'); ctx.strokeRect(Mg.l,Mg.t,pw,ph);
+  if(ymin<0 && ymax>0){
+    ctx.strokeStyle=cssv('--axis'); ctx.globalAlpha=.6; ctx.setLineDash([3,3]);
+    ctx.beginPath(); ctx.moveTo(Mg.l,Y(0)); ctx.lineTo(Mg.l+pw,Y(0)); ctx.stroke();
+    ctx.setLineDash([]); ctx.globalAlpha=1;
+  }
+
+  /* y ticks */
+  ctx.fillStyle=cssv('--muted'); ctx.font=MONO; ctx.textAlign='right';
+  ctx.fillText(fmt(ymax,1), Mg.l-5, Y(ymax)+9);
+  ctx.fillText(fmt(ymin,1), Mg.l-5, Y(ymin)-2);
+
+  function curve(key,color,wd){
+    if(tr.length<2) return;
+    ctx.save(); ctx.beginPath(); ctx.rect(Mg.l,Mg.t,pw,ph); ctx.clip();
+    ctx.strokeStyle=color; ctx.lineWidth=wd; ctx.beginPath();
+    for(var i=0;i<tr.length;i++){ var px=X(i), py=Y(tr[i][key]); if(i===0)ctx.moveTo(px,py); else ctx.lineTo(px,py); }
+    ctx.stroke();
+    var last=tr[tr.length-1];
+    ctx.fillStyle=color; ctx.beginPath(); ctx.arc(X(tr.length-1),Y(last[key]),2.6,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+  curve('E',   cssv('--c-exp'), 1.8);
+  curve('mTS', cssv('--c-ent'), 1.8);
+  curve('F',   cssv('--vfe'),   2.4);
+
+  ctx.font=MONO; ctx.fillStyle=cssv('--muted'); ctx.textAlign='right';
+  ctx.fillText(L('iteration →','반복 →'), Mg.l+pw, h-7);
+}
+
+/* ---------- render ---------- */
+function render(){
+  $('tV').textContent=state.T.toFixed(2);
+  $('lrV').textContent=state.lr.toFixed(3);
+  var m=metrics();
+  state.last=m;
+  $('fV').textContent=fmt(m.F);
+  $('eeV').textContent=fmt(m.meanE);
+  $('sV').textContent=fmt(m.S);
+  $('tsV').textContent=fmt(m.TS);
+  drawMain();
+  drawTrace();
+}
+
+/* ---------- optimization animation ---------- */
+var raf=null;
+function frame(){
+  if(!state.running) return;
+  for(var s=0;s<2 && state.step<MAXSTEPS;s++){ optStep(); state.step++; }
+  var m=metrics();
+  state.trace.push({ F:m.F, E:m.meanE, mTS:-m.TS });
+  if(state.trace.length>2000) state.trace.shift();
+  render();
+  if(state.step>=MAXSTEPS){ stopOpt(); return; }
+  raf=requestAnimationFrame(frame);
+}
+function startOpt(){
+  if(state.running) return;
+  if(state.step>=MAXSTEPS){ state.step=0; state.trace=[]; }
+  state.running=true;
+  $('goBtn').classList.add('running');
+  raf=requestAnimationFrame(frame);
+}
+function stopOpt(){
+  state.running=false;
+  $('goBtn').classList.remove('running');
+  if(raf) cancelAnimationFrame(raf);
+}
+function toggleOpt(){ if(state.running) stopOpt(); else startOpt(); }
+
+/* ---------- controls ---------- */
+function wire(){
+  document.querySelectorAll('#landRow .seg').forEach(function(b){
+    b.addEventListener('click', function(){
+      stopOpt();
+      document.querySelectorAll('#landRow .seg').forEach(function(x){ x.classList.remove('active'); });
+      b.classList.add('active');
+      state.land=b.dataset.land;
+      resetQ(); render();
+    });
+  });
+  $('tS').addEventListener('input', function(){ state.T=+this.value; $('tV').textContent=state.T.toFixed(2); render(); });
+  $('lrS').addEventListener('input', function(){ state.lr=+this.value; $('lrV').textContent=state.lr.toFixed(3); });
+  $('goBtn').addEventListener('click', toggleOpt);
+  $('resetBtn').addEventListener('click', function(){ stopOpt(); resetQ(); render(); });
+  window.addEventListener('resize', render);
+}
+
+/* ---------- KaTeX ---------- */
+var mathDone=false;
+function tryMath(){
+  if(mathDone||!window.renderMathInElement) return;
+  mathDone=true;
+  window.renderMathInElement(document.body,{
+    delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}],
+    throwOnError:false
+  });
+}
+document.addEventListener('DOMContentLoaded', tryMath);
+window.addEventListener('load', tryMath);
+
+/* ---------- init + sync hooks ---------- */
+try {
+  wire();
+  resetQ();
+  window.__onLang=function(){ render(); };            /* redraw canvases with new-language labels */
+  window.__onTheme=function(){ render(); };           /* recolor from CSS vars on theme switch */
+  render();
+} catch(err){ if(window.console) console.error(err); }
+</script>
+</body>
+</html>

@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<script>
+(function(){
+  function g(k,d){ try{ return localStorage.getItem(k)||d; }catch(e){ return d; } }
+  var root=document.documentElement;
+  root.setAttribute('data-theme', g('theme', (window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light'));
+  root.setAttribute('data-lang', g('lang','en'));
+  window.addEventListener('storage', function(e){
+    if(e.key==='theme'){ root.setAttribute('data-theme', e.newValue||'dark'); if(window.__onTheme) window.__onTheme(); }
+    if(e.key==='lang'){ root.setAttribute('data-lang', e.newValue||'en'); if(window.__onLang) window.__onLang(); }
+  });
+})();
+</script>
+
+<title>Gradient Descent &amp; Optimizers — PRISM Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<style>
+* { box-sizing: border-box; }
+:root {
+  color-scheme: light;
+  --bg:#ffffff; --panel:#f7f9fc; --panel-2:#eef2f8; --ink:#141b33; --muted:#5a6488;
+  --border:#e2e7ee; --grid:#eef2f8; --axis:#c9d0c8;
+  --gd:#22a06b; --vi:#22a06b;
+  --c-sgd:#e5484d; --c-mom:#8b5cf6; --c-rms:#2563eb; --c-adam:#e08a00;
+  --shadow: 0 1px 2px rgba(28,36,49,.05);
+}
+[data-theme="dark"] {
+  color-scheme: dark;
+  --bg:#15181e; --panel:#1d212a; --panel-2:#171b22; --ink:#e6edf3; --muted:#8b949e;
+  --border:#2e343f; --grid:#252b36; --axis:#3a4250;
+  --gd:#4ade80; --vi:#4ade80;
+  --c-sgd:#f87171; --c-mom:#a78bfa; --c-rms:#60a5fa; --c-adam:#fbbf24;
+  --shadow: none;
+}
+html, body { margin:0; padding:0; }
+body {
+  background:var(--bg); color:var(--ink);
+  padding:26px 20px 44px;
+  font:14px/1.5 "Inter", system-ui, -apple-system, 'Noto Sans KR', sans-serif;
+  accent-color: var(--vi);
+}
+:focus-visible { outline:2px solid var(--vi); outline-offset:2px; }
+
+/* ---------- bilingual ---------- */
+html[data-lang="en"] .i18n-ko{ display:none !important; }
+html[data-lang="ko"] .i18n-en{ display:none !important; }
+.i18n-ko{ font-family:'Pretendard','Inter',sans-serif; word-break:keep-all; }
+
+/* ---------- site chrome ---------- */
+.wrap{max-width:1120px;margin:0 auto}
+.topbar{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.back{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--muted);text-decoration:none;
+  border:1px solid var(--border);padding:6px 12px;border-radius:20px;transition:.14s}
+.back:hover{color:var(--vi);border-color:currentColor}
+.eyebrow{font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--muted);margin:0 0 10px;display:flex;align-items:center;gap:10px}
+.eyebrow::before{content:"";width:22px;height:1px;background:currentColor;opacity:.7}
+.title{font-family:"Space Grotesk",system-ui,sans-serif;font-weight:700;font-size:clamp(28px,4.6vw,44px);
+  line-height:1.04;margin:0 0 10px;letter-spacing:-.02em;color:var(--ink)}
+.title .thin{color:var(--muted);font-weight:500;font-size:.4em}
+.site-sub{color:var(--muted);max-width:70ch;margin:0 0 24px;font-size:15px}
+footer{margin-top:30px;color:var(--muted);font-size:12px;font-family:"JetBrains Mono",monospace;letter-spacing:.04em}
+footer a{color:var(--muted);text-decoration:underline}
+
+/* ---------- layout ---------- */
+main { padding:0; }
+.tab { display:grid; grid-template-columns:264px minmax(0,1fr); gap:14px; align-items:start; }
+.panel { background:var(--panel); border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow); }
+.stage { display:flex; flex-direction:column; gap:12px; min-width:0; }
+
+/* ---------- side controls ---------- */
+.side { padding:14px; display:flex; flex-direction:column; gap:14px; }
+.grp { display:flex; flex-direction:column; gap:8px; }
+.grp + .grp { border-top:1px dashed var(--border); padding-top:13px; }
+.grp-t { font-size:10.5px; font-weight:700; letter-spacing:.09em; text-transform:uppercase; color:var(--muted); }
+.sl { display:flex; flex-direction:column; gap:3px; font-size:12.5px; }
+.sl > span { display:flex; justify-content:space-between; align-items:baseline; gap:8px; }
+.val { font:600 12px "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+input[type=range] { width:100%; margin:0; height:22px; }
+.hint { margin:0; font-size:11.5px; color:var(--muted); }
+.btnrow { display:flex; gap:6px; flex-wrap:wrap; }
+.btn { border:1px solid var(--border); background:var(--panel); color:var(--ink); font:inherit; font-size:12.5px; padding:6px 11px; border-radius:8px; cursor:pointer; transition:background .12s; }
+.btn:hover { background:var(--bg); }
+.btn.go { border-color:var(--vi); color:var(--vi); font-weight:600; }
+.btn.go.running { background:var(--vi); color:var(--bg); }
+.btn.ghost { color:var(--muted); }
+.segs { display:flex; gap:4px; flex-wrap:wrap; }
+.seg { flex:1; min-width:56px; border:1px solid var(--border); background:var(--bg); color:var(--muted); font:inherit; font-size:12px; padding:5px 4px; border-radius:7px; cursor:pointer; text-align:center; transition:background .12s, color .12s, border-color .12s; }
+.seg:hover { color:var(--ink); }
+.seg.active { background:var(--ink); color:var(--bg); border-color:var(--ink); font-weight:600; }
+.seg.o-sgd.active { background:var(--c-sgd); border-color:var(--c-sgd); color:#fff; }
+.seg.o-mom.active { background:var(--c-mom); border-color:var(--c-mom); color:#fff; }
+.seg.o-rms.active { background:var(--c-rms); border-color:var(--c-rms); color:#fff; }
+.seg.o-adam.active { background:var(--c-adam); border-color:var(--c-adam); color:#fff; }
+
+/* ---------- plot ---------- */
+.plot { padding:10px 12px 8px; }
+canvas { display:block; width:100%; }
+#mainCv { height:360px; }
+#lossCv { height:140px; }
+.legend { display:flex; flex-wrap:wrap; gap:4px 14px; padding:8px 2px 2px; font-size:11.5px; color:var(--muted); }
+.legend span { display:inline-flex; align-items:center; gap:5px; }
+.swbar { display:inline-block; width:14px; height:0; border-top:3px solid currentColor; }
+.swx { display:inline-block; width:12px; text-align:center; font-weight:700; line-height:11px; }
+.losscap { margin:6px 2px 2px; font-size:11.5px; color:var(--muted); text-align:center; }
+
+/* ---------- cards ---------- */
+.cards { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:10px; }
+.card { background:var(--panel); border:1px solid var(--border); border-top:3px solid var(--border); border-radius:12px; padding:10px 12px 9px; box-shadow:var(--shadow); }
+.card.sgd { border-top-color:var(--c-sgd); }
+.card.mom { border-top-color:var(--c-mom); }
+.card.rms { border-top-color:var(--c-rms); }
+.card.adam { border-top-color:var(--c-adam); }
+.card .k { font:700 12px "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing:.04em; }
+.card.sgd .k { color:var(--c-sgd); }
+.card.mom .k { color:var(--c-mom); }
+.card.rms .k { color:var(--c-rms); }
+.card.adam .k { color:var(--c-adam); }
+.card .nm { font-size:12px; color:var(--muted); margin-bottom:6px; }
+.card .big { font:600 20px "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; white-space:nowrap; }
+.card .note { margin:6px 0 0; font-size:11px; color:var(--muted); border-top:1px dashed var(--border); padding-top:5px; }
+
+/* ---------- fold panels ---------- */
+.fold summary { cursor:pointer; padding:9px 13px; font-size:12.5px; font-weight:600; color:var(--muted); list-style:none; display:flex; align-items:center; gap:7px; }
+.fold summary::-webkit-details-marker { display:none; }
+.fold summary::before { content:'\25B8'; font-size:10px; transition:transform .12s; }
+.fold[open] summary::before { transform:rotate(90deg); }
+.fold-body { padding:2px 16px 12px; font-size:13px; }
+.fold-body p { margin:4px 0 8px; }
+.fold ol { margin:0; padding-left:20px; display:flex; flex-direction:column; gap:8px; }
+.katex-display { margin:.5em 0; padding:2px 0; overflow-x:auto; overflow-y:hidden; }
+.katex { font-size:1.0em; }
+
+@media (max-width:760px) {
+  .tab { grid-template-columns:1fr; }
+  .cards { grid-template-columns:1fr 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition:none !important; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar"><a class="back" href="index.html"><span class="i18n-en">← Playground</span><span class="i18n-ko">← 놀이터</span></a></div>
+  <p class="eyebrow"><span class="i18n-en">PRISM · Machine Learning Playground</span><span class="i18n-ko">PRISM · 머신러닝 놀이터</span></p>
+  <h1 class="title"><span class="i18n-en">Gradient Descent &amp; Optimizers</span><span class="i18n-ko">경사 하강법과 최적화기</span><br><span class="thin"><span class="i18n-en">Roll down a loss landscape with SGD, Momentum, RMSProp, and Adam — feel how learning rate and curvature shape the path</span><span class="i18n-ko">SGD, 모멘텀, RMSProp, Adam으로 손실 지형을 굴러 내려가며 — 학습률과 곡률이 경로를 어떻게 결정하는지 느껴보기</span></span></h1>
+
+<main>
+<section class="tab">
+  <aside class="panel side">
+    <div class="grp">
+      <div class="grp-t"><span class="i18n-en">Loss surface</span><span class="i18n-ko">손실 지형</span></div>
+      <div class="segs" id="surfRow">
+        <button class="seg active" data-surf="quad"><span class="i18n-en">Ill-conditioned quadratic</span><span class="i18n-ko">악조건 이차함수</span></button>
+        <button class="seg" data-surf="rosen"><span class="i18n-en">Rosenbrock</span><span class="i18n-ko">로젠브록</span></button>
+        <button class="seg" data-surf="saddle"><span class="i18n-en">Saddle</span><span class="i18n-ko">안장점</span></button>
+      </div>
+      <p class="hint"><span class="i18n-en">Pick the landscape the optimizers roll down.</span><span class="i18n-ko">최적화기가 굴러 내려갈 지형을 고르세요.</span></p>
+    </div>
+
+    <div class="grp">
+      <div class="grp-t"><span class="i18n-en">Optimizers</span><span class="i18n-ko">최적화기</span></div>
+      <div class="segs" id="optRow">
+        <button class="seg o-sgd active" data-opt="sgd">SGD</button>
+        <button class="seg o-mom active" data-opt="mom"><span class="i18n-en">Momentum</span><span class="i18n-ko">모멘텀</span></button>
+        <button class="seg o-rms active" data-opt="rms">RMSProp</button>
+        <button class="seg o-adam active" data-opt="adam">Adam</button>
+      </div>
+      <p class="hint"><span class="i18n-en">Toggle which methods race from the same start.</span><span class="i18n-ko">같은 시작점에서 경주할 방법들을 켜고 끄세요.</span></p>
+    </div>
+
+    <div class="grp">
+      <div class="grp-t"><span class="i18n-en">Hyperparameters</span><span class="i18n-ko">하이퍼파라미터</span></div>
+      <label class="sl"><span><span class="i18n-en">Learning rate</span><span class="i18n-ko">학습률</span> <b id="lrV" class="val">0.09</b></span>
+        <input type="range" id="lrS" min="0" max="1" step="0.001" value="0.5"></label>
+      <label class="sl"><span><span class="i18n-en">Momentum β</span><span class="i18n-ko">모멘텀 β</span> <b id="betaV" class="val">0.90</b></span>
+        <input type="range" id="betaS" min="0.5" max="0.99" step="0.01" value="0.9"></label>
+      <div class="btnrow">
+        <button id="goBtn" class="btn go"><span class="i18n-en">▶ Run</span><span class="i18n-ko">▶ 실행</span></button>
+        <button id="resetBtn" class="btn ghost"><span class="i18n-en">Reset</span><span class="i18n-ko">초기화</span></button>
+      </div>
+      <p class="hint"><span class="i18n-en">Reset re-rolls the start point. Larger β adds inertia to Momentum and Adam.</span><span class="i18n-ko">초기화하면 시작점이 새로 정해집니다. β가 클수록 모멘텀과 Adam에 관성이 더해집니다.</span></p>
+    </div>
+  </aside>
+
+  <div class="stage">
+    <div class="panel plot">
+      <canvas id="mainCv"></canvas>
+      <div class="legend" id="legend">
+        <span style="color:var(--c-sgd)"><i class="swbar"></i>SGD</span>
+        <span style="color:var(--c-mom)"><i class="swbar"></i><span class="i18n-en">Momentum</span><span class="i18n-ko">모멘텀</span></span>
+        <span style="color:var(--c-rms)"><i class="swbar"></i>RMSProp</span>
+        <span style="color:var(--c-adam)"><i class="swbar"></i>Adam</span>
+        <span style="color:var(--ink)"><i class="swx">&#9733;</i><span class="i18n-en">Optimum θ*</span><span class="i18n-ko">최적점 θ*</span></span>
+      </div>
+    </div>
+
+    <div class="panel plot">
+      <canvas id="lossCv"></canvas>
+      <p class="losscap"><span class="i18n-en">Loss vs iteration — log scale where the loss stays positive, so convergence speeds are directly comparable.</span><span class="i18n-ko">반복에 따른 손실 — 손실이 양수인 지형에서는 로그 스케일이라 수렴 속도를 직접 비교할 수 있습니다.</span></p>
+    </div>
+
+    <div class="cards">
+      <div class="card sgd">
+        <div class="k">SGD</div>
+        <div class="nm"><span class="i18n-en">Current loss</span><span class="i18n-ko">현재 손실</span></div>
+        <div class="big" id="sgdV">—</div>
+        <p class="note"><span class="i18n-en">Plain step along the gradient.</span><span class="i18n-ko">경사를 그대로 따라가는 기본 스텝.</span></p>
+      </div>
+      <div class="card mom">
+        <div class="k"><span class="i18n-en">Momentum</span><span class="i18n-ko">모멘텀</span></div>
+        <div class="nm"><span class="i18n-en">Current loss</span><span class="i18n-ko">현재 손실</span></div>
+        <div class="big" id="momV">—</div>
+        <p class="note"><span class="i18n-en">Velocity damps oscillation, accelerates in valleys.</span><span class="i18n-ko">속도가 진동을 억제하고 골짜기에서 가속합니다.</span></p>
+      </div>
+      <div class="card rms">
+        <div class="k">RMSProp</div>
+        <div class="nm"><span class="i18n-en">Current loss</span><span class="i18n-ko">현재 손실</span></div>
+        <div class="big" id="rmsV">—</div>
+        <p class="note"><span class="i18n-en">Per-coordinate adaptive scaling.</span><span class="i18n-ko">좌표별 적응적 스케일링.</span></p>
+      </div>
+      <div class="card adam">
+        <div class="k">Adam</div>
+        <div class="nm"><span class="i18n-en">Current loss</span><span class="i18n-ko">현재 손실</span></div>
+        <div class="big" id="adamV">—</div>
+        <p class="note"><span class="i18n-en">Momentum + adaptive scale + bias correction.</span><span class="i18n-ko">모멘텀 + 적응 스케일 + 편향 보정.</span></p>
+      </div>
+    </div>
+
+    <details class="panel fold">
+      <summary><span class="i18n-en">Formulas</span><span class="i18n-ko">공식</span></summary>
+      <div class="fold-body">
+        <p><span class="i18n-en">All methods start from the same point and follow the gradient g = ∇f(θ) of the loss, with learning rate η:</span><span class="i18n-ko">모든 방법은 같은 점에서 출발해 손실의 경사 g = ∇f(θ)를 따르며, 학습률 η를 사용합니다:</span></p>
+        $$\textbf{SGD:}\quad \theta \leftarrow \theta - \eta\,g$$
+        <p><span class="i18n-en">Momentum accumulates a velocity that damps zig-zag and accelerates along consistent directions:</span><span class="i18n-ko">모멘텀은 속도를 누적하여 지그재그를 억제하고 일관된 방향으로 가속합니다:</span></p>
+        $$\textbf{Momentum:}\quad v \leftarrow \beta v - \eta\,g,\qquad \theta \leftarrow \theta + v$$
+        <p><span class="i18n-en">RMSProp keeps a running average of squared gradients and rescales each coordinate:</span><span class="i18n-ko">RMSProp는 제곱 경사의 이동평균을 유지하여 각 좌표를 재조정합니다:</span></p>
+        $$\textbf{RMSProp:}\quad s \leftarrow \rho\,s + (1-\rho)\,g^2,\qquad \theta \leftarrow \theta - \frac{\eta\,g}{\sqrt{s}+\varepsilon}$$
+        <p><span class="i18n-en">Adam combines a bias-corrected first moment (momentum) with a bias-corrected second moment (adaptive scale):</span><span class="i18n-ko">Adam은 편향 보정된 1차 모멘트(모멘텀)와 편향 보정된 2차 모멘트(적응 스케일)를 결합합니다:</span></p>
+        $$m \leftarrow \beta_1 m + (1-\beta_1)g,\quad v \leftarrow \beta_2 v + (1-\beta_2)g^2$$
+        $$\hat m = \frac{m}{1-\beta_1^{\,t}},\quad \hat v = \frac{v}{1-\beta_2^{\,t}},\qquad \theta \leftarrow \theta - \frac{\eta\,\hat m}{\sqrt{\hat v}+\varepsilon}$$
+      </div>
+    </details>
+
+    <details class="panel fold">
+      <summary><span class="i18n-en">What to watch</span><span class="i18n-ko">관찰 포인트</span></summary>
+      <div class="fold-body">
+        <ol>
+          <li><span class="i18n-en">On the <b>ill-conditioned quadratic</b>, the ravine is steep across and shallow along. Plain <b>SGD zig-zags</b> across the ravine and crawls along it; <b>Momentum</b> damps the oscillation and accelerates down the valley; <b>Adam / RMSProp</b> rescale per-coordinate and head almost straight for the minimum.</span><span class="i18n-ko"><b>악조건 이차함수</b>에서는 골짜기가 가로로 가파르고 세로로 완만합니다. 기본 <b>SGD는 골짜기를 가로질러 지그재그</b>하며 축을 따라서는 느리게 기어갑니다. <b>모멘텀</b>은 진동을 억제하고 골짜기를 따라 가속하며, <b>Adam / RMSProp</b>는 좌표별로 재조정해 최소점을 향해 거의 직진합니다.</span></li>
+          <li><span class="i18n-en">Too large a <b>learning rate</b> overshoots and diverges (the path flies off and is clamped to the plot edge); too small and it crawls — the fundamental step-size tradeoff.</span><span class="i18n-ko"><b>학습률</b>이 너무 크면 과도하게 넘어가 발산하고(경로가 튕겨 나가 그림 가장자리에 고정됨), 너무 작으면 기어갑니다 — 스텝 크기의 근본적인 절충입니다.</span></li>
+          <li><span class="i18n-en">On the <b>saddle</b>, the gradient magnitude vanishes near the saddle point, so SGD stalls; momentum and adaptive methods build up movement and break out of the flat region faster.</span><span class="i18n-ko"><b>안장점</b>에서는 안장점 근처에서 경사 크기가 사라져 SGD가 정체됩니다. 모멘텀과 적응적 방법은 움직임을 쌓아 평평한 영역을 더 빨리 벗어납니다.</span></li>
+          <li><span class="i18n-en"><b>Adam</b> = Momentum (1st moment) + per-coordinate adaptive scaling (2nd moment) with bias correction — it usually wins on curved, ill-conditioned landscapes.</span><span class="i18n-ko"><b>Adam</b> = 모멘텀(1차 모멘트) + 좌표별 적응 스케일링(2차 모멘트) + 편향 보정 — 휘어지고 악조건인 지형에서 대개 가장 앞섭니다.</span></li>
+        </ol>
+      </div>
+    </details>
+  </div>
+</section>
+</main>
+  <footer>PRISM Lab · <span class="i18n-en">prototype</span><span class="i18n-ko">프로토타입</span> · <a href="https://sswu-prism-lab.github.io" target="_blank" rel="noopener">sswu-prism-lab.github.io</a></footer>
+</div>
+
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script>
+'use strict';
+/* Gradient Descent & Optimizers — SGD / Momentum / RMSProp / Adam racing down a 2D loss surface.
+   Real update rules, deterministic (no Math.random at load; start varies from a counter). */
+
+/* ---------- helpers ---------- */
+function $(id){ return document.getElementById(id); }
+function cssv(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+function L(en,ko){ return document.documentElement.getAttribute('data-lang')==='ko' ? ko : en; }
+function fmt(v, dg){
+  if(dg===undefined) dg=3;
+  if(v===null||v===undefined||!isFinite(v)) return '—';
+  var a=Math.abs(v);
+  if(a!==0 && (a>=1e4||a<1e-3)) return v.toExponential(1);
+  return v.toFixed(dg);
+}
+function hexRGB(hex){
+  hex=hex.replace('#','');
+  if(hex.length===3) hex=hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+  return [parseInt(hex.substr(0,2),16), parseInt(hex.substr(2,2),16), parseInt(hex.substr(4,2),16)];
+}
+function hexA(hex,a){ var c=hexRGB(hex); return 'rgba('+c[0]+','+c[1]+','+c[2]+','+a+')'; }
+function setupCanvas(cv){
+  var dpr=window.devicePixelRatio||1;
+  var w=cv.clientWidth, h=cv.clientHeight;
+  if(w===0||h===0) return null;
+  var W=Math.round(w*dpr), H=Math.round(h*dpr);
+  if(cv.width!==W||cv.height!==H){ cv.width=W; cv.height=H; }
+  var ctx=cv.getContext('2d');
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  return { ctx:ctx, w:w, h:h };
+}
+var MONO='11px "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace';
+
+/* ---------- loss surfaces ---------- */
+var SURF={
+  quad:{
+    dom:{xmin:-5,xmax:5,ymin:-5,ymax:5}, min:[0,0], start:[-4.2,4.0],
+    lrDef:0.09, spf:1, max:420, log:true,
+    f:function(x,y){ return 0.5*(16*x*x + 1*y*y); },
+    grad:function(x,y){ return [16*x, 1*y]; }
+  },
+  rosen:{
+    dom:{xmin:-2,xmax:2,ymin:-1,ymax:3}, min:[1,1], start:[-1.4,1.4],
+    lrDef:0.004, spf:4, max:1000, log:true,
+    f:function(x,y){ var a=1-x, b=y-x*x; return a*a + 100*b*b; },
+    grad:function(x,y){ var b=y-x*x; return [ -2*(1-x) - 400*x*b, 200*b ]; }
+  },
+  saddle:{
+    dom:{xmin:-3,xmax:3,ymin:-3,ymax:3}, min:[0,0], start:[2.2,0.05],
+    lrDef:0.05, spf:1, max:120, log:false,
+    f:function(x,y){ return x*x - y*y; },
+    grad:function(x,y){ return [2*x, -2*y]; }
+  }
+};
+/* fixed start-jitter table (no Math.random at load) */
+var STARTS=[[0,0],[0.55,-0.45],[-0.5,0.5],[0.35,0.55],[-0.6,-0.35],[0.7,0.2]];
+
+var OPTS=['sgd','mom','rms','adam'];
+var OCOL={ sgd:'--c-sgd', mom:'--c-mom', rms:'--c-rms', adam:'--c-adam' };
+
+var state={
+  surf:'quad', lr:0.09, beta:0.9,
+  show:{ sgd:true, mom:true, rms:true, adam:true },
+  running:false, iter:0, startIdx:0, raf:null,
+  runners:{}, field:null, fieldKey:''
+};
+
+/* ---------- learning-rate slider mapping (log) ---------- */
+var LR_LO=-4, LR_HI=Math.log(0.5)/Math.LN10; /* log10 */
+function lrFromT(t){ return Math.pow(10, LR_LO + t*(LR_HI-LR_LO)); }
+function tFromLr(lr){ return (Math.log(lr)/Math.LN10 - LR_LO)/(LR_HI-LR_LO); }
+function lrFmt(lr){
+  if(lr<0.01) return lr.toExponential(1);
+  return lr.toFixed(lr<0.1?3:2);
+}
+
+/* ---------- runner (one optimizer) ---------- */
+function makeRunner(start){
+  return {
+    p:[start[0],start[1]],
+    v:[0,0], s:[0,0], m:[0,0], vv:[0,0], t:0,
+    path:[[start[0],start[1]]], hist:[], loss:NaN, diverged:false
+  };
+}
+function resetRunners(){
+  var S=SURF[state.surf];
+  var jit=STARTS[state.startIdx % STARTS.length];
+  var rx=S.dom.xmax-S.dom.xmin, ry=S.dom.ymax-S.dom.ymin;
+  var sx=S.start[0]+jit[0]*0.10*rx;
+  var sy=S.start[1]+ (state.surf==='saddle'? jit[0]*0.02*ry : jit[1]*0.10*ry);
+  sx=Math.max(S.dom.xmin+0.15*rx, Math.min(S.dom.xmax-0.15*rx, sx));
+  sy=Math.max(S.dom.ymin+0.10*ry, Math.min(S.dom.ymax-0.10*ry, sy));
+  state.runners={};
+  for(var i=0;i<OPTS.length;i++){
+    var r=makeRunner([sx,sy]);
+    r.loss=S.f(sx,sy); r.hist=[r.loss];
+    state.runners[OPTS[i]]=r;
+  }
+  state.iter=0;
+}
+
+/* one update step for a runner given optimizer key */
+function stepRunner(key,r){
+  if(r.diverged) return;
+  var S=SURF[state.surf], lr=state.lr, beta=state.beta, eps=1e-8;
+  var g=S.grad(r.p[0],r.p[1]);
+  var i;
+  if(key==='sgd'){
+    for(i=0;i<2;i++) r.p[i]-=lr*g[i];
+  } else if(key==='mom'){
+    for(i=0;i<2;i++){ r.v[i]=beta*r.v[i]-lr*g[i]; r.p[i]+=r.v[i]; }
+  } else if(key==='rms'){
+    var rho=0.9;
+    for(i=0;i<2;i++){ r.s[i]=rho*r.s[i]+(1-rho)*g[i]*g[i]; r.p[i]-=lr*g[i]/(Math.sqrt(r.s[i])+eps); }
+  } else if(key==='adam'){
+    var b1=beta, b2=0.999; r.t++;
+    var bc1=1-Math.pow(b1,r.t), bc2=1-Math.pow(b2,r.t);
+    for(i=0;i<2;i++){
+      r.m[i]=b1*r.m[i]+(1-b1)*g[i];
+      r.vv[i]=b2*r.vv[i]+(1-b2)*g[i]*g[i];
+      var mh=r.m[i]/bc1, vh=r.vv[i]/bc2;
+      r.p[i]-=lr*mh/(Math.sqrt(vh)+eps);
+    }
+  }
+  /* divergence guard */
+  var rx=S.dom.xmax-S.dom.xmin, ry=S.dom.ymax-S.dom.ymin;
+  var big=0.15;   /* freeze once a runner leaves the visible plot, keeps plots bounded */
+  if(!isFinite(r.p[0])||!isFinite(r.p[1]) ||
+     r.p[0]<S.dom.xmin-big*rx || r.p[0]>S.dom.xmax+big*rx ||
+     r.p[1]<S.dom.ymin-big*ry || r.p[1]>S.dom.ymax+big*ry){
+    r.diverged=true;
+    r.p[0]=Math.max(S.dom.xmin-0.02*rx, Math.min(S.dom.xmax+0.02*rx, isFinite(r.p[0])?r.p[0]:S.dom.xmax));
+    r.p[1]=Math.max(S.dom.ymin-0.02*ry, Math.min(S.dom.ymax+0.02*ry, isFinite(r.p[1])?r.p[1]:S.dom.ymax));
+  }
+  r.loss=S.f(r.p[0],r.p[1]);
+  r.path.push([r.p[0],r.p[1]]);
+  if(r.path.length>1200) r.path.shift();
+  r.hist.push(r.loss);
+}
+
+/* ---------- scalar field: heatmap image + values for contours ---------- */
+function rebuildField(){
+  var S=SURF[state.surf], dom=S.dom;
+  var Nc=96;               /* contour grid */
+  var Ni=150;              /* image grid   */
+  var V=new Float64Array(Nc*Nc), fmin=Infinity, fmax=-Infinity;
+  var jy,ix,x,y,f;
+  for(jy=0;jy<Nc;jy++){
+    y=dom.ymax-(jy/(Nc-1))*(dom.ymax-dom.ymin);
+    for(ix=0;ix<Nc;ix++){
+      x=dom.xmin+(ix/(Nc-1))*(dom.xmax-dom.xmin);
+      f=S.f(x,y); V[jy*Nc+ix]=f;
+      if(f<fmin)fmin=f; if(f>fmax)fmax=f;
+    }
+  }
+  var off=document.createElement('canvas'); off.width=Ni; off.height=Ni;
+  var octx=off.getContext('2d');
+  var img=octx.createImageData(Ni,Ni), data=img.data;
+  var rgb=hexRGB(cssv('--gd'));
+  var span=(fmax-fmin)||1;
+  for(jy=0;jy<Ni;jy++){
+    y=dom.ymax-((jy+0.5)/Ni)*(dom.ymax-dom.ymin);
+    for(ix=0;ix<Ni;ix++){
+      x=dom.xmin+((ix+0.5)/Ni)*(dom.xmax-dom.xmin);
+      f=S.f(x,y);
+      var t=(f-fmin)/span;
+      if(S.log) t=Math.pow(t,0.32);        /* compress huge peaks */
+      var o=(jy*Ni+ix)*4;
+      data[o]=rgb[0]; data[o+1]=rgb[1]; data[o+2]=rgb[2];
+      data[o+3]=Math.round(255*Math.min(0.85,Math.max(0,t)*0.85));
+    }
+  }
+  octx.putImageData(img,0,0);
+  /* contour levels */
+  var levels=[], q=[0.03,0.09,0.2,0.38,0.62,0.85];
+  for(var i=0;i<q.length;i++){
+    var tt=q[i], val;
+    if(S.log){ val=fmin+span*Math.pow(tt,1/0.32); } else { val=fmin+span*tt; }
+    levels.push(val);
+  }
+  state.field={ img:off, V:V, N:Nc, fmin:fmin, fmax:fmax, levels:levels, dom:dom };
+}
+
+/* marching squares — push segments for one level into segs[] (grid coords) */
+function marching(V,N,c,segs){
+  function interp(a,b){ return (c-a)/((b-a)||1e-12); }
+  for(var j=0;j<N-1;j++){
+    for(var i=0;i<N-1;i++){
+      var tl=V[j*N+i], tr=V[j*N+i+1], br=V[(j+1)*N+i+1], bl=V[(j+1)*N+i];
+      var idx=(tl>c?8:0)|(tr>c?4:0)|(br>c?2:0)|(bl>c?1:0);
+      if(idx===0||idx===15) continue;
+      var top=[i+interp(tl,tr), j];
+      var right=[i+1, j+interp(tr,br)];
+      var bot=[i+interp(bl,br), j+1];
+      var left=[i, j+interp(tl,bl)];
+      function seg(a,b){ segs.push(a[0],a[1],b[0],b[1]); }
+      switch(idx){
+        case 1: seg(left,bot); break;
+        case 2: seg(bot,right); break;
+        case 3: seg(left,right); break;
+        case 4: seg(top,right); break;
+        case 5: seg(left,top); seg(bot,right); break;
+        case 6: seg(top,bot); break;
+        case 7: seg(left,top); break;
+        case 8: seg(left,top); break;
+        case 9: seg(top,bot); break;
+        case 10: seg(left,bot); seg(top,right); break;
+        case 11: seg(top,right); break;
+        case 12: seg(left,right); break;
+        case 13: seg(bot,right); break;
+        case 14: seg(left,bot); break;
+      }
+    }
+  }
+}
+
+/* ---------- draw main plot ---------- */
+function drawMain(){
+  var cv=$('mainCv'), st=setupCanvas(cv);
+  if(!st) return;
+  var ctx=st.ctx, w=st.w, h=st.h;
+  var Mg={ l:34, r:12, t:12, b:24 };
+  var pw=w-Mg.l-Mg.r, ph=h-Mg.t-Mg.b;
+  ctx.clearRect(0,0,w,h);
+
+  var key=state.surf+'|'+cssv('--gd');
+  if(key!==state.fieldKey || !state.field){ rebuildField(); state.fieldKey=key; }
+  var F=state.field, dom=F.dom;
+
+  function SX(x){ return Mg.l+(x-dom.xmin)/(dom.xmax-dom.xmin)*pw; }
+  function SY(y){ return Mg.t+ph-(y-dom.ymin)/(dom.ymax-dom.ymin)*ph; }
+  function GX(gi){ return SX(dom.xmin+gi/(F.N-1)*(dom.xmax-dom.xmin)); }
+  function GY(gj){ return SY(dom.ymax-gj/(F.N-1)*(dom.ymax-dom.ymin)); }
+
+  /* heatmap */
+  ctx.save();
+  ctx.beginPath(); ctx.rect(Mg.l,Mg.t,pw,ph); ctx.clip();
+  ctx.imageSmoothingEnabled=true;
+  ctx.drawImage(F.img, Mg.l, Mg.t, pw, ph);
+
+  /* contour lines */
+  ctx.lineWidth=1; ctx.strokeStyle=hexA(cssv('--gd'),0.35);
+  for(var li=0;li<F.levels.length;li++){
+    var segs=[]; marching(F.V,F.N,F.levels[li],segs);
+    ctx.beginPath();
+    for(var s=0;s<segs.length;s+=4){
+      ctx.moveTo(GX(segs[s]),GY(segs[s+1]));
+      ctx.lineTo(GX(segs[s+2]),GY(segs[s+3]));
+    }
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  /* frame + ticks */
+  ctx.strokeStyle=cssv('--axis'); ctx.lineWidth=1; ctx.strokeRect(Mg.l,Mg.t,pw,ph);
+  ctx.fillStyle=cssv('--muted'); ctx.font=MONO; ctx.textAlign='center';
+  var xstep=(dom.xmax-dom.xmin)>=8?2:1;
+  for(var gx=Math.ceil(dom.xmin);gx<=dom.xmax+1e-6;gx+=xstep) ctx.fillText(String(gx), SX(gx), h-8);
+  ctx.textAlign='right';
+  var ystep=(dom.ymax-dom.ymin)>=6?2:1;
+  for(var gy=Math.ceil(dom.ymin);gy<=dom.ymax+1e-6;gy+=ystep) ctx.fillText(String(gy), Mg.l-5, SY(gy)+4);
+
+  /* trajectories */
+  ctx.save();
+  ctx.beginPath(); ctx.rect(Mg.l,Mg.t,pw,ph); ctx.clip();
+  for(var oi=0;oi<OPTS.length;oi++){
+    var key2=OPTS[oi]; if(!state.show[key2]) continue;
+    var r=state.runners[key2]; if(!r) continue;
+    var col=cssv(OCOL[key2]);
+    ctx.strokeStyle=col; ctx.lineWidth=2; ctx.globalAlpha=0.9;
+    ctx.beginPath();
+    for(var pi=0;pi<r.path.length;pi++){
+      var px=SX(r.path[pi][0]), py=SY(r.path[pi][1]);
+      if(pi===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+    }
+    ctx.stroke();
+    /* step markers */
+    ctx.globalAlpha=0.85; ctx.fillStyle=col;
+    var mstep=Math.max(1,Math.round(r.path.length/26));
+    for(var mi=0;mi<r.path.length;mi+=mstep){
+      ctx.beginPath(); ctx.arc(SX(r.path[mi][0]),SY(r.path[mi][1]),1.6,0,Math.PI*2); ctx.fill();
+    }
+    /* head */
+    var last=r.path[r.path.length-1];
+    ctx.globalAlpha=1; ctx.beginPath();
+    ctx.arc(SX(last[0]),SY(last[1]),r.diverged?0:4,0,Math.PI*2); ctx.fill();
+    if(!r.diverged){ ctx.strokeStyle=cssv('--bg'); ctx.lineWidth=1.2; ctx.stroke(); }
+  }
+  ctx.globalAlpha=1;
+  /* optimum star */
+  var S=SURF[state.surf];
+  drawStar(ctx, SX(S.min[0]), SY(S.min[1]), 6.5, cssv('--ink'));
+  ctx.restore();
+
+  /* language-aware labels */
+  ctx.font='600 12px "Inter", system-ui, sans-serif'; ctx.textAlign='left';
+  ctx.fillStyle=cssv('--ink');
+  ctx.fillText(L('Loss landscape','손실 지형'), Mg.l+8, Mg.t+16);
+  ctx.font=MONO; ctx.fillStyle=cssv('--muted');
+  ctx.textAlign='right';
+  ctx.fillText(L('x →','x →'), Mg.l+pw, Mg.t+ph-6);
+  ctx.save();
+  ctx.translate(Mg.l+11, Mg.t+8); ctx.rotate(-Math.PI/2);
+  ctx.textAlign='right'; ctx.fillText(L('y →','y →'), 0, 0);
+  ctx.restore();
+  ctx.textAlign='right'; ctx.fillStyle=cssv('--muted');
+  ctx.fillText(L('iter ','반복 ')+state.iter, Mg.l+pw-2, Mg.t+14);
+}
+function drawStar(ctx,cx,cy,rad,col){
+  ctx.save(); ctx.fillStyle=col; ctx.strokeStyle=cssv('--bg'); ctx.lineWidth=1.4;
+  ctx.beginPath();
+  for(var i=0;i<10;i++){
+    var ang=-Math.PI/2 + i*Math.PI/5;
+    var rr=(i%2===0)?rad:rad*0.42;
+    var x=cx+Math.cos(ang)*rr, y=cy+Math.sin(ang)*rr;
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.closePath(); ctx.fill(); ctx.stroke(); ctx.restore();
+}
+
+/* ---------- draw loss vs iteration ---------- */
+function drawLoss(){
+  var cv=$('lossCv'), st=setupCanvas(cv);
+  if(!st) return;
+  var ctx=st.ctx, w=st.w, h=st.h;
+  var Mg={ l:46, r:12, t:12, b:22 };
+  var pw=w-Mg.l-Mg.r, ph=h-Mg.t-Mg.b;
+  ctx.clearRect(0,0,w,h);
+  var S=SURF[state.surf], logMode=S.log;
+
+  function tf(v){ return logMode ? Math.log(Math.max(v,1e-8))/Math.LN10 : v; }
+
+  var ymin=Infinity, ymax=-Infinity, n=1;
+  for(var oi=0;oi<OPTS.length;oi++){
+    var key=OPTS[oi]; if(!state.show[key]) continue;
+    var r=state.runners[key]; if(!r) continue;
+    if(r.hist.length>n) n=r.hist.length;
+    for(var i=0;i<r.hist.length;i++){
+      var yv=tf(r.hist[i]); if(!isFinite(yv)) continue;
+      if(yv<ymin)ymin=yv; if(yv>ymax)ymax=yv;
+    }
+  }
+  if(!isFinite(ymin)||!isFinite(ymax)){ ymin=0; ymax=1; }
+  if(ymax-ymin<1e-6){ ymax=ymin+1; }
+  var pad=(ymax-ymin)*0.08; ymin-=pad; ymax+=pad;
+
+  function X(i){ return Mg.l+(n<=1?0:i/(n-1))*pw; }
+  function Y(v){ v=Math.max(ymin,Math.min(ymax,v)); return Mg.t+ph-(v-ymin)/(ymax-ymin)*ph; }
+
+  /* grid + y ticks */
+  ctx.strokeStyle=cssv('--grid'); ctx.lineWidth=1;
+  ctx.fillStyle=cssv('--muted'); ctx.font=MONO; ctx.textAlign='right';
+  var GT=4;
+  for(var gi=0;gi<=GT;gi++){
+    var vv=ymin+(ymax-ymin)*gi/GT, yy=Y(vv);
+    ctx.beginPath(); ctx.moveTo(Mg.l,yy); ctx.lineTo(Mg.l+pw,yy); ctx.stroke();
+    var lab=logMode ? ('1e'+Math.round(vv)) : fmt(vv,1);
+    ctx.fillText(lab, Mg.l-5, yy+4);
+  }
+  ctx.strokeStyle=cssv('--axis'); ctx.strokeRect(Mg.l,Mg.t,pw,ph);
+
+  /* curves */
+  ctx.save(); ctx.beginPath(); ctx.rect(Mg.l,Mg.t,pw,ph); ctx.clip();
+  for(oi=0;oi<OPTS.length;oi++){
+    var k=OPTS[oi]; if(!state.show[k]) continue;
+    var rr=state.runners[k]; if(!rr||rr.hist.length<2) continue;
+    ctx.strokeStyle=cssv(OCOL[k]); ctx.lineWidth=2; ctx.beginPath();
+    var started=false;
+    for(i=0;i<rr.hist.length;i++){
+      var y2=tf(rr.hist[i]); if(!isFinite(y2)) continue;
+      var px=X(i), py=Y(y2);
+      if(!started){ ctx.moveTo(px,py); started=true; } else ctx.lineTo(px,py);
+    }
+    ctx.stroke();
+  }
+  ctx.restore();
+
+  ctx.font='600 11px "Inter", system-ui, sans-serif'; ctx.fillStyle=cssv('--muted');
+  ctx.textAlign='left';
+  ctx.fillText(logMode?L('log₁₀ loss','log₁₀ 손실'):L('loss','손실'), Mg.l+6, Mg.t+13);
+  ctx.font=MONO; ctx.textAlign='right';
+  ctx.fillText(L('iteration →','반복 →'), Mg.l+pw, h-7);
+}
+
+/* ---------- render ---------- */
+function render(){
+  for(var oi=0;oi<OPTS.length;oi++){
+    var k=OPTS[oi], r=state.runners[k];
+    var el=$(k+'V');
+    if(el){
+      if(!state.show[k]) el.textContent='—';
+      else if(r&&r.diverged) el.textContent=(state.surf==='saddle')?L('escaped','탈출'):L('diverged','발산');
+      else el.textContent=r?fmt(r.loss):'—';
+    }
+  }
+  drawMain();
+  drawLoss();
+}
+
+/* ---------- animation ---------- */
+function frame(){
+  if(!state.running) return;
+  var S=SURF[state.surf];
+  for(var s=0;s<S.spf && state.iter<S.max;s++){
+    for(var oi=0;oi<OPTS.length;oi++){
+      var k=OPTS[oi]; if(state.show[k]) stepRunner(k,state.runners[k]);
+    }
+    state.iter++;
+  }
+  render();
+  if(state.iter>=S.max){ stopRun(); return; }
+  state.raf=requestAnimationFrame(frame);
+}
+function startRun(){
+  if(state.running) return;
+  var S=SURF[state.surf];
+  if(state.iter>=S.max){ resetRunners(); }
+  state.running=true; $('goBtn').classList.add('running');
+  updateGoLabel();
+  state.raf=requestAnimationFrame(frame);
+}
+function stopRun(){
+  state.running=false; $('goBtn').classList.remove('running');
+  if(state.raf) cancelAnimationFrame(state.raf);
+  updateGoLabel();
+}
+function toggleRun(){ if(state.running) stopRun(); else startRun(); }
+function updateGoLabel(){
+  var b=$('goBtn');
+  b.innerHTML = state.running
+    ? '<span class="i18n-en">❚❚ Pause</span><span class="i18n-ko">❚❚ 일시정지</span>'
+    : '<span class="i18n-en">▶ Run</span><span class="i18n-ko">▶ 실행</span>';
+}
+
+/* ---------- controls ---------- */
+function wire(){
+  document.querySelectorAll('#surfRow .seg').forEach(function(b){
+    b.addEventListener('click', function(){
+      stopRun();
+      document.querySelectorAll('#surfRow .seg').forEach(function(x){ x.classList.remove('active'); });
+      b.classList.add('active');
+      state.surf=b.dataset.surf;
+      var S=SURF[state.surf];
+      state.lr=S.lrDef; $('lrS').value=String(tFromLr(S.lrDef)); $('lrV').textContent=lrFmt(S.lr);
+      state.field=null; state.fieldKey='';
+      resetRunners(); render();
+    });
+  });
+  document.querySelectorAll('#optRow .seg').forEach(function(b){
+    b.addEventListener('click', function(){
+      var k=b.dataset.opt;
+      state.show[k]=!state.show[k];
+      b.classList.toggle('active', state.show[k]);
+      render();
+    });
+  });
+  $('lrS').addEventListener('input', function(){
+    state.lr=lrFromT(+this.value); $('lrV').textContent=lrFmt(state.lr);
+  });
+  $('betaS').addEventListener('input', function(){
+    state.beta=+this.value; $('betaV').textContent=state.beta.toFixed(2);
+  });
+  $('goBtn').addEventListener('click', toggleRun);
+  $('resetBtn').addEventListener('click', function(){
+    stopRun(); state.startIdx++; resetRunners(); render();
+  });
+  window.addEventListener('resize', render);
+}
+
+/* ---------- KaTeX ---------- */
+var mathDone=false;
+function tryMath(){
+  if(mathDone||!window.renderMathInElement) return;
+  mathDone=true;
+  window.renderMathInElement(document.body,{
+    delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}],
+    throwOnError:false
+  });
+}
+document.addEventListener('DOMContentLoaded', tryMath);
+window.addEventListener('load', tryMath);
+
+/* ---------- init + sync hooks ---------- */
+try{
+  wire();
+  state.lr=SURF[state.surf].lrDef;
+  $('lrS').value=String(tFromLr(state.lr)); $('lrV').textContent=lrFmt(state.lr);
+  $('betaV').textContent=state.beta.toFixed(2);
+  resetRunners();
+  render();
+}catch(e){ console.error(e); }
+
+window.__onLang=function(){ render(); };            /* redraw canvases with new-language labels */
+window.__onTheme=function(){ state.fieldKey=''; state.field=null; render(); }; /* recolor field + redraw */
+</script>
+</body>
+</html>

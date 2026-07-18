@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<script>
+(function(){
+  function g(k,d){ try{ return localStorage.getItem(k)||d; }catch(e){ return d; } }
+  var root=document.documentElement;
+  root.setAttribute('data-theme', g('theme', (window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'dark':'light'));
+  root.setAttribute('data-lang', g('lang','en'));
+  window.addEventListener('storage', function(e){
+    if(e.key==='theme'){ root.setAttribute('data-theme', e.newValue||'dark'); if(window.__onTheme) window.__onTheme(); }
+    if(e.key==='lang'){ root.setAttribute('data-lang', e.newValue||'en'); if(window.__onLang) window.__onLang(); }
+  });
+})();
+</script>
+
+<title>Perceptron Capacity — PRISM Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<style>
+* { box-sizing: border-box; }
+:root {
+  color-scheme: light;
+  --bg:#ffffff; --panel:#f7f9fc; --panel-2:#eef2f8; --ink:#141b33; --muted:#5a6488;
+  --border:#e2e7ee; --grid:#eef2f8; --axis:#c9d0c8;
+  --pc:#c13a86;
+  --c-load:#c13a86; --c-cap:#e08a00; --c-psep:#2563eb; --c-stat:#0f9d6b;
+  --cls-pos:#2563eb; --cls-neg:#e0672a;
+  --shadow: 0 1px 2px rgba(28,36,49,.05);
+}
+[data-theme="dark"] {
+  color-scheme: dark;
+  --bg:#15181e; --panel:#1d212a; --panel-2:#171b22; --ink:#e6edf3; --muted:#8b949e;
+  --border:#2e343f; --grid:#252b36; --axis:#3a4250;
+  --pc:#d16ba5;
+  --c-load:#d16ba5; --c-cap:#fbbf24; --c-psep:#60a5fa; --c-stat:#34d399;
+  --cls-pos:#60a5fa; --cls-neg:#f0904e;
+  --shadow: none;
+}
+html, body { margin:0; padding:0; }
+body {
+  background:var(--bg); color:var(--ink);
+  padding:26px 20px 44px;
+  font:14px/1.5 "Inter", system-ui, -apple-system, 'Noto Sans KR', sans-serif;
+  accent-color: var(--pc);
+}
+:focus-visible { outline:2px solid var(--pc); outline-offset:2px; }
+
+/* ---------- bilingual ---------- */
+html[data-lang="en"] .i18n-ko{ display:none !important; }
+html[data-lang="ko"] .i18n-en{ display:none !important; }
+.i18n-ko{ font-family:'Pretendard','Inter',sans-serif; word-break:keep-all; }
+
+/* ---------- site chrome ---------- */
+.wrap{max-width:1120px;margin:0 auto}
+.topbar{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.back{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--muted);text-decoration:none;
+  border:1px solid var(--border);padding:6px 12px;border-radius:20px;transition:.14s}
+.back:hover{color:var(--pc);border-color:currentColor}
+.eyebrow{font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--muted);margin:0 0 10px;display:flex;align-items:center;gap:10px}
+.eyebrow::before{content:"";width:22px;height:1px;background:currentColor;opacity:.7}
+.title{font-family:"Space Grotesk",system-ui,sans-serif;font-weight:700;font-size:clamp(28px,4.6vw,44px);
+  line-height:1.04;margin:0 0 10px;letter-spacing:-.02em;color:var(--ink)}
+.title .thin{color:var(--muted);font-weight:500;font-size:.4em}
+.site-sub{color:var(--muted);max-width:70ch;margin:0 0 24px;font-size:15px}
+footer{margin-top:30px;color:var(--muted);font-size:12px;font-family:"JetBrains Mono",monospace;letter-spacing:.04em}
+footer a{color:var(--muted);text-decoration:underline}
+
+/* ---------- layout ---------- */
+main { padding:0; }
+.tab { display:grid; grid-template-columns:264px minmax(0,1fr); gap:14px; align-items:start; }
+.panel { background:var(--panel); border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow); }
+.stage { display:flex; flex-direction:column; gap:12px; min-width:0; }
+
+/* ---------- side controls ---------- */
+.side { padding:14px; display:flex; flex-direction:column; gap:14px; }
+.grp { display:flex; flex-direction:column; gap:8px; }
+.grp + .grp { border-top:1px dashed var(--border); padding-top:13px; }
+.grp-t { font-size:10.5px; font-weight:700; letter-spacing:.09em; text-transform:uppercase; color:var(--muted); }
+.sl { display:flex; flex-direction:column; gap:3px; font-size:12.5px; }
+.sl > span { display:flex; justify-content:space-between; align-items:baseline; gap:8px; }
+.val { font:600 12px "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+input[type=range] { width:100%; margin:0; height:22px; }
+.hint { margin:0; font-size:11.5px; color:var(--muted); }
+.btnrow { display:flex; gap:6px; flex-wrap:wrap; }
+.btn { border:1px solid var(--border); background:var(--panel); color:var(--ink); font:inherit; font-size:12.5px; padding:6px 11px; border-radius:8px; cursor:pointer; transition:background .12s; }
+.btn:hover { background:var(--bg); }
+.btn.go { border-color:var(--pc); color:var(--pc); font-weight:600; }
+.btn.go.running { background:var(--pc); color:var(--bg); }
+.btn.ghost { color:var(--muted); }
+
+/* ---------- plot ---------- */
+.plot { padding:10px 12px 8px; }
+canvas { display:block; width:100%; }
+#coverCv { height:300px; }
+#sepCv { height:300px; }
+.legend { display:flex; flex-wrap:wrap; gap:4px 14px; padding:8px 2px 2px; font-size:11.5px; color:var(--muted); }
+.legend span { display:inline-flex; align-items:center; gap:5px; }
+.swbar { display:inline-block; width:12px; height:11px; border-radius:2px; background:currentColor; }
+.swtick { display:inline-block; width:14px; height:0; border-top:2px solid currentColor; }
+.swdash { display:inline-block; width:14px; height:0; border-top:2px dashed currentColor; }
+.swdot { display:inline-block; width:11px; height:11px; border-radius:50%; background:currentColor; }
+.losscap { margin:6px 2px 2px; font-size:11.5px; color:var(--muted); text-align:center; }
+
+/* ---------- cards ---------- */
+.cards { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:10px; }
+.card { background:var(--panel); border:1px solid var(--border); border-top:3px solid var(--border); border-radius:12px; padding:10px 12px 9px; box-shadow:var(--shadow); }
+.card.load { border-top-color:var(--c-load); }
+.card.cap { border-top-color:var(--c-cap); }
+.card.psep { border-top-color:var(--c-psep); }
+.card.stat { border-top-color:var(--c-stat); }
+.card .k { font:700 12px "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing:.04em; }
+.card.load .k { color:var(--c-load); }
+.card.cap .k { color:var(--c-cap); }
+.card.psep .k { color:var(--c-psep); }
+.card.stat .k { color:var(--c-stat); }
+.card .nm { font-size:12px; color:var(--muted); margin-bottom:6px; }
+.card .big { font:600 20px "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; white-space:nowrap; }
+.card .note { margin:6px 0 0; font-size:11px; color:var(--muted); border-top:1px dashed var(--border); padding-top:5px; }
+
+/* ---------- fold panels ---------- */
+.fold summary { cursor:pointer; padding:9px 13px; font-size:12.5px; font-weight:600; color:var(--muted); list-style:none; display:flex; align-items:center; gap:7px; }
+.fold summary::-webkit-details-marker { display:none; }
+.fold summary::before { content:'\25B8'; font-size:10px; transition:transform .12s; }
+.fold[open] summary::before { transform:rotate(90deg); }
+.fold-body { padding:2px 16px 12px; font-size:13px; }
+.fold-body p { margin:4px 0 8px; }
+.fold ol { margin:0; padding-left:20px; display:flex; flex-direction:column; gap:8px; }
+.katex-display { margin:.5em 0; padding:2px 0; overflow-x:auto; overflow-y:hidden; }
+.katex { font-size:1.0em; }
+
+@media (max-width:760px) {
+  .tab { grid-template-columns:1fr; }
+  .cards { grid-template-columns:1fr 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition:none !important; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar"><a class="back" href="index.html"><span class="i18n-en">← Playground</span><span class="i18n-ko">← 놀이터</span></a></div>
+  <p class="eyebrow"><span class="i18n-en">PRISM · Machine Learning Playground</span><span class="i18n-ko">PRISM · 머신러닝 놀이터</span></p>
+  <h1 class="title"><span class="i18n-en">Perceptron Capacity</span><span class="i18n-ko">퍼셉트론 용량</span><br><span class="thin"><span class="i18n-en">How many random patterns can one neuron linearly separate? Watch the α_c ≈ 2 storage transition emerge (Cover &amp; Gardner)</span><span class="i18n-ko">하나의 뉴런이 무작위 패턴을 몇 개나 선형 분리할 수 있을까? α_c ≈ 2 저장 상전이가 나타나는 과정을 관찰하기 (Cover · Gardner)</span></span></h1>
+
+<main>
+<section class="tab">
+  <aside class="panel side">
+    <div class="grp">
+      <div class="grp-t"><span class="i18n-en">Cover's counting</span><span class="i18n-ko">커버 계수 정리</span></div>
+      <label class="sl"><span><span class="i18n-en">Dimension N</span><span class="i18n-ko">차원 N</span> <b id="nV" class="val">40</b></span>
+        <input type="range" id="nS" min="3" max="200" step="1" value="40"></label>
+      <p class="hint"><span class="i18n-en">As N grows, the separability curve sharpens into a step at α = 2.</span><span class="i18n-ko">N이 커질수록 분리 가능성 곡선은 α = 2에서 계단 함수로 날카로워집니다.</span></p>
+    </div>
+
+    <div class="grp">
+      <div class="grp-t"><span class="i18n-en">Live separation · N = 3</span><span class="i18n-ko">실시간 분리 · N = 3</span></div>
+      <label class="sl"><span><span class="i18n-en">Patterns P</span><span class="i18n-ko">패턴 수 P</span> <b id="pV" class="val">6</b></span>
+        <input type="range" id="pS" min="2" max="30" step="1" value="6"></label>
+      <div class="btnrow">
+        <button id="fitBtn" class="btn go"><span class="i18n-en">▶ Re-draw &amp; fit</span><span class="i18n-ko">▶ 다시 뽑아 학습</span></button>
+        <button id="empBtn" class="btn ghost"><span class="i18n-en">Empirical scan ×60</span><span class="i18n-ko">경험적 스캔 ×60</span></button>
+      </div>
+      <p class="hint"><span class="i18n-en">Perceptron learning rule on P random ±1-labelled points; N = 2 inputs + bias = 3 weights.</span><span class="i18n-ko">P개의 무작위 ±1 라벨 점에 퍼셉트론 학습 규칙 적용; N = 입력 2 + 편향 = 가중치 3개.</span></p>
+    </div>
+  </aside>
+
+  <div class="stage">
+    <div class="panel plot">
+      <canvas id="coverCv"></canvas>
+      <div class="legend">
+        <span><i class="swtick" style="color:var(--pc)"></i><span class="i18n-en">C(P,N) — separable fraction</span><span class="i18n-ko">C(P,N) — 분리 가능 비율</span></span>
+        <span><i class="swdash" style="color:var(--c-cap)"></i><span class="i18n-en">α = 2 (capacity)</span><span class="i18n-ko">α = 2 (용량)</span></span>
+        <span><i class="swdot" style="color:var(--c-psep)"></i><span class="i18n-en">live load α = P/3</span><span class="i18n-ko">실시간 부하 α = P/3</span></span>
+      </div>
+      <p class="losscap"><span class="i18n-en">Cover (1965): the fraction of the 2ᴾ random dichotomies a linear neuron can realise, in general position.</span><span class="i18n-ko">커버(1965): 일반 위치의 점에 대해 선형 뉴런이 실현할 수 있는 2ᴾ개 무작위 이분법의 비율.</span></p>
+    </div>
+
+    <div class="panel plot">
+      <canvas id="sepCv"></canvas>
+      <div class="legend">
+        <span><i class="swdot" style="color:var(--cls-pos)"></i><span class="i18n-en">class +1</span><span class="i18n-ko">클래스 +1</span></span>
+        <span><i class="swdot" style="color:var(--cls-neg)"></i><span class="i18n-en">class −1</span><span class="i18n-ko">클래스 −1</span></span>
+        <span><i class="swtick" style="color:var(--ink)"></i><span class="i18n-en">decision boundary w·x = 0</span><span class="i18n-ko">결정 경계 w·x = 0</span></span>
+      </div>
+      <p class="losscap"><span class="i18n-en">Empirical separable fraction (60 redraws at this P): </span><span class="i18n-ko">경험적 분리 가능 비율 (이 P에서 60회 재추출): </span><b id="empV" class="val">—</b></p>
+    </div>
+
+    <div class="cards">
+      <div class="card load">
+        <div class="k">α</div>
+        <div class="nm"><span class="i18n-en">Load P/N</span><span class="i18n-ko">부하 P/N</span></div>
+        <div class="big" id="alphaV">—</div>
+        <p class="note"><span class="i18n-en">P patterns over N = 3 weights.</span><span class="i18n-ko">가중치 N = 3개당 패턴 P개.</span></p>
+      </div>
+      <div class="card cap">
+        <div class="k">α_c</div>
+        <div class="nm"><span class="i18n-en">Capacity</span><span class="i18n-ko">용량</span></div>
+        <div class="big" id="acV">2.00</div>
+        <p class="note"><span class="i18n-en">Cover / Gardner storage limit — a constant.</span><span class="i18n-ko">커버 · 가드너 저장 한계 — 상수.</span></p>
+      </div>
+      <div class="card psep">
+        <div class="k">P(sep)</div>
+        <div class="nm"><span class="i18n-en">Separable prob.</span><span class="i18n-ko">분리 확률</span></div>
+        <div class="big" id="psepV">—</div>
+        <p class="note"><span class="i18n-en">Cover's C(P,N) at this α, N = 3.</span><span class="i18n-ko">이 α에서의 커버 C(P,N), N = 3.</span></p>
+      </div>
+      <div class="card stat">
+        <div class="k">status</div>
+        <div class="nm"><span class="i18n-en">Live fit</span><span class="i18n-ko">실시간 학습</span></div>
+        <div class="big" id="statV">—</div>
+        <p class="note"><span class="i18n-en">From the perceptron fit above.</span><span class="i18n-ko">위 퍼셉트론 학습 결과.</span></p>
+      </div>
+    </div>
+
+    <details class="panel fold">
+      <summary><span class="i18n-en">Formulas</span><span class="i18n-ko">공식</span></summary>
+      <div class="fold-body">
+        <p><span class="i18n-en">The fraction of the random ±1 labelings of P points in N dimensions (general position) that a linear neuron can separate:</span><span class="i18n-ko">N차원의 일반 위치에 놓인 P개 점에 대한 무작위 ±1 라벨 중, 선형 뉴런이 분리할 수 있는 비율:</span></p>
+        $$C(P,N)=2^{1-P}\sum_{k=0}^{N-1}\binom{P-1}{k}\quad(P>N),\qquad C(P,N)=1\ \ (P\le N)$$
+        <p><span class="i18n-en">The load α and its critical value — the capacity is exactly 2 patterns per weight:</span><span class="i18n-ko">부하 α와 임계값 — 용량은 정확히 가중치당 2개 패턴입니다:</span></p>
+        $$\alpha=\frac{P}{N},\qquad \alpha_c=2\ \ \text{(Cover 1965 · Gardner 1988)}$$
+      </div>
+    </details>
+
+    <details class="panel fold">
+      <summary><span class="i18n-en">What to watch</span><span class="i18n-ko">관찰 포인트</span></summary>
+      <div class="fold-body">
+        <ol>
+          <li><span class="i18n-en">Below <b>α = 2</b> almost every random labeling is separable; above it, almost none are — a sharp <b>storage phase transition</b> in the thermodynamic (large-N) limit.</span><span class="i18n-ko"><b>α = 2</b> 아래에서는 거의 모든 무작위 라벨이 분리 가능하지만, 그 위에서는 거의 불가능합니다 — 열역학적(큰 N) 극한에서 나타나는 뚜렷한 <b>저장 상전이</b>입니다.</span></li>
+          <li><span class="i18n-en">Finite N gives a smooth <b>sigmoid</b> that steepens toward a step as N → ∞ (a finite-size effect). Slide N up and watch the curve tighten around α = 2.</span><span class="i18n-ko">유한한 N에서는 매끄러운 <b>시그모이드</b>가 나타나며 N → ∞로 갈수록 계단 함수로 가팔라집니다 (유한 크기 효과). N을 올려 곡선이 α = 2 주위로 조여지는 것을 보세요.</span></li>
+          <li><span class="i18n-en">This α_c = 2 is the classic result of <b>Cover (1965)</b> counting and <b>Gardner (1988)</b> replica theory: a single neuron stores about <b>2 random patterns per weight</b>.</span><span class="i18n-ko">이 α_c = 2는 <b>커버(1965)</b>의 계수 정리와 <b>가드너(1988)</b>의 레플리카 이론이 낳은 고전적 결과입니다: 하나의 뉴런은 <b>가중치당 약 2개의 무작위 패턴</b>을 저장합니다.</span></li>
+        </ol>
+      </div>
+    </details>
+  </div>
+</section>
+</main>
+  <footer>PRISM Lab · <span class="i18n-en">prototype</span><span class="i18n-ko">프로토타입</span> · <a href="https://sswu-prism-lab.github.io" target="_blank" rel="noopener">sswu-prism-lab.github.io</a></footer>
+</div>
+
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<script>
+'use strict';
+/* Perceptron Capacity — Cover's counting theorem C(P,N) + a live 2D perceptron fit.
+   N_live = 2 inputs + bias = 3 weights; capacity alpha_c = 2 (Cover 1965 / Gardner 1988). */
+
+/* ---------- helpers ---------- */
+function $(id){ return document.getElementById(id); }
+function cssv(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+function L(en,ko){ return document.documentElement.getAttribute('data-lang')==='ko' ? ko : en; }
+function fmt(v, dg){
+  if(dg===undefined) dg=3;
+  if(v===null||v===undefined||!isFinite(v)) return '—';
+  var a=Math.abs(v);
+  if(a!==0 && (a>=1e4||a<1e-3)) return v.toExponential(1);
+  return v.toFixed(dg);
+}
+function randn(){
+  var u=0,v=0;
+  while(u===0) u=Math.random();
+  while(v===0) v=Math.random();
+  return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);
+}
+function hexRGB(hex){
+  hex=hex.replace('#','');
+  if(hex.length===3) hex=hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+  return [parseInt(hex.substr(0,2),16), parseInt(hex.substr(2,2),16), parseInt(hex.substr(4,2),16)];
+}
+function hexA(hex,a){ var c=hexRGB(hex); return 'rgba('+c[0]+','+c[1]+','+c[2]+','+a+')'; }
+function setupCanvas(cv){
+  var dpr=window.devicePixelRatio||1;
+  var w=cv.clientWidth, h=cv.clientHeight;
+  if(w===0||h===0) return null;
+  var W=Math.round(w*dpr), H=Math.round(h*dpr);
+  if(cv.width!==W||cv.height!==H){ cv.width=W; cv.height=H; }
+  var ctx=cv.getContext('2d');
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  return { ctx:ctx, w:w, h:h };
+}
+var MONO='11px "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace';
+
+/* ---------- Cover's counting theorem (log-space) ---------- */
+function lgamma(x){
+  var c=[0.99999999999980993,676.5203681218851,-1259.1392167224028,
+    771.32342877765313,-176.61502916214059,12.507343278686905,
+    -0.13857109526572012,9.9843695780195716e-6,1.5056327351493116e-7];
+  if(x<0.5) return Math.log(Math.PI/Math.sin(Math.PI*x))-lgamma(1-x);
+  x-=1;
+  var a=c[0], t=x+7.5;
+  for(var i=1;i<9;i++) a+=c[i]/(x+i);
+  return 0.5*Math.log(2*Math.PI)+(x+0.5)*Math.log(t)-t+Math.log(a);
+}
+function logBinom(n,k){
+  if(k<0||k>n) return -Infinity;
+  return lgamma(n+1)-lgamma(k+1)-lgamma(n-k+1);
+}
+/* C(P,N) = 2^{1-P} sum_{k=0}^{N-1} binom(P-1,k), =1 for P<=N.
+   Computed via log-sum-exp so large P/N never overflow. */
+function coverProb(P,N){
+  if(P<=0) return 1;
+  if(P<=N) return 1;
+  var kmax=Math.min(N-1, P-1), terms=[], mx=-Infinity, k;
+  for(k=0;k<=kmax;k++){
+    var t=(1-P)*Math.LN2 + logBinom(P-1,k);
+    terms.push(t); if(t>mx) mx=t;
+  }
+  if(mx===-Infinity) return 0;
+  var s=0; for(k=0;k<terms.length;k++) s+=Math.exp(terms[k]-mx);
+  var val=Math.exp(mx+Math.log(s));
+  return Math.min(1, Math.max(0, val));
+}
+
+/* ---------- state ---------- */
+var NLIVE=3;              /* 2 inputs + bias */
+var state={ N:40, P:6, sep:null, running:false, emp:null };
+var SDOM={ min:-3.6, max:3.6 };
+
+/* ---------- live 2D perceptron ---------- */
+function makeDraw(P){
+  var X=[], Y=[];
+  for(var i=0;i<P;i++){
+    X.push([1.35*randn(), 1.35*randn()]);
+    Y.push(Math.random()<0.5 ? 1 : -1);
+  }
+  return { P:P, X:X, Y:Y, w:[0,0,0], ptr:0, clean:0, updates:0,
+           cap:120*P+3000, done:false, separable:null };
+}
+function pStep(s){
+  var i=s.ptr % s.P, x=s.X[i], y=s.Y[i];
+  var dot=s.w[0]*x[0]+s.w[1]*x[1]+s.w[2];
+  if(y*dot<=0){
+    s.w[0]+=y*x[0]; s.w[1]+=y*x[1]; s.w[2]+=y;
+    s.clean=0; s.updates++;
+  } else {
+    s.clean++;
+  }
+  s.ptr++;
+  if(s.clean>=s.P){ s.done=true; s.separable=true; }
+  else if(s.updates>=s.cap){ s.done=true; s.separable=false; }
+}
+function fitSync(s){ while(!s.done) pStep(s); return s; }
+
+/* empirical separable fraction over R fresh draws at current P */
+function empiricalScan(P,R){
+  var sep=0;
+  for(var r=0;r<R;r++){ if(fitSync(makeDraw(P)).separable) sep++; }
+  return sep/R;
+}
+
+/* Sutherland-Hodgman clip of a rectangle polygon by half-plane a*x+b*y+c >= 0 */
+function clipHalf(poly,a,b,c){
+  var out=[], n=poly.length;
+  for(var i=0;i<n;i++){
+    var A=poly[i], B=poly[(i+1)%n];
+    var da=a*A[0]+b*A[1]+c, db=a*B[0]+b*B[1]+c;
+    if(da>=0) out.push(A);
+    if((da>=0)!==(db>=0)){
+      var t=da/(da-db);
+      out.push([A[0]+t*(B[0]-A[0]), A[1]+t*(B[1]-A[1])]);
+    }
+  }
+  return out;
+}
+
+/* ---------- draw Cover curve ---------- */
+function drawCover(){
+  var cv=$('coverCv'), st=setupCanvas(cv);
+  if(!st) return;
+  var ctx=st.ctx, w=st.w, h=st.h;
+  var Mg={ l:42, r:14, t:14, b:26 };
+  var pw=w-Mg.l-Mg.r, ph=h-Mg.t-Mg.b;
+  ctx.clearRect(0,0,w,h);
+  var AX=4; /* alpha axis 0..4 */
+  function SX(al){ return Mg.l+al/AX*pw; }
+  function SY(c){ return Mg.t+ph-c*ph; }
+
+  /* grid */
+  ctx.strokeStyle=cssv('--grid'); ctx.lineWidth=1; ctx.beginPath();
+  for(var a=0;a<=AX;a+=1){ ctx.moveTo(SX(a),Mg.t); ctx.lineTo(SX(a),Mg.t+ph); }
+  for(var c=0;c<=1.0001;c+=0.25){ ctx.moveTo(Mg.l,SY(c)); ctx.lineTo(Mg.l+pw,SY(c)); }
+  ctx.stroke();
+  ctx.strokeStyle=cssv('--axis'); ctx.strokeRect(Mg.l,Mg.t,pw,ph);
+
+  /* ticks */
+  ctx.fillStyle=cssv('--muted'); ctx.font=MONO;
+  ctx.textAlign='center';
+  for(a=0;a<=AX;a+=1) ctx.fillText(String(a), SX(a), h-9);
+  ctx.textAlign='right';
+  for(c=0;c<=1.0001;c+=0.5) ctx.fillText(c.toFixed(1), Mg.l-5, SY(c)+4);
+
+  /* alpha = 2 capacity line */
+  ctx.strokeStyle=cssv('--c-cap'); ctx.lineWidth=1.4; ctx.setLineDash([5,4]);
+  ctx.beginPath(); ctx.moveTo(SX(2),Mg.t); ctx.lineTo(SX(2),Mg.t+ph); ctx.stroke();
+  ctx.setLineDash([]);
+
+  /* 0.5 reference */
+  ctx.strokeStyle=cssv('--axis'); ctx.globalAlpha=.5; ctx.setLineDash([2,4]);
+  ctx.beginPath(); ctx.moveTo(Mg.l,SY(0.5)); ctx.lineTo(Mg.l+pw,SY(0.5)); ctx.stroke();
+  ctx.setLineDash([]); ctx.globalAlpha=1;
+
+  /* C(P,N) curve: iterate integer P */
+  var N=state.N, Pmax=Math.ceil(AX*N);
+  ctx.save(); ctx.beginPath(); ctx.rect(Mg.l,Mg.t,pw,ph); ctx.clip();
+  ctx.strokeStyle=cssv('--pc'); ctx.lineWidth=2.4; ctx.beginPath();
+  var started=false;
+  for(var P=0;P<=Pmax;P++){
+    var al=P/N; if(al>AX) break;
+    var y=coverProb(P,N);
+    var px=SX(al), py=SY(y);
+    if(!started){ ctx.moveTo(px,py); started=true; } else ctx.lineTo(px,py);
+  }
+  ctx.stroke();
+  ctx.restore();
+
+  /* live load marker at alpha = P/3 on this curve's N (for reference) and on N=3 truth */
+  var alLive=state.P/NLIVE;
+  if(alLive<=AX){
+    var yLive=coverProb(state.P, NLIVE);
+    ctx.save(); ctx.beginPath(); ctx.rect(Mg.l,Mg.t,pw,ph); ctx.clip();
+    ctx.strokeStyle=hexA(cssv('--c-psep'),0.55); ctx.lineWidth=1; ctx.setLineDash([3,3]);
+    ctx.beginPath(); ctx.moveTo(SX(alLive),Mg.t); ctx.lineTo(SX(alLive),Mg.t+ph); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle=cssv('--c-psep'); ctx.beginPath();
+    ctx.arc(SX(alLive),SY(yLive),4,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+
+  /* labels */
+  ctx.font='600 12px "Inter", system-ui, sans-serif';
+  ctx.textAlign='left'; ctx.fillStyle=cssv('--pc');
+  ctx.fillText(L('C(P,N)  N = '+N, 'C(P,N)  N = '+N), Mg.l+8, Mg.t+16);
+  ctx.fillStyle=cssv('--c-cap'); ctx.textAlign='center';
+  ctx.fillText(L('α = 2','α = 2'), SX(2), Mg.t+ph+18>h-4?Mg.t+12:Mg.t+ph-6);
+  ctx.font=MONO; ctx.fillStyle=cssv('--muted');
+  ctx.textAlign='right';
+  ctx.fillText(L('α = P/N →','α = P/N →'), Mg.l+pw, h-9);
+  ctx.save();
+  ctx.translate(Mg.l+11, Mg.t+8); ctx.rotate(-Math.PI/2);
+  ctx.textAlign='right'; ctx.fillText(L('P(separable)','P(분리 가능)'), 0, 0);
+  ctx.restore();
+}
+
+/* ---------- draw live separation ---------- */
+function drawSep(){
+  var cv=$('sepCv'), st=setupCanvas(cv);
+  if(!st) return;
+  var ctx=st.ctx, w=st.w, h=st.h;
+  var Mg={ l:28, r:14, t:14, b:24 };
+  var pw=w-Mg.l-Mg.r, ph=h-Mg.t-Mg.b;
+  ctx.clearRect(0,0,w,h);
+  var lo=SDOM.min, hi=SDOM.max, span=hi-lo;
+  function SX(x){ return Mg.l+(x-lo)/span*pw; }
+  function SY(y){ return Mg.t+ph-(y-lo)/span*ph; }
+
+  var s=state.sep;
+  var cpos=cssv('--cls-pos'), cneg=cssv('--cls-neg'), ink=cssv('--ink');
+
+  /* decision-region shading via half-plane clip */
+  if(s && (s.w[0]!==0||s.w[1]!==0)){
+    var rect=[[lo,lo],[hi,lo],[hi,hi],[lo,hi]];
+    var a=s.w[0], b=s.w[1], cc=s.w[2];
+    var polyP=clipHalf(rect, a,b,cc);      /* w·x >= 0  -> +1 side */
+    var polyN=clipHalf(rect, -a,-b,-cc);   /* w·x <  0  -> -1 side */
+    ctx.save(); ctx.beginPath(); ctx.rect(Mg.l,Mg.t,pw,ph); ctx.clip();
+    function fillPoly(poly,col){
+      if(poly.length<3) return;
+      ctx.beginPath();
+      for(var i=0;i<poly.length;i++){ var P=poly[i]; if(i===0) ctx.moveTo(SX(P[0]),SY(P[1])); else ctx.lineTo(SX(P[0]),SY(P[1])); }
+      ctx.closePath(); ctx.fillStyle=hexA(col,0.09); ctx.fill();
+    }
+    fillPoly(polyP,cpos); fillPoly(polyN,cneg);
+    ctx.restore();
+  }
+
+  /* grid */
+  ctx.strokeStyle=cssv('--grid'); ctx.lineWidth=1; ctx.beginPath();
+  for(var g=Math.ceil(lo);g<=hi;g+=1){ ctx.moveTo(SX(g),Mg.t); ctx.lineTo(SX(g),Mg.t+ph); ctx.moveTo(Mg.l,SY(g)); ctx.lineTo(Mg.l+pw,SY(g)); }
+  ctx.stroke();
+  ctx.strokeStyle=cssv('--axis'); ctx.strokeRect(Mg.l,Mg.t,pw,ph);
+
+  /* boundary line */
+  if(s && (s.w[0]!==0||s.w[1]!==0)){
+    var pts=[];
+    /* intersect w0*x + w1*y + w2 = 0 with the four edges */
+    function addX(x){ if(Math.abs(s.w[1])>1e-9){ var y=-(s.w[0]*x+s.w[2])/s.w[1]; if(y>=lo-1e-6&&y<=hi+1e-6) pts.push([x,y]); } }
+    function addY(y){ if(Math.abs(s.w[0])>1e-9){ var x=-(s.w[1]*y+s.w[2])/s.w[0]; if(x>=lo-1e-6&&x<=hi+1e-6) pts.push([x,y]); } }
+    addX(lo); addX(hi); addY(lo); addY(hi);
+    if(pts.length>=2){
+      ctx.save(); ctx.beginPath(); ctx.rect(Mg.l,Mg.t,pw,ph); ctx.clip();
+      ctx.strokeStyle=ink; ctx.lineWidth=2.2; ctx.beginPath();
+      ctx.moveTo(SX(pts[0][0]),SY(pts[0][1])); ctx.lineTo(SX(pts[1][0]),SY(pts[1][1])); ctx.stroke();
+      ctx.restore();
+    }
+  }
+
+  /* points */
+  if(s){
+    for(var i=0;i<s.P;i++){
+      var x=s.X[i], y=s.Y[i];
+      var px=SX(x[0]), py=SY(x[1]);
+      var mis=false;
+      if(s.w[0]!==0||s.w[1]!==0){ var dot=s.w[0]*x[0]+s.w[1]*x[1]+s.w[2]; mis=(y*dot<=0); }
+      ctx.beginPath(); ctx.arc(px,py,5,0,Math.PI*2);
+      ctx.fillStyle=(y>0)?cpos:cneg; ctx.fill();
+      if(mis){ ctx.strokeStyle=ink; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(px,py,8,0,Math.PI*2); ctx.stroke(); }
+    }
+  }
+
+  /* status annotation */
+  ctx.font='600 12px "Inter", system-ui, sans-serif'; ctx.textAlign='left';
+  var al=state.P/NLIVE;
+  var lab, col;
+  if(!s){ lab=''; col=cssv('--muted'); }
+  else if(!s.done){ lab=L('fitting…','학습 중…'); col=cssv('--muted'); }
+  else if(s.separable){ lab=L('separable ✓','분리 가능 ✓'); col=cssv('--c-stat'); }
+  else { lab=L('not separable ✗','분리 불가 ✗'); col=cssv('--cls-neg'); }
+  if(lab){ ctx.fillStyle=col; ctx.fillText(lab, Mg.l+8, Mg.t+16); }
+  ctx.font=MONO; ctx.fillStyle=cssv('--muted');
+  ctx.fillText('P = '+state.P+'   α = '+al.toFixed(2), Mg.l+8, Mg.t+ph-8);
+}
+
+/* ---------- cards ---------- */
+function updateCards(){
+  var al=state.P/NLIVE;
+  $('alphaV').textContent=al.toFixed(2);
+  $('psepV').textContent=fmt(coverProb(state.P, NLIVE),3);
+  var s=state.sep, el=$('statV');
+  if(!s || !s.done){ el.textContent=(s&&!s.done)?L('fitting…','학습 중…'):'—'; el.style.color=cssv('--muted'); }
+  else if(s.separable){ el.textContent=L('separable','분리 가능'); el.style.color=cssv('--c-stat'); }
+  else { el.textContent=L('not sep.','분리 불가'); el.style.color=cssv('--cls-neg'); }
+  $('empV').textContent=(state.emp===null)?'—':(100*state.emp).toFixed(0)+'%';
+}
+
+/* ---------- render ---------- */
+function render(){
+  $('nV').textContent=String(state.N);
+  $('pV').textContent=String(state.P);
+  drawCover();
+  drawSep();
+  updateCards();
+}
+
+/* ---------- fit animation ---------- */
+var raf=null;
+function animFit(){
+  var s=state.sep;
+  if(!s){ state.running=false; return; }
+  for(var t=0;t<400 && !s.done;t++) pStep(s);
+  drawSep(); updateCards();
+  if(!s.done){ raf=requestAnimationFrame(animFit); }
+  else {
+    state.running=false;
+    $('fitBtn').classList.remove('running');
+    state.emp=empiricalScan(state.P, 60);
+    render();
+  }
+}
+function startFit(){
+  if(state.running) return;
+  state.sep=makeDraw(state.P);
+  state.emp=null;
+  state.running=true;
+  $('fitBtn').classList.add('running');
+  raf=requestAnimationFrame(animFit);
+}
+
+/* ---------- controls ---------- */
+function wire(){
+  $('nS').addEventListener('input', function(){ state.N=+this.value; $('nV').textContent=this.value; drawCover(); });
+  $('pS').addEventListener('input', function(){
+    if(state.running){ state.running=false; if(raf) cancelAnimationFrame(raf); $('fitBtn').classList.remove('running'); }
+    state.P=+this.value; $('pV').textContent=this.value;
+    state.sep=fitSync(makeDraw(state.P));
+    state.emp=null;
+    render();
+  });
+  $('fitBtn').addEventListener('click', startFit);
+  $('empBtn').addEventListener('click', function(){
+    state.emp=empiricalScan(state.P, 60);
+    updateCards();
+  });
+  window.addEventListener('resize', render);
+}
+
+/* ---------- KaTeX ---------- */
+var mathDone=false;
+function tryMath(){
+  if(mathDone||!window.renderMathInElement) return;
+  mathDone=true;
+  window.renderMathInElement(document.body,{
+    delimiters:[{left:'$$',right:'$$',display:true},{left:'\\(',right:'\\)',display:false}],
+    throwOnError:false
+  });
+}
+document.addEventListener('DOMContentLoaded', tryMath);
+window.addEventListener('load', tryMath);
+
+/* ---------- init + sync hooks ---------- */
+try{
+  wire();
+  state.sep=fitSync(makeDraw(state.P));
+  window.__onLang=function(){ render(); };                 /* redraw canvases with new-language labels */
+  window.__onTheme=function(){ render(); };                /* recolor from CSS vars */
+  render();
+}catch(e){ if(window.console) console.error(e); }
+</script>
+</body>
+</html>
