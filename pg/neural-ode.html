@@ -1,0 +1,576 @@
+<html lang="en" data-theme="light" data-lang="en"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+(function(){
+  function cur(){ try{ return localStorage.getItem('theme') || (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark':'light'); }catch(e){ return 'dark'; } }
+  var t=cur(); window.__theme=t; document.documentElement.setAttribute('data-theme', t);
+  try{ document.documentElement.setAttribute('data-lang', (localStorage.getItem('lang')||'en')); }catch(e){ document.documentElement.setAttribute('data-lang','en'); }
+  window.addEventListener('storage', function(e){ if(e.key==='theme'){ var n=e.newValue||'dark'; window.__theme=n; document.documentElement.setAttribute('data-theme', n); if(window.__onTheme) window.__onTheme(n); } if(e.key==='lang'){ document.documentElement.setAttribute('data-lang', e.newValue||'en'); if(window.__onLang) window.__onLang(); } });
+})();
+</script>
+
+<title>Neural ODE — PRISM Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;600&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+  :root{
+    --void:#15181e; --panel:#1d212a; --panel-2:#171b22; --line:#2e343f;
+    --ink:#e6edf3; --muted:#8b949e;
+    --cool:#5eead4; --sharp:#ff6b5a; --warm-a:#ffc24b; --warm-b:#ff5a3c; --test:#a78bff; --blue:#6ea8ff;
+    --focus:#9cc7ff;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background: var(--void);
+    color:var(--ink); font-family:"Inter",system-ui,-apple-system,sans-serif; line-height:1.5;
+    -webkit-font-smoothing:antialiased; padding:24px 20px 48px;
+  }
+  .wrap{max-width:1120px;margin:0 auto}
+
+  .topbar{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+  .back{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--muted);text-decoration:none;
+    border:1px solid var(--line);padding:6px 12px;border-radius:20px;transition:.14s}
+  .back:hover{color:var(--cool);border-color:var(--cool)}
+
+  .eyebrow{font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--cool);margin:0 0 10px;display:flex;align-items:center;gap:10px}
+  .eyebrow::before{content:"";width:22px;height:1px;background:var(--cool);opacity:.7}
+  .title{font-family:"Space Grotesk",system-ui,sans-serif;font-weight:700;font-size:clamp(28px,4.6vw,46px);
+    line-height:1.02;margin:0 0 10px;letter-spacing:-.02em}
+  .title .thin{color:var(--muted);font-weight:500}
+  .subtitle{color:var(--muted);max-width:none;margin:0 0 26px;font-size:15px}
+  .subtitle b{color:var(--ink);font-weight:600}
+
+  .grid{display:grid;grid-template-columns:1.62fr 1fr;gap:18px;align-items:start}
+  @media (max-width:860px){ .grid{grid-template-columns:1fr} }
+
+  .card{background:linear-gradient(180deg,var(--panel) 0%,var(--panel-2) 100%);
+    border:1px solid var(--line);border-radius:16px;padding:16px}
+  .card + .card{margin-top:14px}
+  .card-h{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--muted);margin:0 0 12px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .card-h .hint{color:#3f7f76;letter-spacing:.02em;text-transform:none;font-size:11px}
+
+  .stage{padding:14px 12px 10px}
+  .canvas-hold{position:relative;width:100%}
+  canvas{display:block;width:100%;height:auto;border-radius:8px}
+  #flow{height:340px}
+  #sep{height:150px}
+  .legend{display:flex;align-items:center;gap:14px;margin:10px 6px 2px;flex-wrap:wrap;font-family:"JetBrains Mono",monospace;
+    font-size:10.5px;color:var(--muted)}
+  .legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:middle}
+  .axis-cap{font-family:"JetBrains Mono",monospace;font-size:10.5px;color:var(--muted);
+    display:flex;justify-content:space-between;margin:2px 6px 0}
+
+  .seg{display:flex;gap:6px;flex-wrap:wrap}
+  .seg .chip, .chip{font-family:"Inter",sans-serif;font-size:12.5px;font-weight:500;color:var(--ink);
+    background:var(--panel-2);border:1px solid var(--line);padding:7px 12px;border-radius:9px;cursor:pointer;transition:.14s}
+  .chip:hover{border-color:#3a486e}
+  .chip.active{background:var(--cool);border-color:var(--cool);color:#04231f;font-weight:600}
+  .clab{font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 7px}
+
+  .ctl{margin:14px 0 0}
+  .ctl-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px}
+  .ctl-name{font-size:13px;font-weight:500}
+  .ctl-name .sub{color:var(--muted);font-weight:400;font-size:12px}
+  .ctl-val{font-family:"JetBrains Mono",monospace;font-size:13px;color:var(--cool)}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:3px;
+    background:var(--line);outline:none;margin:6px 0 0}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;
+    background:var(--ink);border:2px solid var(--void);cursor:pointer;box-shadow:0 0 0 1px var(--line)}
+  input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--ink);
+    border:2px solid var(--void);cursor:pointer}
+  #stepsR{background:linear-gradient(90deg,#5a2330 0%, var(--cool) 100%)}
+
+  .btnrow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+  .btnrow .wide{grid-column:1 / -1}
+  .btn{border:1px solid var(--line);background:var(--panel-2);color:var(--ink);font-family:"Inter",sans-serif;
+    font-size:13px;font-weight:500;padding:10px 8px;border-radius:9px;cursor:pointer;transition:.14s}
+  .btn:hover{border-color:#3a486e;background:#152238}
+  .btn:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+  .btn-primary{background:var(--cool);border-color:var(--cool);color:#04231f;font-weight:600}
+  .btn-primary:hover{filter:brightness(1.06)}
+  .btn.on{background:rgba(94,234,212,.14);border-color:var(--cool);color:var(--cool)}
+  .noteline{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--muted);margin-top:11px;min-height:16px}
+  .noteline b{color:var(--cool)}
+
+  .ro-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);
+    border-radius:10px;overflow:hidden}
+  .ro{background:var(--panel);padding:10px 12px}
+  .ro .k{font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:.06em;color:var(--muted);text-transform:uppercase}
+  .ro .v{font-family:"JetBrains Mono",monospace;font-size:17px;margin-top:3px}
+  .ro .v.big{font-size:22px;color:var(--cool)}
+  .sync-tag{font-size:12px;padding:2px 8px;border-radius:20px;font-family:"Inter",sans-serif;font-weight:600}
+  .sync-tag.off{background:rgba(255,107,90,.14);color:var(--sharp)}
+  .sync-tag.part{background:rgba(255,194,75,.16);color:var(--warm-a)}
+  .sync-tag.on{background:rgba(94,234,212,.14);color:var(--cool)}
+
+  .try ol{margin:0;padding-left:20px;color:var(--muted);font-size:13.5px}
+  .try li{margin-bottom:6px}
+  .try li b{color:var(--ink);font-weight:600}
+  .try li .kbd{font-family:"JetBrains Mono",monospace;color:var(--cool);font-size:12.5px}
+
+  .explain{margin-top:26px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media (max-width:860px){ .explain{grid-template-columns:1fr} }
+  .ex{border-top:2px solid var(--line);padding-top:12px}
+  .ex.a{border-color:var(--blue)} .ex.b{border-color:var(--cool)} .ex.c{border-color:var(--sharp)}
+  .ex h4{font-family:"Space Grotesk",sans-serif;font-size:15px;margin:0 0 7px;font-weight:500}
+  .ex p{margin:0;font-size:13px;color:var(--muted)}
+  .ex code{font-family:"JetBrains Mono",monospace;color:var(--ink);font-size:12.5px;background:var(--panel);padding:1px 5px;border-radius:4px}
+
+  footer{margin-top:30px;color:var(--muted);font-size:12px;font-family:"JetBrains Mono",monospace;letter-spacing:.04em}
+  footer a{color:var(--cool);text-decoration:none}
+
+  html[data-theme="light"]{
+    --void:#ffffff; --panel:#f7f9fc; --panel-2:#eef2f8; --line:#e2e7ee;
+    --ink:#141b33; --muted:#5a6488;
+    --cool:#12a08d; --sharp:#e04a37; --warm-a:#c98a12; --warm-b:#cf4a24; --test:#6d4fe0; --blue:#2f6fd6; --focus:#2f6fd6;
+  }
+  html[data-theme="light"] body{ background: var(--void); }
+  html[data-theme="light"] .btn:hover{ border-color:#b9c4da; background:#e9eef7; }
+
+  html[data-lang="en"] .i18n-ko{ display:none !important; }
+  html[data-lang="ko"] .i18n-en{ display:none !important; }
+  .i18n-ko{ font-family:'Pretendard','Inter',sans-serif; word-break:keep-all; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar"><a class="back" href="index.html"><span class="i18n-en">← Playground</span><span class="i18n-ko">← 놀이터</span></a></div>
+  <p class="eyebrow"><span class="i18n-en">PRISM · Statistical-Mechanics Playground</span><span class="i18n-ko">PRISM · 통계역학 놀이터</span></p>
+  <h1 class="title"><span class="i18n-en">Neural ODE</span><span class="i18n-ko">뉴럴 ODE</span><br><span class="thin"><span class="i18n-en">Depth becomes time — a network as a continuous flow that reshapes data</span><span class="i18n-ko">깊이가 시간이 된다 — 데이터를 연속적으로 변형하는 흐름으로서의 신경망</span></span></h1>
+  <p class="subtitle">
+    <span class="i18n-en">A residual layer <code>h ← h + f(h)</code> is one Euler step of an ODE <code>dh/dt = f(h,t)</code>. A <b>Neural ODE</b> takes the limit: infinitely many infinitesimal layers, so the forward pass is <b>integrating a vector field</b> and depth is just how long you flow. Watch the field carry two classes into a new shape — and hit the wall where a 2-D flow can't help.</span><span class="i18n-ko">잔차 층 <code>h ← h + f(h)</code>는 ODE <code>dh/dt = f(h,t)</code>의 오일러 한 스텝이다. <b>뉴럴 ODE</b>는 그 극한이다: 무한히 많은 무한소 층 — 순전파는 <b>벡터장을 적분</b>하는 것이고 깊이는 얼마나 오래 흐르느냐일 뿐이다. 벡터장이 두 클래스를 새로운 모양으로 실어 나르는 것을, 그리고 2차원 흐름이 통하지 않는 벽을 지켜보라.</span>
+  </p>
+
+  <div class="grid">
+    <!-- ===== LEFT ===== -->
+    <div>
+      <div class="card stage">
+        <div class="card-h"><span class="i18n-en">Phase plane · vector field &amp; the flow of data</span><span class="i18n-ko">위상 평면 · 벡터장과 데이터의 흐름</span> <span class="hint" id="flowHint">dh/dt = f(h)</span></div>
+        <div class="canvas-hold"><canvas id="flow" width="1310" height="680"></canvas></div>
+        <div class="legend">
+          <span><i style="background:#6ea8ff"></i><span class="i18n-en">class +1</span><span class="i18n-ko">클래스 +1</span></span>
+          <span><i style="background:#ff6b5a"></i><span class="i18n-en">class −1</span><span class="i18n-ko">클래스 −1</span></span>
+          <span><i style="background:#8b949e"></i><span class="i18n-en">vector field f</span><span class="i18n-ko">벡터장 f</span></span>
+          <span><i style="background:#5eead4"></i><span class="i18n-en">linear boundary at t=T</span><span class="i18n-ko">t=T의 선형 경계</span></span>
+        </div>
+      </div>
+
+      <div class="card stage">
+        <div class="card-h"><span class="i18n-en">Linear separability vs depth t</span><span class="i18n-ko">깊이 t에 따른 선형 분리도</span> <span class="hint"><span class="i18n-en">best linear split of the two classes</span><span class="i18n-ko">두 클래스의 최적 선형 분리</span></span></div>
+        <div class="canvas-hold"><canvas id="sep" width="1310" height="300"></canvas></div>
+        <div class="axis-cap"><span>t = 0</span><span><span class="i18n-en">integration time (depth) →</span><span class="i18n-ko">적분 시간 (깊이) →</span></span><span id="sepTmax">t = T</span></div>
+      </div>
+    </div>
+
+    <!-- ===== RIGHT ===== -->
+    <div>
+      <div class="card">
+        <div class="card-h"><span class="i18n-en">Controls</span><span class="i18n-ko">제어판</span></div>
+
+        <p class="clab"><span class="i18n-en">Dataset</span><span class="i18n-ko">데이터셋</span></p>
+        <div class="seg" id="dataSeg">
+          <button class="chip active" data-d="blobs"><span class="i18n-en">Two blobs</span><span class="i18n-ko">두 덩어리</span></button>
+          <button class="chip" data-d="rings"><span class="i18n-en">Rings</span><span class="i18n-ko">동심원</span></button>
+          <button class="chip" data-d="moons"><span class="i18n-en">Moons</span><span class="i18n-ko">초승달</span></button>
+        </div>
+
+        <p class="clab" style="margin-top:14px"><span class="i18n-en">Vector field f(h)</span><span class="i18n-ko">벡터장 f(h)</span></p>
+        <div class="seg" id="fieldSeg">
+          <button class="chip active" data-f="rot"><span class="i18n-en">Rotation</span><span class="i18n-ko">회전</span></button>
+          <button class="chip" data-f="saddle"><span class="i18n-en">Saddle</span><span class="i18n-ko">안장점</span></button>
+          <button class="chip" data-f="gyre"><span class="i18n-en">Gyre</span><span class="i18n-ko">소용돌이</span></button>
+          <button class="chip" data-f="repel"><span class="i18n-en">Repeller</span><span class="i18n-ko">밀개</span></button>
+        </div>
+
+        <div class="ctl">
+          <div class="ctl-top">
+            <span class="ctl-name"><span class="i18n-en">Field strength</span><span class="i18n-ko">벡터장 세기</span> <span class="sub" id="strSub"></span></span>
+            <span class="ctl-val" id="strV">1.4</span>
+          </div>
+          <input type="range" id="strength" min="0" max="3" step="0.05" value="1.4" aria-label="Field strength">
+        </div>
+
+        <div class="ctl">
+          <div class="ctl-top">
+            <span class="ctl-name"><span class="i18n-en">Integration time T</span><span class="i18n-ko">적분 시간 T</span> <span class="sub"><span class="i18n-en">= depth</span><span class="i18n-ko">= 깊이</span></span></span>
+            <span class="ctl-val" id="TV">1.60</span>
+          </div>
+          <input type="range" id="Ttime" min="0.2" max="3" step="0.05" value="1.6" aria-label="Integration time">
+        </div>
+
+        <div class="ctl">
+          <div class="ctl-top">
+            <span class="ctl-name"><span class="i18n-en">Solver steps</span><span class="i18n-ko">솔버 스텝 수</span> <span class="sub"><span class="i18n-en">= number of layers</span><span class="i18n-ko">= 층 수</span></span></span>
+            <span class="ctl-val" id="stepsV">20</span>
+          </div>
+          <input type="range" id="stepsR" min="2" max="60" step="1" value="20" aria-label="Solver steps">
+        </div>
+
+        <p class="clab" style="margin-top:14px"><span class="i18n-en">Solver</span><span class="i18n-ko">솔버</span></p>
+        <div class="seg" id="solverSeg">
+          <button class="chip active" data-s="rk4">RK4</button>
+          <button class="chip" data-s="euler"><span class="i18n-en">Euler (ResNet)</span><span class="i18n-ko">오일러 (ResNet)</span></button>
+        </div>
+
+        <div class="btnrow">
+          <button class="btn btn-primary" id="run">▶ Replay</button>
+          <button class="btn" id="augment"><span class="i18n-en">Augment +1D: off</span><span class="i18n-ko">차원 증강 +1: 끔</span></button>
+          <button class="btn wide" id="reset"><span class="i18n-en">Reset to t = 0</span><span class="i18n-ko">t = 0으로 초기화</span></button>
+        </div>
+        <div class="noteline" id="noteLine"><span class="i18n-en">Press Flow. Then try Rings — a 2-D flow can never separate them.</span><span class="i18n-ko">Flow를 누르세요. 그런 다음 동심원을 — 2차원 흐름으로는 절대 분리할 수 없습니다.</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-h"><span class="i18n-en">Measurements</span><span class="i18n-ko">측정값</span> <span id="sepTag" class="sync-tag on">Separated</span></div>
+        <div class="ro-grid">
+          <div class="ro"><div class="k"><span class="i18n-en">separability @ T</span><span class="i18n-ko">분리도 @ T</span></div><div class="v big" id="roSep">100%</div></div>
+          <div class="ro"><div class="k"><span class="i18n-en">time t</span><span class="i18n-ko">시간 t</span></div><div class="v" id="roT">1.60</div></div>
+          <div class="ro"><div class="k"><span class="i18n-en">step size h = T/L</span><span class="i18n-ko">스텝 크기 h = T/L</span></div><div class="v" id="roH">0.080</div></div>
+          <div class="ro"><div class="k"><span class="i18n-en">latent dim</span><span class="i18n-ko">잠재 차원</span></div><div class="v" id="roDim">2</div></div>
+          <div class="ro"><div class="k"><span class="i18n-en">trajectories cross?</span><span class="i18n-ko">궤적 교차?</span></div><div class="v" id="roCross">no</div></div>
+          <div class="ro"><div class="k"><span class="i18n-en">max ‖h‖</span><span class="i18n-ko">최대 ‖h‖</span></div><div class="v" id="roNorm">1.43</div></div>
+        </div>
+      </div>
+
+      <div class="card try">
+        <div class="card-h"><span class="i18n-en">Things to try</span><span class="i18n-ko">해볼 것들</span></div>
+        <ol>
+          <li><span class="i18n-en"><b>Depth = time:</b> raise <span class="kbd">T</span> and watch the flow carry the data further — more depth, more deformation.</span><span class="i18n-ko"><b>깊이 = 시간:</b> <span class="kbd">T</span>를 키우면 흐름이 데이터를 더 멀리 실어 나른다 — 깊을수록 더 큰 변형.</span></li>
+          <li><span class="i18n-en"><b>ResNet is Euler:</b> switch to <span class="kbd">Euler</span> and drop <span class="kbd">steps</span> low — the trajectory becomes a coarse polyline and can overshoot; RK4 stays smooth.</span><span class="i18n-ko"><b>ResNet은 오일러:</b> <span class="kbd">오일러</span>로 바꾸고 <span class="kbd">스텝 수</span>를 낮추면 궤적이 거친 꺾은선이 되어 벗어날 수 있다; RK4는 매끄럽게 유지된다.</span></li>
+          <li><span class="i18n-en"><b>The homeomorphism wall:</b> choose <span class="kbd">Rings</span>. No 2-D field ever makes them linearly separable — flows can't let trajectories cross.</span><span class="i18n-ko"><b>위상동형의 벽:</b> <span class="kbd">동심원</span>을 고르라. 어떤 2차원 벡터장도 이들을 선형 분리 가능하게 만들 수 없다 — 흐름은 궤적을 교차시키지 못한다.</span></li>
+          <li><span class="i18n-en"><b>Augment:</b> turn on <span class="kbd">+1D</span> — one extra dimension lets the rings lift apart and separability jumps. This is the Augmented Neural ODE.</span><span class="i18n-ko"><b>증강:</b> <span class="kbd">+1D</span>를 켜라 — 여분의 한 차원이 동심원을 들어 올려 분리도가 뛴다. 이것이 Augmented Neural ODE다.</span></li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <div class="explain">
+    <div class="ex a">
+      <h4><span class="i18n-en">A ResNet is Euler's method</span><span class="i18n-ko">ResNet은 오일러 방법</span></h4>
+      <p><span class="i18n-en">A residual block computes <code>h_{k+1} = h_k + f(h_k)</code> — exactly one Euler step of <code>dh/dt = f(h,t)</code> with step size 1. Stacking blocks integrates the ODE; the Neural ODE takes the continuous limit, so an adaptive solver replaces the layers and "depth" is the integration time T.</span><span class="i18n-ko">잔차 블록은 <code>h_{k+1} = h_k + f(h_k)</code>를 계산한다 — 스텝 크기 1인 <code>dh/dt = f(h,t)</code>의 오일러 한 스텝 그대로다. 블록을 쌓는 것은 ODE를 적분하는 것이고, 뉴럴 ODE는 그 연속 극한을 취해 적응형 솔버가 층을 대체하며 "깊이"는 적분 시간 T가 된다.</span></p>
+    </div>
+    <div class="ex b">
+      <h4><span class="i18n-en">Flows are homeomorphisms</span><span class="i18n-ko">흐름은 위상동형</span></h4>
+      <p><span class="i18n-en">An ODE flow is a smooth, invertible map — trajectories can never cross. So a Neural ODE cannot turn nested rings into linearly separable data in the same dimension. <b>Augmented Neural ODEs</b> add extra dimensions to give the flow room, exactly as toggling <code>+1D</code> here rescues the rings.</span><span class="i18n-ko">ODE 흐름은 매끄럽고 가역인 사상이라 궤적이 절대 교차하지 않는다. 그래서 뉴럴 ODE는 같은 차원에서 내포된 동심원을 선형 분리 가능하게 만들 수 없다. <b>Augmented Neural ODE</b>는 여분의 차원을 더해 흐름에 공간을 주며, 여기서 <code>+1D</code>를 켜는 것이 동심원을 구제하는 것과 정확히 같다.</span></p>
+    </div>
+    <div class="ex c">
+      <h4><span class="i18n-en">The bridge to biomedical data</span><span class="i18n-ko">biomedical 데이터로의 다리</span></h4>
+      <p><span class="i18n-en">Because time is continuous, Neural ODEs handle <b>irregularly-sampled</b> and missing data natively — the reason <b>Latent ODEs</b> and <b>ODE-RNNs</b> are used for ICU vitals, EHR trajectories, and physiological signals that arrive at odd intervals. The latent state is a continuous-time <b>representation</b> of the patient — close to PRISM's neural-signal modeling.</span><span class="i18n-ko">시간이 연속이므로 뉴럴 ODE는 <b>불규칙 표집</b>과 결측 데이터를 자연스럽게 다룬다 — <b>Latent ODE</b>와 <b>ODE-RNN</b>이 ICU 활력징후, EHR 궤적, 불규칙한 간격으로 들어오는 생리 신호에 쓰이는 이유다. 잠재 상태는 환자에 대한 연속시간 <b>표현</b>이며, PRISM의 신경신호 모델링과 맞닿아 있다.</span></p>
+    </div>
+  </div>
+
+  <footer><span class="i18n-en">PRISM Lab · prototype · </span><span class="i18n-ko">PRISM Lab · 프로토타입 · </span><a href="https://sswu-prism-lab.github.io" target="_blank" rel="noopener">sswu-prism-lab.github.io</a></footer>
+</div>
+
+<script>
+(() => {
+  "use strict";
+  function L(en,ko){ return document.documentElement.getAttribute('data-lang')==='ko' ? ko : en; }
+
+  const PAL={
+    dark:{ ink:"#e7ecff", muted:"#8493b8", line:"#26314f", grid:a=>`rgba(38,49,79,${a})`, cool:"#5eead4", sharp:"#ff6b5a", warmA:"#ffc24b", test:"#a78bff", blue:"#6ea8ff", panel:"#111a30", field:"#4a5578" },
+    light:{ ink:"#141b33", muted:"#5a6488", line:"#d9e0ec", grid:a=>`rgba(150,162,190,${a})`, cool:"#12a08d", sharp:"#e04a37", warmA:"#c98a12", test:"#6d4fe0", blue:"#2f6fd6", panel:"#ffffff", field:"#aeb8cc" }
+  };
+  let C = PAL[(window.__theme==='light')?'light':'dark'];
+  const clamp=(x,a,b)=> x<a?a : x>b?b : x;
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const R0 = 0.62;     // ring radius threshold for augmentation
+
+  const S = {
+    dataset:"blobs", field:"rot", g:1.4, T:1.6, steps:20, solver:"rk4",
+    augment:false, running:false,
+    pts0:[],                 // original {x,y,c}
+    traj:[],                 // traj[k] = array of [x,y,z] at step k
+    sepHist:[],              // separability at each step
+    cursor:0                 // animation float in [0,steps]
+  };
+
+  // ---------- gaussian ----------
+  let spare=null;
+  function gauss(){ if(spare!==null){const v=spare;spare=null;return v;}
+    let u=0; do{u=Math.random();}while(u<=1e-12);
+    const w=Math.sqrt(-2*Math.log(u)), a=2*Math.PI*Math.random(); spare=w*Math.sin(a); return w*Math.cos(a); }
+
+  // ---------- datasets ----------
+  function makeData(){
+    const P=[]; const n=32;
+    if(S.dataset==="blobs"){
+      for(let i=0;i<n;i++){ P.push({x:-0.7+0.22*gauss(), y: 0.45+0.22*gauss(), c:+1}); }
+      for(let i=0;i<n;i++){ P.push({x: 0.7+0.22*gauss(), y:-0.45+0.22*gauss(), c:-1}); }
+    } else if(S.dataset==="rings"){
+      for(let i=0;i<n;i++){ const a=Math.random()*2*Math.PI, r=0.28+0.06*gauss(); P.push({x:r*Math.cos(a), y:r*Math.sin(a), c:+1}); }
+      for(let i=0;i<n;i++){ const a=Math.random()*2*Math.PI, r=0.95+0.06*gauss(); P.push({x:r*Math.cos(a), y:r*Math.sin(a), c:-1}); }
+    } else { // moons
+      for(let i=0;i<n;i++){ const a=Math.PI*Math.random(); P.push({x:Math.cos(a)-0.5+0.05*gauss(), y:Math.sin(a)-0.25+0.05*gauss(), c:+1}); }
+      for(let i=0;i<n;i++){ const a=Math.PI*Math.random(); P.push({x:1-Math.cos(a)-0.5+0.05*gauss(), y:-Math.sin(a)+0.25+0.05*gauss(), c:-1}); }
+    }
+    S.pts0=P;
+  }
+
+  // ---------- vector field f(x,y) -> [vx,vy] ----------
+  function field(x,y){
+    const g=S.g;
+    switch(S.field){
+      case "rot":    return [-g*y, g*x];
+      case "saddle": return [ g*x, -g*y];
+      case "gyre":   return [-g*Math.sin(1.6*x)*Math.cos(1.6*y), g*Math.cos(1.6*x)*Math.sin(1.6*y)];
+      case "repel":  { const r=Math.hypot(x,y)+1e-3; return [g*x/(0.4+r), g*y/(0.4+r)]; }
+    }
+    return [0,0];
+  }
+  // augmented 3rd component: uses radius (position only) so it is a valid field
+  function fieldZ(x,y){ const r=Math.hypot(x,y); return S.g*1.3*(r-R0); }
+
+  function deriv(p){ // p=[x,y,z]; returns [dx,dy,dz]
+    const f=field(p[0],p[1]);
+    return [f[0], f[1], S.augment ? fieldZ(p[0],p[1]) : 0];
+  }
+  function stepOnce(p,h){
+    if(S.solver==="euler"){ const k=deriv(p); return [p[0]+h*k[0], p[1]+h*k[1], p[2]+h*k[2]]; }
+    // RK4
+    const k1=deriv(p);
+    const p2=[p[0]+0.5*h*k1[0],p[1]+0.5*h*k1[1],p[2]+0.5*h*k1[2]]; const k2=deriv(p2);
+    const p3=[p[0]+0.5*h*k2[0],p[1]+0.5*h*k2[1],p[2]+0.5*h*k2[2]]; const k3=deriv(p3);
+    const p4=[p[0]+h*k3[0],p[1]+h*k3[1],p[2]+h*k3[2]]; const k4=deriv(p4);
+    return [ p[0]+h/6*(k1[0]+2*k2[0]+2*k3[0]+k4[0]),
+             p[1]+h/6*(k1[1]+2*k2[1]+2*k3[1]+k4[1]),
+             p[2]+h/6*(k1[2]+2*k2[2]+2*k3[2]+k4[2]) ];
+  }
+
+  // ---------- separability: best linear split along difference-of-means dir ----------
+  function separability(state){
+    let m1=[0,0,0], m0=[0,0,0], n1=0,n0=0, dim=S.augment?3:2;
+    for(let i=0;i<state.length;i++){ const p=state[i], c=S.pts0[i].c;
+      if(!isFinite(p[0])||!isFinite(p[1])) continue;
+      if(c>0){ m1[0]+=p[0];m1[1]+=p[1];m1[2]+=p[2]; n1++; } else { m0[0]+=p[0];m0[1]+=p[1];m0[2]+=p[2]; n0++; } }
+    if(!n1||!n0) return 0.5;
+    for(let d=0;d<3;d++){ m1[d]/=n1; m0[d]/=n0; }
+    let w=[m1[0]-m0[0], m1[1]-m0[1], (dim===3?m1[2]-m0[2]:0)];
+    const wn=Math.hypot(w[0],w[1],w[2]); if(wn<1e-6) return 0.5;
+    w=[w[0]/wn,w[1]/wn,w[2]/wn];
+    const proj=[];
+    for(let i=0;i<state.length;i++){ const p=state[i]; if(!isFinite(p[0])) continue; proj.push({s:p[0]*w[0]+p[1]*w[1]+p[2]*w[2], c:S.pts0[i].c}); }
+    proj.sort((a,b)=>a.s-b.s);
+    // best threshold
+    let best=0.5;
+    for(let t=0;t<=proj.length;t++){
+      let corr=0;
+      for(let i=0;i<proj.length;i++){ const below=i<t; const pred=below?-1:1; if(pred===proj[i].c) corr++; }
+      const acc=corr/proj.length; if(acc>best) best=acc;
+    }
+    return best;
+  }
+  // boundary direction (2D) for drawing
+  function boundaryDir(state){
+    let m1=[0,0],m0=[0,0],n1=0,n0=0;
+    for(let i=0;i<state.length;i++){ const p=state[i],c=S.pts0[i].c; if(c>0){m1[0]+=p[0];m1[1]+=p[1];n1++;}else{m0[0]+=p[0];m0[1]+=p[1];n0++;} }
+    if(!n1||!n0) return null;
+    const w=[m1[0]/n1-m0[0]/n0, m1[1]/n1-m0[1]/n0]; const wn=Math.hypot(w[0],w[1]); if(wn<1e-4) return null;
+    return {w:[w[0]/wn,w[1]/wn], mid:[(m1[0]/n1+m0[0]/n0)/2,(m1[1]/n1+m0[1]/n0)/2]};
+  }
+
+  // ---------- build full trajectory ----------
+  function build(){
+    const L0=S.steps, h=S.T/L0;
+    let state=S.pts0.map(p=>[p.x,p.y,0]);
+    S.traj=[state.map(p=>p.slice())];
+    S.sepHist=[separability(state)];
+    for(let k=0;k<L0;k++){
+      state=state.map(p=>{ const np=stepOnce(p,h);
+        // clamp to avoid inf blow-up (keep finite for drawing/measuring)
+        return [clamp(np[0],-1e4,1e4), clamp(np[1],-1e4,1e4), clamp(np[2],-1e4,1e4)]; });
+      S.traj.push(state.map(p=>p.slice()));
+      S.sepHist.push(separability(state));
+    }
+  }
+
+  // ---------- canvases ----------
+  const cvF=document.getElementById("flow"), cxF=cvF.getContext("2d");
+  const cvS=document.getElementById("sep"), cxS=cvS.getContext("2d");
+  function fit(cv,ctx){ const dpr=Math.min(window.devicePixelRatio||1,2); const w=cv.clientWidth,h=cv.clientHeight;
+    cv.width=Math.round(w*dpr); cv.height=Math.round(h*dpr); ctx.setTransform(dpr,0,0,dpr,0,0); return {w,h}; }
+
+  const VIEW=1.9;
+  function drawFlow(){
+    const {w,h}=fit(cvF,cxF);
+    cxF.clearRect(0,0,w,h);
+    const cx=w/2, cy=h/2, sc=Math.min(w,h)/(2*VIEW);
+    const X=(x)=> cx + x*sc, Y=(y)=> cy - y*sc;
+
+    // axes
+    cxF.strokeStyle=C.grid(.55); cxF.lineWidth=1;
+    cxF.beginPath(); cxF.moveTo(X(-VIEW),Y(0)); cxF.lineTo(X(VIEW),Y(0)); cxF.moveTo(X(0),Y(-VIEW)); cxF.lineTo(X(0),Y(VIEW)); cxF.stroke();
+
+    // vector field arrows
+    const gN=13; cxF.strokeStyle=C.field; cxF.fillStyle=C.field; cxF.lineWidth=1;
+    for(let i=0;i<=gN;i++) for(let j=0;j<=gN;j++){
+      const x=-VIEW+2*VIEW*i/gN, y=-VIEW+2*VIEW*j/gN;
+      const f=field(x,y); let mag=Math.hypot(f[0],f[1]); if(mag<1e-4) continue;
+      const len=Math.min(mag*0.10, 0.11);
+      const ux=f[0]/mag, uy=f[1]/mag;
+      const x0=X(x), y0=Y(y), x1=X(x+ux*len), y1=Y(y+uy*len);
+      cxF.globalAlpha=.5; cxF.beginPath(); cxF.moveTo(x0,y0); cxF.lineTo(x1,y1); cxF.stroke();
+      const ang=Math.atan2(y1-y0,x1-x0);
+      cxF.beginPath(); cxF.moveTo(x1,y1);
+      cxF.lineTo(x1-4*Math.cos(ang-0.5), y1-4*Math.sin(ang-0.5));
+      cxF.lineTo(x1-4*Math.cos(ang+0.5), y1-4*Math.sin(ang+0.5)); cxF.closePath(); cxF.fill();
+      cxF.globalAlpha=1;
+    }
+
+    const kf=S.cursor, k0=Math.floor(kf), k1=Math.min(k0+1,S.steps), fr=kf-k0;
+    const A=S.traj[k0], B=S.traj[k1];
+    function pos(i){ const a=A[i], b=B[i]; return [a[0]+(b[0]-a[0])*fr, a[1]+(b[1]-a[1])*fr, a[2]+(b[2]-a[2])*fr]; }
+
+    // trails
+    cxF.lineWidth=1.1;
+    for(let i=0;i<S.pts0.length;i++){
+      cxF.strokeStyle = S.pts0[i].c>0 ? C.blue : C.sharp; cxF.globalAlpha=.22;
+      cxF.beginPath();
+      for(let k=0;k<=k0;k++){ const p=S.traj[k][i]; const px=X(p[0]),py=Y(p[1]); if(k===0)cxF.moveTo(px,py); else cxF.lineTo(px,py); }
+      const pc=pos(i); cxF.lineTo(X(pc[0]),Y(pc[1])); cxF.stroke();
+    }
+    cxF.globalAlpha=1;
+
+    // boundary at final state (t=T)
+    const fin=S.traj[S.steps];
+    const bd=boundaryDir(fin);
+    if(bd && Math.abs(kf-S.steps)<0.01){
+      // line through mid, perpendicular to w
+      const perp=[-bd.w[1],bd.w[0]];
+      const c0=[bd.mid[0]-perp[0]*VIEW*2, bd.mid[1]-perp[1]*VIEW*2];
+      const c1=[bd.mid[0]+perp[0]*VIEW*2, bd.mid[1]+perp[1]*VIEW*2];
+      cxF.strokeStyle=C.cool; cxF.lineWidth=2; cxF.setLineDash([6,4]);
+      cxF.beginPath(); cxF.moveTo(X(c0[0]),Y(c0[1])); cxF.lineTo(X(c1[0]),Y(c1[1])); cxF.stroke(); cxF.setLineDash([]);
+    }
+
+    // points
+    for(let i=0;i<S.pts0.length;i++){
+      const p=pos(i); const base = S.pts0[i].c>0 ? C.blue : C.sharp;
+      let r=3.6;
+      if(S.augment){ // encode z as ring size/glow
+        const zz=clamp(p[2],-1.2,1.2); r=3.4+Math.abs(zz)*2.4;
+        cxF.globalAlpha=.9;
+      }
+      cxF.fillStyle=base; cxF.beginPath(); cxF.arc(X(p[0]),Y(p[1]),r,0,2*Math.PI); cxF.fill();
+      if(S.augment){ cxF.globalAlpha=1; cxF.strokeStyle=p[2]>=0?C.cool:C.warmA; cxF.lineWidth=1.4;
+        cxF.beginPath(); cxF.arc(X(p[0]),Y(p[1]),r+1.6,0,2*Math.PI); cxF.stroke(); }
+    }
+    cxF.globalAlpha=1;
+
+    if(S.augment){
+      cxF.fillStyle=C.muted; cxF.font='10px "JetBrains Mono", monospace'; cxF.textAlign="left"; cxF.textBaseline="top";
+      cxF.fillText(L("ring size ∝ |z| (3rd dim)","고리 크기 ∝ |z| (3번째 차원)"), 10, 8);
+    }
+  }
+
+  function drawSep(){
+    const {w,h}=fit(cvS,cxS);
+    cxS.clearRect(0,0,w,h);
+    const pl=34,pr=12,pt=12,pb=18;
+    const X=(k)=> pl + k/S.steps*(w-pl-pr);
+    const Y=(a)=> h-pb - (a-0.5)/0.5*(h-pt-pb);   // 0.5..1.0
+    // gridlines
+    cxS.font='10px "JetBrains Mono", monospace'; cxS.fillStyle=C.muted; cxS.textAlign="right"; cxS.textBaseline="middle";
+    [0.5,0.75,1.0].forEach(a=>{ const y=Y(a); cxS.strokeStyle=C.grid(.6); cxS.lineWidth=1;
+      cxS.beginPath(); cxS.moveTo(pl,y); cxS.lineTo(w-pr,y); cxS.stroke(); cxS.fillStyle=C.muted; cxS.fillText((a*100)+"%", pl-5, y); });
+    // curve
+    cxS.strokeStyle=C.cool; cxS.lineWidth=2; cxS.beginPath();
+    for(let k=0;k<=S.steps;k++){ const px=X(k),py=Y(clamp(S.sepHist[k],0.5,1)); if(k===0)cxS.moveTo(px,py); else cxS.lineTo(px,py); }
+    cxS.stroke();
+    // cursor marker
+    const cx2=X(S.cursor);
+    cxS.strokeStyle=C.grid(1); cxS.setLineDash([3,3]); cxS.lineWidth=1;
+    cxS.beginPath(); cxS.moveTo(cx2,pt); cxS.lineTo(cx2,h-pb); cxS.stroke(); cxS.setLineDash([]);
+    const kk=Math.round(S.cursor);
+    cxS.fillStyle=C.cool; cxS.beginPath(); cxS.arc(X(kk),Y(clamp(S.sepHist[kk],0.5,1)),3.5,0,2*Math.PI); cxS.fill();
+  }
+
+  function maxNorm(state){ let m=0; for(const p of state){ const n=Math.hypot(p[0],p[1],p[2]); if(isFinite(n)&&n>m)m=n; } return m; }
+
+  function updateReadouts(){
+    const kk=Math.round(S.cursor);
+    const sepNow=S.sepHist[S.steps];
+    document.getElementById("roSep").textContent=(sepNow*100).toFixed(0)+"%";
+    document.getElementById("roT").textContent=(S.cursor/S.steps*S.T).toFixed(2);
+    document.getElementById("roH").textContent=(S.T/S.steps).toFixed(3);
+    document.getElementById("roDim").textContent=S.augment?"3":"2";
+    document.getElementById("roCross").textContent=L("no","아니오");
+    document.getElementById("roNorm").textContent=maxNorm(S.traj[kk]).toFixed(2);
+    const tag=document.getElementById("sepTag");
+    if(sepNow>0.93){ tag.textContent=L("Separated","분리됨"); tag.className="sync-tag on"; }
+    else if(sepNow>0.7){ tag.textContent=L("Partial","부분 분리"); tag.className="sync-tag part"; }
+    else { tag.textContent=L("Entangled","얽힘"); tag.className="sync-tag off"; }
+  }
+
+  function drawAll(){ drawFlow(); drawSep(); updateReadouts(); }
+
+  // ---------- loop ----------
+  let raf=null;
+  function loop(){
+    if(!S.running){ raf=null; return; }
+    S.cursor += S.steps/90;                 // ~1.5s sweep regardless of steps
+    if(S.cursor>=S.steps){ S.cursor=S.steps; S.running=false; syncRunLabel(); }
+    drawAll();
+    if(S.running) raf=requestAnimationFrame(loop); else raf=null;
+  }
+  function setRunning(on){ S.running=on; syncRunLabel(); if(on){ if(S.cursor>=S.steps) S.cursor=0; if(!raf) raf=requestAnimationFrame(loop);} else drawAll(); }
+  function syncRunLabel(){ document.getElementById("run").textContent = S.running ? L("❚❚ Pause","❚❚ 일시정지") : (S.cursor>=S.steps? L("▶ Replay","▶ 다시") : L("▶ Flow","▶ 흐름")); }
+
+  function rebuild(resetCursor){ build(); if(resetCursor) S.cursor=0; else S.cursor=Math.min(S.cursor,S.steps); drawAll(); }
+
+  // ---------- controls ----------
+  function segSetup(segId, key, after){
+    document.getElementById(segId).addEventListener("click",e=>{
+      const b=e.target.closest(".chip"); if(!b) return;
+      [...e.currentTarget.children].forEach(c=>c.classList.remove("active")); b.classList.add("active");
+      after(b.dataset);
+    });
+  }
+  segSetup("dataSeg","d",ds=>{ S.dataset=ds.d; makeData(); rebuild(true); });
+  segSetup("fieldSeg","f",ds=>{ S.field=ds.f; rebuild(true); });
+  segSetup("solverSeg","s",ds=>{ S.solver=ds.s; rebuild(false); });
+
+  const bind=(id,valId,fmt,fn,reset)=>{ const el=document.getElementById(id);
+    el.addEventListener("input",()=>{ const v=parseFloat(el.value); fn(v);
+      if(valId) document.getElementById(valId).textContent=fmt(v); rebuild(reset); }); };
+  bind("strength","strV",v=>v.toFixed(2),v=>{S.g=v;},false);
+  bind("Ttime","TV",v=>v.toFixed(2),v=>{S.T=v;},false);
+  bind("stepsR","stepsV",v=>String(v|0),v=>{S.steps=v|0;},false);
+
+  document.getElementById("run").onclick=()=>setRunning(!S.running);
+  document.getElementById("reset").onclick=()=>{ S.cursor=0; S.running=false; syncRunLabel(); drawAll(); };
+  document.getElementById("augment").onclick=()=>{
+    S.augment=!S.augment;
+    const b=document.getElementById("augment");
+    b.className = "btn" + (S.augment?" on":"");
+    b.innerHTML = S.augment
+      ? '<span class="i18n-en">Augment +1D: on</span><span class="i18n-ko">차원 증강 +1: 켬</span>'
+      : '<span class="i18n-en">Augment +1D: off</span><span class="i18n-ko">차원 증강 +1: 끔</span>';
+    if(S.augment && S.dataset==="rings")
+      document.getElementById("noteLine").innerHTML=L("The extra dimension lifts inner vs outer rings apart — now a plane separates them.","여분의 차원이 안쪽·바깥쪽 고리를 갈라 들어 올린다 — 이제 평면 하나로 분리된다.");
+    rebuild(true);
+  };
+
+  window.__onTheme=t=>{ C=PAL[t==='light'?'light':'dark']; drawAll(); };
+  window.__onLang=()=>{ syncRunLabel(); drawAll(); };
+  window.addEventListener("resize",()=>{ clearTimeout(window.__rt); window.__rt=setTimeout(drawAll,80); });
+
+  function strSub(){ document.getElementById("strSub").textContent = ""; }
+
+  // ---------- init ----------
+  document.getElementById("sepTmax").textContent="t = T";
+  strSub();
+  makeData(); build(); S.cursor=0; drawAll(); syncRunLabel();
+  if(!reduceMotion) setRunning(true);
+})();
+</script>
+
+
+</body></html>
