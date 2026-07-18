@@ -70,6 +70,8 @@
   a.c-eeg:hover{border-color:var(--cool)}
   a.c-bold:hover{border-color:#ff8a5c}
   a.c-conn:hover{border-color:#4fd1a0}
+  .c-pc{border-top-color:#c4b5fd} .c-ddm{border-top-color:#5ed0c0}
+  a.c-pc:hover{border-color:#c4b5fd} a.c-ddm:hover{border-color:#5ed0c0}
 
   .glyph{height:98px;display:flex;align-items:center;justify-content:center;
     background:var(--panel-2);border-bottom:1px solid var(--line)}
@@ -144,7 +146,7 @@
     Move a slider to feel phase transitions, free energy, and synchronization first-hand. Click a card to enter.</span><span class="i18n-ko">물리적 직관과 학습 알고리즘을 잇는 <b>인터랙티브 데모</b> 모음입니다.
     슬라이더를 움직여 상전이, 자유 에너지, 동기화를 직접 느껴보세요. 카드를 클릭해 들어가세요.</span>
   </p>
-  <h2 class="section-h first"><span class="i18n-en">Physics-inspired Representation Learning</span><span class="i18n-ko">물리학 기반 표현 학습</span> <span class="n"><span class="i18n-en">11 live · 5 soon</span><span class="i18n-ko">11개 공개 · 5개 준비 중</span></span></h2>
+  <h2 class="section-h first"><span class="i18n-en">Physics-inspired Representation Learning</span><span class="i18n-ko">물리학 기반 표현 학습</span> <span class="n"><span class="i18n-en">13 live · 5 soon</span><span class="i18n-ko">13개 공개 · 5개 준비 중</span></span></h2>
   <p class="section-sub"><span class="i18n-en">Statistical-mechanics intuition behind representation and learning — feel phase transitions, free energy, and synchronization first-hand.</span><span class="i18n-ko">표현과 학습의 이면에 있는 통계역학적 직관 — 상전이, 자유 에너지, 동기화를 직접 느껴보세요.</span></p>
 
   <div class="deck">
@@ -392,6 +394,50 @@
         <div class="tags"><span><span class="i18n-en">Replica</span><span class="i18n-ko">레플리카</span></span><span><span class="i18n-en">Capacity</span><span class="i18n-ko">용량</span></span></div>
         <h3><span class="i18n-en">Perceptron Capacity</span><span class="i18n-ko">퍼셉트론 용량</span></h3>
         <p><span class="i18n-en">How many random patterns can a single neuron separate? Watch the Gardner storage limit <code>αc ≈ 2</code> emerge as you load in more.</span><span class="i18n-ko">하나의 뉴런이 무작위 패턴을 몇 개나 분리할 수 있을까요? 패턴을 더 많이 넣을수록 Gardner 저장 한계 <code>αc ≈ 2</code>가 나타나는 것을 지켜보세요.</span></p>
+        <div class="go"><span class="i18n-en">Open →</span><span class="i18n-ko">열기 →</span></div>
+      </div>
+    </a>
+
+    <!-- ===== ACTIVE: Predictive Coding ===== -->
+    <a class="card-demo c-pc" href="predictive-coding.html">
+      <div class="glyph">
+        <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <line x1="100" y1="16" x2="100" y2="64" stroke="#33415e" stroke-width="1.2"/>
+          <line x1="82" y1="23" x2="82" y2="57" stroke="#8493b8" stroke-width="1.4"/>
+          <path d="M82,58 l-3.5,-6 h7 z" fill="#8493b8"/>
+          <line x1="120" y1="57" x2="120" y2="23" stroke="#ff6b5a" stroke-width="1.6"/>
+          <path d="M120,22 l-3.5,6 h7 z" fill="#ff6b5a"/>
+          <circle cx="100" cy="16" r="6" fill="none" stroke="#ffc24b" stroke-width="2"/>
+          <circle cx="100" cy="40" r="6" fill="none" stroke="#a78bff" stroke-width="2"/>
+          <circle cx="100" cy="64" r="6" fill="none" stroke="#5eead4" stroke-width="2"/>
+          <circle cx="120" cy="28" r="3.4" fill="#ff6b5a"/>
+          <circle cx="120" cy="52" r="2.4" fill="#ff6b5a"/>
+        </svg>
+      </div>
+      <div class="body">
+        <div class="tags"><span><span class="i18n-en">Free energy</span><span class="i18n-ko">자유 에너지</span></span><span><span class="i18n-en">Inference</span><span class="i18n-ko">추론</span></span></div>
+        <h3><span class="i18n-en">Predictive Coding &amp; Free Energy</span><span class="i18n-ko">예측 부호화와 자유 에너지</span></h3>
+        <p><span class="i18n-en">A hierarchy perceives by minimizing precision-weighted prediction error. Slide the precisions and watch perception tip between the senses and the prior — the brain as a variational inference machine.</span><span class="i18n-ko">위계 구조가 정밀도로 가중된 예측오차를 최소화하며 지각합니다. 정밀도를 움직여 지각이 감각과 사전 기대 사이에서 기우는 것을 보세요 — 변분 추론 기계로서의 뇌입니다.</span></p>
+        <div class="go"><span class="i18n-en">Open →</span><span class="i18n-ko">열기 →</span></div>
+      </div>
+    </a>
+
+    <!-- ===== ACTIVE: Drift-Diffusion ===== -->
+    <a class="card-demo c-ddm" href="drift-diffusion.html">
+      <div class="glyph">
+        <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <line x1="24" y1="16" x2="180" y2="16" stroke="#5eead4" stroke-width="2"/>
+          <line x1="24" y1="64" x2="180" y2="64" stroke="#ff6b5a" stroke-width="2"/>
+          <line x1="24" y1="40" x2="176" y2="18" stroke="#33415e" stroke-width="1.2" stroke-dasharray="4 3"/>
+          <polyline points="24,40 32,45 40,36 48,43 56,33 64,39 72,29 80,34 88,25 96,30 104,23 112,26 120,19 128,22 136,17 143,16" stroke="#5eead4" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="24" cy="40" r="3" fill="#8b949e"/>
+          <circle cx="143" cy="16" r="3" fill="#5eead4"/>
+        </svg>
+      </div>
+      <div class="body">
+        <div class="tags"><span><span class="i18n-en">Langevin</span><span class="i18n-ko">Langevin</span></span><span><span class="i18n-en">Decision</span><span class="i18n-ko">의사결정</span></span></div>
+        <h3><span class="i18n-en">Drift-Diffusion Decision Model</span><span class="i18n-ko">표류-확산 결정 모형</span></h3>
+        <p><span class="i18n-en">A choice is a biased random walk to a bound. Watch evidence accumulate to a boundary and build up the joint distribution of accuracy and reaction time — the workhorse of perceptual decisions.</span><span class="i18n-ko">선택은 경계로 향하는 편향된 무작위 걸음입니다. 증거가 경계까지 누적되며 정확도와 반응시간의 결합 분포가 쌓이는 것을 보세요 — 지각적 의사결정의 대표 모형입니다.</span></p>
         <div class="go"><span class="i18n-en">Open →</span><span class="i18n-ko">열기 →</span></div>
       </div>
     </a>

@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<script>
+(function(){
+  function cur(){ try{ return localStorage.getItem('theme') || (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark':'light'); }catch(e){ return 'dark'; } }
+  var t=cur(); window.__theme=t; document.documentElement.setAttribute('data-theme', t);
+  try{ document.documentElement.setAttribute('data-lang', (localStorage.getItem('lang')||'en')); }catch(e){ document.documentElement.setAttribute('data-lang','en'); }
+  window.addEventListener('storage', function(e){ if(e.key==='theme'){ var n=e.newValue||'dark'; window.__theme=n; document.documentElement.setAttribute('data-theme', n); if(window.__onTheme) window.__onTheme(n); } if(e.key==='lang'){ document.documentElement.setAttribute('data-lang', e.newValue||'en'); if(window.__onLang) window.__onLang(); } });
+})();
+</script>
+
+<title>Predictive Coding &amp; Free Energy — PRISM Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+  :root{
+    --void:#15181e; --panel:#1d212a; --panel-2:#171b22; --line:#2e343f;
+    --ink:#e6edf3; --muted:#8b949e;
+    --cool:#5eead4; --sharp:#ff6b5a; --warm-a:#ffc24b; --warm-b:#ff5a3c; --test:#a78bff; --blue:#6ea8ff;
+    --focus:#9cc7ff;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background: var(--void);
+    color:var(--ink); font-family:"Inter",system-ui,-apple-system,sans-serif; line-height:1.5;
+    -webkit-font-smoothing:antialiased; padding:24px 20px 48px;
+  }
+  .wrap{max-width:1120px;margin:0 auto}
+
+  .topbar{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+  .back{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--muted);text-decoration:none;
+    border:1px solid var(--line);padding:6px 12px;border-radius:20px;transition:.14s}
+  .back:hover{color:var(--cool);border-color:var(--cool)}
+
+  .eyebrow{font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--cool);margin:0 0 10px;display:flex;align-items:center;gap:10px}
+  .eyebrow::before{content:"";width:22px;height:1px;background:var(--cool);opacity:.7}
+  .title{font-family:"Space Grotesk",system-ui,sans-serif;font-weight:700;font-size:clamp(28px,4.6vw,46px);
+    line-height:1.02;margin:0 0 10px;letter-spacing:-.02em}
+  .title .thin{color:var(--muted);font-weight:500}
+  .subtitle{color:var(--muted);max-width:none;margin:0 0 26px;font-size:15px}
+  .subtitle b{color:var(--ink);font-weight:600}
+
+  .grid{display:grid;grid-template-columns:1.62fr 1fr;gap:18px;align-items:start}
+  @media (max-width:860px){ .grid{grid-template-columns:1fr} }
+
+  .card{background:linear-gradient(180deg,var(--panel) 0%,var(--panel-2) 100%);
+    border:1px solid var(--line);border-radius:16px;padding:16px}
+  .card + .card{margin-top:14px}
+  .card-h{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--muted);margin:0 0 12px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .card-h .hint{color:#3f7f76;letter-spacing:.02em;text-transform:none;font-size:11px}
+
+  .stage{padding:14px 12px 10px}
+  .canvas-hold{position:relative;width:100%}
+  canvas{display:block;width:100%;height:auto;border-radius:8px}
+  #column{height:322px}
+  #energy{height:150px}
+  #trace{height:158px}
+  .legend{display:flex;align-items:center;gap:14px;margin:10px 6px 2px;flex-wrap:wrap;font-family:"JetBrains Mono",monospace;
+    font-size:10.5px;color:var(--muted)}
+  .legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:middle}
+  .axis-cap{font-family:"JetBrains Mono",monospace;font-size:10.5px;color:var(--muted);
+    display:flex;justify-content:space-between;margin:2px 6px 0}
+
+  .ctl{margin-bottom:15px}
+  .ctl:last-child{margin-bottom:0}
+  .ctl-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px}
+  .ctl-name{font-size:13px;font-weight:500}
+  .ctl-name .sub{color:var(--muted);font-weight:400;font-size:12px}
+  .ctl-val{font-family:"JetBrains Mono",monospace;font-size:13px;color:var(--cool)}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:3px;
+    background:var(--line);outline:none;margin:6px 0 0}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;
+    background:var(--ink);border:2px solid var(--void);cursor:pointer;box-shadow:0 0 0 1px var(--line)}
+  input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--ink);
+    border:2px solid var(--void);cursor:pointer}
+  #p0{background:linear-gradient(90deg,#2b3a63 0%, var(--blue) 100%)}
+  #p2{background:linear-gradient(90deg,#3a2f18 0%, var(--warm-a) 100%)}
+
+  .btnrow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px}
+  .btnrow .wide{grid-column:1 / -1}
+  .btn{border:1px solid var(--line);background:var(--panel-2);color:var(--ink);font-family:"Inter",sans-serif;
+    font-size:13px;font-weight:500;padding:10px 8px;border-radius:9px;cursor:pointer;transition:.14s}
+  .btn:hover{border-color:#3a486e;background:#152238}
+  .btn:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+  .btn-primary{background:var(--cool);border-color:var(--cool);color:#04231f;font-weight:600}
+  .btn-primary:hover{filter:brightness(1.06)}
+  .noteline{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--muted);margin-top:9px;min-height:16px}
+  .noteline b{color:var(--cool)}
+
+  .ro-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);
+    border-radius:10px;overflow:hidden}
+  .ro{background:var(--panel);padding:10px 12px}
+  .ro .k{font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:.06em;color:var(--muted);text-transform:uppercase}
+  .ro .v{font-family:"JetBrains Mono",monospace;font-size:17px;margin-top:3px}
+  .ro .v.big{font-size:22px;color:var(--cool)}
+  .sync-tag{font-size:12px;padding:2px 8px;border-radius:20px;font-family:"Inter",sans-serif;font-weight:600}
+  .sync-tag.off{background:rgba(255,107,90,.14);color:var(--sharp)}
+  .sync-tag.part{background:rgba(255,194,75,.16);color:var(--warm-a)}
+  .sync-tag.on{background:rgba(94,234,212,.14);color:var(--cool)}
+
+  .try{margin-top:0}
+  .try ol{margin:0;padding-left:20px;color:var(--muted);font-size:13.5px}
+  .try li{margin-bottom:6px}
+  .try li b{color:var(--ink);font-weight:600}
+  .try li .kbd{font-family:"JetBrains Mono",monospace;color:var(--cool);font-size:12.5px}
+
+  .explain{margin-top:26px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media (max-width:860px){ .explain{grid-template-columns:1fr} }
+  .ex{border-top:2px solid var(--line);padding-top:12px}
+  .ex.a{border-color:var(--blue)} .ex.b{border-color:var(--test)} .ex.c{border-color:var(--sharp)}
+  .ex h4{font-family:"Space Grotesk",sans-serif;font-size:15px;margin:0 0 7px;font-weight:500}
+  .ex p{margin:0;font-size:13px;color:var(--muted)}
+  .ex code{font-family:"JetBrains Mono",monospace;color:var(--ink);font-size:12.5px;background:var(--panel);padding:1px 5px;border-radius:4px}
+
+  footer{margin-top:30px;color:var(--muted);font-size:12px;font-family:"JetBrains Mono",monospace;letter-spacing:.04em}
+  footer a{color:var(--cool);text-decoration:none}
+
+  html[data-theme="light"]{
+    --void:#ffffff; --panel:#f7f9fc; --panel-2:#eef2f8; --line:#e2e7ee;
+    --ink:#141b33; --muted:#5a6488;
+    --cool:#12a08d; --sharp:#e04a37; --warm-a:#c98a12; --warm-b:#cf4a24; --test:#6d4fe0; --blue:#2f6fd6; --focus:#2f6fd6;
+  }
+  html[data-theme="light"] body{ background: var(--void); }
+  html[data-theme="light"] .btn:hover{ border-color:#b9c4da; background:#e9eef7; }
+
+  html[data-lang="en"] .i18n-ko{ display:none !important; }
+  html[data-lang="ko"] .i18n-en{ display:none !important; }
+  .i18n-ko{ font-family:'Pretendard','Inter',sans-serif; word-break:keep-all; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar"><a class="back" href="index.html"><span class="i18n-en">← Playground</span><span class="i18n-ko">← 놀이터</span></a></div>
+  <p class="eyebrow"><span class="i18n-en">PRISM · Statistical-Mechanics Playground</span><span class="i18n-ko">PRISM · 통계역학 놀이터</span></p>
+  <h1 class="title"><span class="i18n-en">Predictive Coding &amp; Free Energy</span><span class="i18n-ko">예측 부호화와 자유 에너지</span><br><span class="thin"><span class="i18n-en">A hierarchy that perceives by minimizing precision-weighted prediction error</span><span class="i18n-ko">정밀도로 가중된 예측오차를 최소화하며 지각하는 위계 구조</span></span></h1>
+  <p class="subtitle">
+    <span class="i18n-en">The brain never sees the world directly — it <b>predicts</b> its sensory input from internal causes and only transmits the <b>error</b>. Inference is gradient descent on a <b>variational free energy</b> <code>F = ½ Σ Π·ε²</code>, and each error is weighted by its <b>precision Π</b>. Slide the precisions to feel perception tip between what the senses say and what the prior expects.</span><span class="i18n-ko">뇌는 세계를 직접 보지 않는다 — 내부 원인으로부터 감각 입력을 <b>예측</b>하고 <b>오차</b>만 전달한다. 추론은 <b>변분 자유 에너지</b> <code>F = ½ Σ Π·ε²</code>에 대한 경사 하강이며, 각 오차는 그 <b>정밀도 Π</b>로 가중된다. 정밀도를 움직여 지각이 감각과 사전 기대 사이에서 어떻게 기우는지 느껴보라.</span>
+  </p>
+
+  <div class="grid">
+    <!-- ===== LEFT ===== -->
+    <div>
+      <div class="card stage">
+        <div class="card-h"><span class="i18n-en">Hierarchy · predictions ↓ &nbsp; prediction errors ↑</span><span class="i18n-ko">위계 · 예측 ↓ &nbsp; 예측오차 ↑</span> <span class="hint" id="colHint">φ̇ = ξ_below − ξ_above</span></div>
+        <div class="canvas-hold"><canvas id="column"></canvas></div>
+        <div class="legend">
+          <span><i style="background:#6ea8ff"></i><span class="i18n-en">sensory x</span><span class="i18n-ko">감각 x</span></span>
+          <span><i style="background:#5eead4"></i><span class="i18n-en">belief φ₁ (feature)</span><span class="i18n-ko">믿음 φ₁ (특징)</span></span>
+          <span><i style="background:#a78bff"></i><span class="i18n-en">belief φ₂ (cause)</span><span class="i18n-ko">믿음 φ₂ (원인)</span></span>
+          <span><i style="background:#ffc24b"></i><span class="i18n-en">prior m</span><span class="i18n-ko">사전 m</span></span>
+          <span><i style="background:#ff6b5a"></i><span class="i18n-en">error unit ξ</span><span class="i18n-ko">오차 유닛 ξ</span></span>
+        </div>
+      </div>
+
+      <div class="card stage">
+        <div class="card-h"><span class="i18n-en">Free-energy landscape over φ₁</span><span class="i18n-ko">φ₁에 대한 자유 에너지 지형</span> <span class="hint"><span class="i18n-en">the belief rolls downhill</span><span class="i18n-ko">믿음이 골짜기로 굴러간다</span></span></div>
+        <div class="canvas-hold"><canvas id="energy"></canvas></div>
+      </div>
+
+      <div class="card stage">
+        <div class="card-h"><span class="i18n-en">Sensory input vs beliefs over time</span><span class="i18n-ko">시간에 따른 감각 입력 vs 믿음</span> <span class="hint" id="traceHint"></span></div>
+        <div class="canvas-hold"><canvas id="trace"></canvas></div>
+        <div class="axis-cap"><span><span class="i18n-en">past</span><span class="i18n-ko">과거</span></span><span><span class="i18n-en">time →</span><span class="i18n-ko">시간 →</span></span><span><span class="i18n-en">now</span><span class="i18n-ko">현재</span></span></div>
+      </div>
+    </div>
+
+    <!-- ===== RIGHT ===== -->
+    <div>
+      <div class="card">
+        <div class="card-h"><span class="i18n-en">Controls</span><span class="i18n-ko">제어판</span></div>
+
+        <div class="ctl">
+          <div class="ctl-top">
+            <span class="ctl-name"><span class="i18n-en">Sensory precision Π₀</span><span class="i18n-ko">감각 정밀도 Π₀</span> <span class="sub"><span class="i18n-en">trust in the senses</span><span class="i18n-ko">감각에 대한 신뢰</span></span></span>
+            <span class="ctl-val" id="p0V">4.0</span>
+          </div>
+          <input type="range" id="p0" min="0.1" max="12" step="0.1" value="4" aria-label="Sensory precision" />
+        </div>
+
+        <div class="ctl">
+          <div class="ctl-top">
+            <span class="ctl-name"><span class="i18n-en">Intermediate precision Π₁</span><span class="i18n-ko">중간 정밀도 Π₁</span> <span class="sub"><span class="i18n-en">feature ↔ cause link</span><span class="i18n-ko">특징 ↔ 원인 연결</span></span></span>
+            <span class="ctl-val" id="p1V">2.0</span>
+          </div>
+          <input type="range" id="p1" min="0.1" max="12" step="0.1" value="2" aria-label="Intermediate precision" />
+        </div>
+
+        <div class="ctl">
+          <div class="ctl-top">
+            <span class="ctl-name"><span class="i18n-en">Prior precision Π₂</span><span class="i18n-ko">사전 정밀도 Π₂</span> <span class="sub"><span class="i18n-en">strength of expectation</span><span class="i18n-ko">기대의 강도</span></span></span>
+            <span class="ctl-val" id="p2V">2.0</span>
+          </div>
+          <input type="range" id="p2" min="0.1" max="12" step="0.1" value="2" aria-label="Prior precision" />
+        </div>
+
+        <div class="ctl">
+          <div class="ctl-top">
+            <span class="ctl-name"><span class="i18n-en">Prior mean m</span><span class="i18n-ko">사전 평균 m</span> <span class="sub"><span class="i18n-en">what you expect</span><span class="i18n-ko">기대하는 값</span></span></span>
+            <span class="ctl-val" id="mV">0.00</span>
+          </div>
+          <input type="range" id="mprior" min="-3" max="3" step="0.05" value="0" aria-label="Prior mean" />
+        </div>
+
+        <div class="ctl">
+          <div class="ctl-top">
+            <span class="ctl-name"><span class="i18n-en">True cause v</span><span class="i18n-ko">참 원인 v</span> <span class="sub"><span class="i18n-en">the world</span><span class="i18n-ko">세계</span></span></span>
+            <span class="ctl-val" id="vV">1.50</span>
+          </div>
+          <input type="range" id="cause" min="-3" max="3" step="0.05" value="1.5" aria-label="True cause" />
+        </div>
+
+        <div class="ctl">
+          <div class="ctl-top">
+            <span class="ctl-name"><span class="i18n-en">World noise σ</span><span class="i18n-ko">세계 잡음 σ</span> <span class="sub"><span class="i18n-en">sampling spread of x</span><span class="i18n-ko">x의 표집 산포</span></span></span>
+            <span class="ctl-val" id="sV">0.25</span>
+          </div>
+          <input type="range" id="sigma" min="0" max="1.2" step="0.01" value="0.25" aria-label="World noise" />
+        </div>
+
+        <div class="btnrow">
+          <button class="btn btn-primary wide" id="run">▶ Run</button>
+          <button class="btn" id="sample"><span class="i18n-en">New sample</span><span class="i18n-ko">새 표본</span></button>
+          <button class="btn" id="surprise"><span class="i18n-en">⚡ Surprise</span><span class="i18n-ko">⚡ 놀람</span></button>
+          <button class="btn" id="stream"><span class="i18n-en">Stream: off</span><span class="i18n-ko">스트림: 끔</span></button>
+          <button class="btn" id="reset"><span class="i18n-en">Reset beliefs</span><span class="i18n-ko">믿음 초기화</span></button>
+        </div>
+        <div class="noteline" id="noteLine"><span class="i18n-en">Run, then raise Π₀ to pull the belief onto the data, or Π₂ to pull it onto the prior.</span><span class="i18n-ko">실행한 뒤 Π₀를 올리면 믿음이 데이터로, Π₂를 올리면 사전으로 끌려간다.</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-h"><span class="i18n-en">Measurements</span><span class="i18n-ko">측정값</span> <span id="stateTag" class="sync-tag part">Updating</span></div>
+        <div class="ro-grid">
+          <div class="ro"><div class="k"><span class="i18n-en">free energy F</span><span class="i18n-ko">자유 에너지 F</span></div><div class="v big" id="roF">–</div></div>
+          <div class="ro"><div class="k"><span class="i18n-en">total error Σξ²</span><span class="i18n-ko">총 오차 Σξ²</span></div><div class="v" id="roErr">–</div></div>
+          <div class="ro"><div class="k"><span class="i18n-en">belief φ₁</span><span class="i18n-ko">믿음 φ₁</span></div><div class="v" id="roF1">–</div></div>
+          <div class="ro"><div class="k"><span class="i18n-en">belief φ₂</span><span class="i18n-ko">믿음 φ₂</span></div><div class="v" id="roF2">–</div></div>
+          <div class="ro"><div class="k"><span class="i18n-en">sensory PE ξ₀</span><span class="i18n-ko">감각 오차 ξ₀</span></div><div class="v" id="roX0">–</div></div>
+          <div class="ro"><div class="k"><span class="i18n-en">posterior φ₁* (exact)</span><span class="i18n-ko">사후 φ₁* (정확)</span></div><div class="v" id="roPost">–</div></div>
+        </div>
+      </div>
+
+      <div class="card try">
+        <div class="card-h"><span class="i18n-en">Things to try</span><span class="i18n-ko">해볼 것들</span></div>
+        <ol>
+          <li><span class="i18n-en"><b>Precision-weighted percept:</b> set <span class="kbd">v</span> and <span class="kbd">m</span> far apart, then trade <span class="kbd">Π₀</span> against <span class="kbd">Π₂</span> — <span class="kbd">φ₁*</span> lands at the precision-weighted average.</span><span class="i18n-ko"><b>정밀도 가중 지각:</b> <span class="kbd">v</span>와 <span class="kbd">m</span>을 멀리 벌린 뒤 <span class="kbd">Π₀</span>와 <span class="kbd">Π₂</span>를 맞바꿔 보라 — <span class="kbd">φ₁*</span>가 정밀도 가중 평균에 놓인다.</span></li>
+          <li><span class="i18n-en"><b>Surprise:</b> hit <span class="kbd">⚡</span> and watch the error units flare, F spike, then the belief chase the new input down the bowl.</span><span class="i18n-ko"><b>놀람:</b> <span class="kbd">⚡</span>를 눌러 오차 유닛이 확 타오르고 F가 치솟은 뒤, 믿음이 새 입력을 따라 골짜기로 내려가는 것을 보라.</span></li>
+          <li><span class="i18n-en"><b>Strong prior illusion:</b> crank <span class="kbd">Π₂</span> high with low <span class="kbd">Π₀</span> — perception clamps to the expectation even when the data disagrees.</span><span class="i18n-ko"><b>강한 사전의 착시:</b> <span class="kbd">Π₀</span>는 낮추고 <span class="kbd">Π₂</span>를 크게 — 데이터가 달라도 지각이 기대에 고정된다.</span></li>
+          <li><span class="i18n-en"><b>Hierarchy:</b> lower <span class="kbd">Π₁</span> and the cause <span class="kbd">φ₂</span> decouples from the feature <span class="kbd">φ₁</span> — each level explains what it can.</span><span class="i18n-ko"><b>위계:</b> <span class="kbd">Π₁</span>을 낮추면 원인 <span class="kbd">φ₂</span>가 특징 <span class="kbd">φ₁</span>에서 분리된다 — 각 층이 설명할 수 있는 만큼 설명한다.</span></li>
+          <li><span class="i18n-en"><b>Stream:</b> turn Stream on to feed fresh noisy samples and watch beliefs filter the signal in real time.</span><span class="i18n-ko"><b>스트림:</b> 스트림을 켜서 잡음 섞인 새 표본을 계속 넣고, 믿음이 신호를 실시간으로 걸러내는 것을 보라.</span></li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <div class="explain">
+    <div class="ex a">
+      <h4><span class="i18n-en">Free energy = prediction error</span><span class="i18n-ko">자유 에너지 = 예측오차</span></h4>
+      <p><span class="i18n-en">Under a Gaussian model the variational free energy is <code>F = ½ Σᵢ Πᵢ εᵢ²</code> (plus constants), where <code>εᵢ</code> is a prediction error and <code>Πᵢ</code> its precision. Perception is gradient descent <code>φ̇ = −∂F/∂φ</code>, so each belief moves until the error it sends up balances the error it receives from below: <code>ξ₀ = ξ₁ = ξ₂</code>.</span><span class="i18n-ko">가우시안 모형에서 변분 자유 에너지는 <code>F = ½ Σᵢ Πᵢ εᵢ²</code>(상수 제외)이며, <code>εᵢ</code>는 예측오차, <code>Πᵢ</code>는 그 정밀도다. 지각은 경사 하강 <code>φ̇ = −∂F/∂φ</code>이므로, 각 믿음은 위로 보내는 오차와 아래에서 받는 오차가 균형을 이룰 때까지 이동한다: <code>ξ₀ = ξ₁ = ξ₂</code>.</span></p>
+    </div>
+    <div class="ex b">
+      <h4><span class="i18n-en">Precision = gain / attention</span><span class="i18n-ko">정밀도 = 이득 / 주의</span></h4>
+      <p><span class="i18n-en">The stable belief is a <code>Π</code>-weighted average of sensory data and prior: <code>φ₁* = (Π₀x + Π₁φ₂)/(Π₀+Π₁)</code>. Precision is exactly the synaptic <b>gain</b> on each error channel — the computational stand-in for attention. Turn it up and that channel dominates the percept.</span><span class="i18n-ko">안정된 믿음은 감각 데이터와 사전의 <code>Π</code>-가중 평균이다: <code>φ₁* = (Π₀x + Π₁φ₂)/(Π₀+Π₁)</code>. 정밀도는 각 오차 채널의 시냅스 <b>이득</b>에 정확히 대응하며, 주의의 계산적 대응물이다. 이를 키우면 그 채널이 지각을 지배한다.</span></p>
+    </div>
+    <div class="ex c">
+      <h4><span class="i18n-en">The bridge to biomedical data</span><span class="i18n-ko">biomedical 데이터로의 다리</span></h4>
+      <p><span class="i18n-en">Prediction errors are measurable: the EEG <b>mismatch negativity</b> and P300 are error signals, and cortical microcircuits carry the up/down messages here. Aberrant <b>precision</b> is a leading account of hallucinations and autism. A predictive-coding hierarchy is a biological <b>VAE</b> — the generative-model view of representation learning behind PRISM's neural-signal work.</span><span class="i18n-ko">예측오차는 측정 가능하다: EEG의 <b>불일치 음성전위(MMN)</b>와 P300은 오차 신호이며, 대뇌 미세회로가 여기의 상·하향 메시지를 나른다. 비정상적 <b>정밀도</b>는 환각과 자폐의 유력한 설명이다. 예측 부호화 위계는 생물학적 <b>VAE</b>다 — PRISM의 신경 신호 연구가 기반하는, 표현 학습의 생성모형적 관점이다.</span></p>
+    </div>
+  </div>
+
+  <footer><span class="i18n-en">PRISM Lab · prototype · </span><span class="i18n-ko">PRISM Lab · 프로토타입 · </span><a href="https://sswu-prism-lab.github.io" target="_blank" rel="noopener">sswu-prism-lab.github.io</a></footer>
+</div>
+
+<script>
+(() => {
+  "use strict";
+  function L(en,ko){ return document.documentElement.getAttribute('data-lang')==='ko' ? ko : en; }
+
+  const PAL={
+    dark:{ ink:"#e7ecff", muted:"#8493b8", line:"#26314f", grid:a=>`rgba(38,49,79,${a})`, cool:"#5eead4", sharp:"#ff6b5a", warmA:"#ffc24b", test:"#a78bff", blue:"#6ea8ff", panel:"#111a30" },
+    light:{ ink:"#141b33", muted:"#5a6488", line:"#d9e0ec", grid:a=>`rgba(150,162,190,${a})`, cool:"#12a08d", sharp:"#e04a37", warmA:"#c98a12", test:"#6d4fe0", blue:"#2f6fd6", panel:"#ffffff" }
+  };
+  let C = PAL[(window.__theme==='light')?'light':'dark'];
+  const clamp=(x,a,b)=> x<a?a : x>b?b : x;
+  const VR = 3.6;                 // half value-range for plots
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  const S = {
+    P0:4, P1:2, P2:2, m:0, v:1.5, sigma:0.25,
+    x:1.5, f1:0, f2:0,
+    running:false, streaming:false, frame:0,
+    F:0, e0:0, e1:0, e2:0,
+    trace:[]                       // {x,f1,f2}
+  };
+
+  // gaussian
+  let spare=null;
+  function gauss(){
+    if(spare!==null){const v=spare;spare=null;return v;}
+    let u=0; do{u=Math.random();}while(u<=1e-12);
+    const w=Math.sqrt(-2*Math.log(u)), a=2*Math.PI*Math.random();
+    spare=w*Math.sin(a); return w*Math.cos(a);
+  }
+  function newSample(dev){
+    S.x = clamp(S.v + (dev!==undefined?dev:S.sigma*gauss()), -VR, VR);
+  }
+
+  // ---- exact fixed point (linear, g=identity) ----
+  function fixedPoint(){
+    // (P0+P1) f1 - P1 f2 = P0 x
+    // -P1 f1 + (P1+P2) f2 = P2 m
+    const a=S.P0+S.P1, b=-S.P1, c=-S.P1, d=S.P1+S.P2;
+    const e=S.P0*S.x, f=S.P2*S.m;
+    const det=a*d-b*c;
+    return { f1:(e*d-b*f)/det, f2:(a*f-c*e)/det };
+  }
+
+  // ---- one inference step (gradient descent on F) ----
+  function stepInfer(dt){
+    S.e0 = S.x - S.f1;
+    S.e1 = S.f1 - S.f2;
+    S.e2 = S.f2 - S.m;
+    const x0=S.P0*S.e0, x1=S.P1*S.e1, x2=S.P2*S.e2;   // precision-weighted errors ξ
+    const df1 = x0 - x1;
+    const df2 = x1 - x2;
+    S.f1 += dt*df1;
+    S.f2 += dt*df2;
+  }
+  function recompute(){
+    S.e0 = S.x - S.f1; S.e1 = S.f1 - S.f2; S.e2 = S.f2 - S.m;
+    const TWO_PI=2*Math.PI;
+    S.F = 0.5*(S.P0*S.e0*S.e0 + S.P1*S.e1*S.e1 + S.P2*S.e2*S.e2)
+        + 0.5*(Math.log(TWO_PI/S.P0)+Math.log(TWO_PI/S.P1)+Math.log(TWO_PI/S.P2));
+  }
+
+  // ---------- canvases ----------
+  const cvC=document.getElementById("column"), cxC=cvC.getContext("2d");
+  const cvE=document.getElementById("energy"), cxE=cvE.getContext("2d");
+  const cvT=document.getElementById("trace"),  cxT=cvT.getContext("2d");
+  function fit(cv,ctx){
+    const dpr=Math.min(window.devicePixelRatio||1,2);
+    const w=cv.clientWidth, h=cv.clientHeight;
+    cv.width=Math.round(w*dpr); cv.height=Math.round(h*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0); return {w,h};
+  }
+
+  function roundRect(ctx,x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r);
+    ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+
+  // ---------- hierarchy diagram ----------
+  function drawColumn(){
+    const {w,h}=fit(cvC,cxC);
+    cxC.clearRect(0,0,w,h);
+    const cx=w*0.5;
+    const yPrior=26, yF2=h*0.34, yF1=h*0.66, yX=h-26;
+    const rad=17;
+    const predX=cx-72, errX=cx+72;
+
+    function node(y,val,col,label){
+      cxC.save();
+      cxC.fillStyle=C.panel; cxC.strokeStyle=col; cxC.lineWidth=2.4;
+      cxC.beginPath(); cxC.arc(cx,y,rad,0,2*Math.PI); cxC.fill(); cxC.stroke();
+      cxC.fillStyle=col; cxC.font='600 12px "JetBrains Mono", monospace'; cxC.textAlign="center"; cxC.textBaseline="middle";
+      cxC.fillText(val.toFixed(2), cx, y);
+      cxC.fillStyle=C.muted; cxC.font='10px "JetBrains Mono", monospace'; cxC.textAlign="left";
+      cxC.fillText(label, cx+rad+8, y);
+      cxC.restore();
+    }
+    function priorSquare(y,val){
+      cxC.save();
+      cxC.fillStyle=C.panel; cxC.strokeStyle=C.warmA; cxC.lineWidth=2.2;
+      roundRect(cxC,cx-rad,y-rad+3,rad*2,rad*2-6,5); cxC.fill(); cxC.stroke();
+      cxC.fillStyle=C.warmA; cxC.font='600 12px "JetBrains Mono", monospace'; cxC.textAlign="center"; cxC.textBaseline="middle";
+      cxC.fillText(val.toFixed(2), cx, y);
+      cxC.fillStyle=C.muted; cxC.font='10px "JetBrains Mono", monospace'; cxC.textAlign="left";
+      cxC.fillText(L("prior m","사전 m"), cx+rad+8, y);
+      cxC.restore();
+    }
+    function sensorSquare(y,val){
+      cxC.save();
+      cxC.fillStyle=C.panel; cxC.strokeStyle=C.blue; cxC.lineWidth=2.2;
+      roundRect(cxC,cx-rad,y-rad+3,rad*2,rad*2-6,5); cxC.fill(); cxC.stroke();
+      cxC.fillStyle=C.blue; cxC.font='600 12px "JetBrains Mono", monospace'; cxC.textAlign="center"; cxC.textBaseline="middle";
+      cxC.fillText(val.toFixed(2), cx, y);
+      cxC.fillStyle=C.muted; cxC.font='10px "JetBrains Mono", monospace'; cxC.textAlign="left";
+      cxC.fillText(L("sensory x","감각 x"), cx+rad+8, y);
+      cxC.restore();
+    }
+
+    // down prediction arrow (left) and up error arrow (right) between y0 and y1
+    function link(y0,y1,xi){
+      // prediction (top-down) — muted, on the left
+      cxC.strokeStyle=C.grid(1); cxC.lineWidth=1.4;
+      cxC.beginPath(); cxC.moveTo(predX, y0+rad-4); cxC.lineTo(predX, y1-rad+4); cxC.stroke();
+      // arrowhead down
+      cxC.fillStyle=C.muted;
+      cxC.beginPath(); cxC.moveTo(predX,y1-rad+4); cxC.lineTo(predX-4,y1-rad-3); cxC.lineTo(predX+4,y1-rad-3); cxC.closePath(); cxC.fill();
+      // error unit (bottom-up) — on the right, size ∝ |ξ|
+      const mag=Math.min(Math.abs(xi),6);
+      const er=3+mag*2.1;
+      const col = xi>=0 ? C.sharp : C.blue;
+      const my=(y0+y1)/2;
+      cxC.globalAlpha=0.9;
+      cxC.fillStyle=col; cxC.beginPath(); cxC.arc(errX,my,er,0,2*Math.PI); cxC.fill();
+      cxC.globalAlpha=1;
+      cxC.strokeStyle=col; cxC.lineWidth=1.4;
+      cxC.beginPath(); cxC.moveTo(errX, y1-rad+4); cxC.lineTo(errX, y0+rad-4); cxC.stroke();
+      cxC.beginPath(); cxC.moveTo(errX,y0+rad-4); cxC.lineTo(errX-4,y0+rad+3); cxC.lineTo(errX+4,y0+rad+3); cxC.closePath(); cxC.fill();
+      // xi label
+      cxC.fillStyle=col; cxC.font='9.5px "JetBrains Mono", monospace'; cxC.textAlign="center"; cxC.textBaseline="middle";
+      cxC.fillText(xi.toFixed(1), errX+er+11, my);
+    }
+
+    const x0=S.P0*S.e0, x1=S.P1*S.e1, x2=S.P2*S.e2;
+    link(yPrior,yF2,x2);
+    link(yF2,yF1,x1);
+    link(yF1,yX,x0);
+
+    // side captions
+    cxC.fillStyle=C.muted; cxC.font='9px "JetBrains Mono", monospace';
+    cxC.textAlign="center"; cxC.textBaseline="bottom";
+    cxC.save(); cxC.translate(predX-14,h*0.5); cxC.rotate(-Math.PI/2);
+    cxC.fillText(L("predictions ↓","예측 ↓"),0,0); cxC.restore();
+    cxC.textBaseline="top";
+    cxC.save(); cxC.translate(errX+34,h*0.5); cxC.rotate(-Math.PI/2);
+    cxC.fillText(L("errors ↑","오차 ↑"),0,0); cxC.restore();
+
+    priorSquare(yPrior,S.m);
+    node(yF2,S.f2,C.test,L("cause φ₂","원인 φ₂"));
+    node(yF1,S.f1,C.cool,L("feature φ₁","특징 φ₁"));
+    sensorSquare(yX,S.x);
+  }
+
+  // ---------- free-energy bowl over f1 (f2,x,m fixed) ----------
+  function Ff1(f1){
+    const e0=S.x-f1, e1=f1-S.f2;
+    return 0.5*(S.P0*e0*e0 + S.P1*e1*e1);
+  }
+  function drawEnergy(){
+    const {w,h}=fit(cvE,cxE);
+    cxE.clearRect(0,0,w,h);
+    const pl=34,pr=14,pt=14,pb=22;
+    const X=(f1)=> pl + (f1+VR)/(2*VR)*(w-pl-pr);
+    // sample F over range for auto-scale
+    let fmax=1e-6;
+    const N=160, xs=[], fs=[];
+    for(let i=0;i<=N;i++){ const f1=-VR+ i/N*2*VR; const F=Ff1(f1); xs.push(f1); fs.push(F); if(F>fmax)fmax=F; }
+    const Y=(F)=> h-pb - Math.min(F,fmax)/fmax*(h-pt-pb);
+
+    // axis
+    cxE.strokeStyle=C.grid(.7); cxE.lineWidth=1;
+    cxE.beginPath(); cxE.moveTo(pl,h-pb); cxE.lineTo(w-pr,h-pb); cxE.stroke();
+    cxE.fillStyle=C.muted; cxE.font='10px "JetBrains Mono", monospace';
+    cxE.textAlign="center"; cxE.textBaseline="top";
+    cxE.fillText("φ₁ = "+(-VR).toFixed(0), pl, h-pb+4);
+    cxE.fillText("0", X(0), h-pb+4);
+    cxE.fillText("+"+VR.toFixed(0), w-pr, h-pb+4);
+    cxE.save(); cxE.translate(11,(h-pb+pt)/2); cxE.rotate(-Math.PI/2);
+    cxE.textAlign="center"; cxE.textBaseline="middle"; cxE.fillText("F(φ₁)",0,0); cxE.restore();
+
+    // parabola fill + line
+    cxE.beginPath();
+    for(let i=0;i<=N;i++){ const px=X(xs[i]), py=Y(fs[i]); if(i===0)cxE.moveTo(px,py); else cxE.lineTo(px,py); }
+    cxE.strokeStyle=C.cool; cxE.lineWidth=2; cxE.stroke();
+    cxE.lineTo(X(VR),h-pb); cxE.lineTo(X(-VR),h-pb); cxE.closePath();
+    cxE.fillStyle=(C===PAL.dark)?"rgba(94,234,212,.07)":"rgba(18,160,141,.09)"; cxE.fill();
+
+    // vertex (optimum given current f2)
+    const f1opt=(S.P0*S.x+S.P1*S.f2)/(S.P0+S.P1);
+    cxE.strokeStyle=C.grid(1); cxE.setLineDash([3,3]); cxE.lineWidth=1;
+    cxE.beginPath(); cxE.moveTo(X(f1opt),pt); cxE.lineTo(X(f1opt),h-pb); cxE.stroke(); cxE.setLineDash([]);
+
+    // markers: x (data) and m (prior) ticks on axis
+    cxE.fillStyle=C.blue; cxE.beginPath(); cxE.arc(X(clamp(S.x,-VR,VR)),h-pb,3,0,2*Math.PI); cxE.fill();
+    cxE.fillStyle=C.warmA; cxE.beginPath(); cxE.arc(X(clamp(S.m,-VR,VR)),h-pb,3,0,2*Math.PI); cxE.fill();
+
+    // rolling ball = current belief
+    const bx=X(clamp(S.f1,-VR,VR)), by=Y(Ff1(clamp(S.f1,-VR,VR)));
+    cxE.fillStyle=C.cool; cxE.shadowColor=C.cool; cxE.shadowBlur=9;
+    cxE.beginPath(); cxE.arc(bx,by,5,0,2*Math.PI); cxE.fill(); cxE.shadowBlur=0;
+  }
+
+  // ---------- time trace ----------
+  function drawTrace(){
+    const {w,h}=fit(cvT,cxT);
+    cxT.clearRect(0,0,w,h);
+    const pl=8,pr=8,pt=8,pb=6;
+    const Y=(val)=> pt + (VR-clamp(val,-VR,VR))/(2*VR)*(h-pt-pb);
+    // zero line
+    cxT.strokeStyle=C.grid(.7); cxT.lineWidth=1;
+    cxT.beginPath(); cxT.moveTo(pl,Y(0)); cxT.lineTo(w-pr,Y(0)); cxT.stroke();
+    const tr=S.trace, n=tr.length; if(n<2){ return; }
+    const X=(i)=> pl + i/(Math.max(n-1,1))*(w-pl-pr);
+    function line(key,col,wid){
+      cxT.strokeStyle=col; cxT.lineWidth=wid; cxT.beginPath();
+      for(let i=0;i<n;i++){ const px=X(i), py=Y(tr[i][key]); if(i===0)cxT.moveTo(px,py); else cxT.lineTo(px,py); }
+      cxT.stroke();
+    }
+    // x as faint dots/steps
+    cxT.strokeStyle=C.blue; cxT.globalAlpha=.55; cxT.lineWidth=1.2; cxT.beginPath();
+    for(let i=0;i<n;i++){ const px=X(i), py=Y(tr[i].x); if(i===0)cxT.moveTo(px,py); else cxT.lineTo(px,py); }
+    cxT.stroke(); cxT.globalAlpha=1;
+    line('f2',C.test,1.8);
+    line('f1',C.cool,2.4);
+  }
+
+  function drawAll(){ recompute(); drawColumn(); drawEnergy(); drawTrace(); updateReadouts(); }
+
+  // ---------- readouts ----------
+  function updateReadouts(){
+    document.getElementById("roF").textContent=S.F.toFixed(2);
+    const x0=S.P0*S.e0, x1=S.P1*S.e1, x2=S.P2*S.e2;
+    const tot=x0*x0+x1*x1+x2*x2;
+    document.getElementById("roErr").textContent=tot.toFixed(2);
+    document.getElementById("roF1").textContent=S.f1.toFixed(2);
+    document.getElementById("roF2").textContent=S.f2.toFixed(2);
+    document.getElementById("roX0").textContent=x0.toFixed(2);
+    const fp=fixedPoint();
+    document.getElementById("roPost").textContent=fp.f1.toFixed(2);
+    const tag=document.getElementById("stateTag");
+    const gap=Math.abs(S.f1-fp.f1)+Math.abs(S.f2-fp.f2);
+    if(gap<0.02){ tag.textContent=L("Converged","수렴"); tag.className="sync-tag on"; }
+    else if(gap<0.4){ tag.textContent=L("Settling","안정화 중"); tag.className="sync-tag part"; }
+    else { tag.textContent=L("Updating","갱신 중"); tag.className="sync-tag off"; }
+  }
+
+  window.__onTheme=t=>{ C=PAL[t==='light'?'light':'dark']; drawAll(); };
+  window.__onLang=()=>{ syncRunLabel(); drawAll(); };
+  function syncRunLabel(){ document.getElementById("run").textContent = S.running ? L("❚❚ Pause","❚❚ 일시정지") : L("▶ Run","▶ 실행");
+    document.getElementById("stream").textContent = S.streaming ? L("Stream: on","스트림: 켬") : L("Stream: off","스트림: 끔"); }
+
+  // ---------- loop ----------
+  let raf=null;
+  function loop(){
+    if(!S.running){ raf=null; return; }
+    S.frame++;
+    for(let k=0;k<7;k++) stepInfer(0.10);       // several inference steps / frame
+    if(S.streaming && S.frame%42===0) newSample();
+    S.trace.push({x:S.x,f1:S.f1,f2:S.f2}); if(S.trace.length>150) S.trace.shift();
+    drawAll();
+    raf=requestAnimationFrame(loop);
+  }
+  function setRunning(on){
+    S.running=on; syncRunLabel();
+    if(on && !raf) raf=requestAnimationFrame(loop);
+    else if(!on) drawAll();
+  }
+
+  // ---------- controls ----------
+  const bind=(id,valId,fmt,fn)=>{
+    const el=document.getElementById(id);
+    el.addEventListener("input",()=>{ const v=parseFloat(el.value); fn(v);
+      if(valId) document.getElementById(valId).textContent=fmt(v); if(!S.running) drawAll(); });
+  };
+  bind("p0","p0V",v=>v.toFixed(1),v=>{S.P0=v;});
+  bind("p1","p1V",v=>v.toFixed(1),v=>{S.P1=v;});
+  bind("p2","p2V",v=>v.toFixed(1),v=>{S.P2=v;});
+  bind("mprior","mV",v=>v.toFixed(2),v=>{S.m=v;});
+  bind("cause","vV",v=>v.toFixed(2),v=>{S.v=v; newSample();});
+  bind("sigma","sV",v=>v.toFixed(2),v=>{S.sigma=v;});
+
+  document.getElementById("run").onclick=()=>setRunning(!S.running);
+  document.getElementById("sample").onclick=()=>{ newSample(); if(!S.running){ S.trace.push({x:S.x,f1:S.f1,f2:S.f2}); if(S.trace.length>150)S.trace.shift(); drawAll(); } };
+  document.getElementById("surprise").onclick=()=>{
+    const dir = (S.x>=S.m)? 1 : -1;
+    newSample(dir*(2.4+Math.random()*0.6));
+    document.getElementById("noteLine").innerHTML=L(
+      "A large sensory <b>surprise</b> — errors flare and F spikes until the belief catches up.",
+      "큰 감각적 <b>놀람</b> — 오차가 확 타오르고 믿음이 따라잡을 때까지 F가 치솟는다.");
+    if(!S.running) setRunning(true);
+  };
+  document.getElementById("stream").onclick=()=>{ S.streaming=!S.streaming; syncRunLabel(); if(S.streaming && !S.running) setRunning(true); };
+  document.getElementById("reset").onclick=()=>{ S.f1=0; S.f2=0; S.trace=[]; drawAll(); };
+
+  window.addEventListener("resize",()=>{ clearTimeout(window.__rt); window.__rt=setTimeout(drawAll,80); });
+
+  // ---------- init ----------
+  document.getElementById("traceHint").textContent = "";
+  newSample(0);                 // start x exactly at v
+  drawAll();
+  syncRunLabel();
+  if(!reduceMotion) setRunning(true);
+})();
+</script>
+</body>
+</html>
