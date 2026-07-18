@@ -71,6 +71,7 @@
   .c-pc{border-top-color:#c4b5fd} .c-ddm{border-top-color:#5ed0c0}
   a.c-pc:hover{border-color:#c4b5fd} a.c-ddm:hover{border-color:#5ed0c0}
   .c-node{border-top-color:#7dd3fc} a.c-node:hover{border-color:#7dd3fc}
+  a.c-diff:hover{border-color:#6ea8ff} a.c-ib:hover{border-color:#6ea8ff} a.c-grok:hover{border-color:#5eead4}
 
   .glyph{height:98px;display:flex;align-items:center;justify-content:center;
     background:var(--panel-2);border-bottom:1px solid var(--line)}
@@ -157,12 +158,11 @@
     Move a slider to feel phase transitions, free energy, and synchronization first-hand. Click a card to enter.</span><span class="i18n-ko">물리적 직관과 학습 알고리즘을 잇는 <b>인터랙티브 데모</b> 모음입니다.
     슬라이더를 움직여 상전이, 자유 에너지, 동기화를 직접 느껴보세요. 카드를 클릭해 들어가세요.</span>
   </p>
-  <h2 class="section-h first"><span class="i18n-en">Physics-inspired Representation Learning</span><span class="i18n-ko">물리학 기반 표현 학습</span> <span class="n"><span class="i18n-en">14 live · 5 soon</span><span class="i18n-ko">14개 공개 · 5개 준비 중</span></span></h2>
+  <h2 class="section-h first"><span class="i18n-en">Physics-inspired Representation Learning</span><span class="i18n-ko">물리학 기반 표현 학습</span> <span class="n"><span class="i18n-en">17 live · 2 soon</span><span class="i18n-ko">17개 공개 · 2개 준비 중</span></span></h2>
   <p class="section-sub"><span class="i18n-en">Statistical-mechanics intuition behind representation and learning — feel phase transitions, free energy, and synchronization first-hand.</span><span class="i18n-ko">표현과 학습의 이면에 있는 통계역학적 직관 — 상전이, 자유 에너지, 동기화를 직접 느껴보세요.</span></p>
 
   <div class="deck collapsed" id="deckPhysics">
 
-    <!-- ===== ACTIVE: logo studio ===== -->
     <a class="card-demo c-logo" href="logo-studio.html">
       <div class="glyph">
         <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -196,7 +196,6 @@
       </div>
     </a>
 
-    <!-- ===== ACTIVE: flat minima ===== -->
     <a class="card-demo c-flat" href="flat-minima-playground.html">
       <div class="glyph">
         <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -213,7 +212,6 @@
       </div>
     </a>
 
-    <!-- ===== ACTIVE: Kuramoto ===== -->
     <a class="card-demo c-kura" href="kuramoto-playground.html">
       <div class="glyph">
         <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -243,7 +241,6 @@
       </div>
     </a>
 
-    <!-- ===== ACTIVE: Ising ===== -->
     <a class="card-demo c-ising" href="ising-inverse-ising.html">
       <div class="glyph">
         <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -262,7 +259,6 @@
       </div>
     </a>
 
-    <!-- ===== ACTIVE: Hopfield → Attention ===== -->
     <a class="card-demo c-hop" href="hopfield-attention.html">
       <div class="glyph">
         <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -284,7 +280,6 @@
       </div>
     </a>
 
-    <!-- ===== ACTIVE: Marchenko–Pastur ===== -->
     <a class="card-demo c-mp" href="marchenko-pastur.html">
       <div class="glyph">
         <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -305,7 +300,6 @@
       </div>
     </a>
 
-    <!-- ===== ACTIVE: EEG rhythms ===== -->
     <a class="card-demo c-eeg" href="eeg-rhythms.html">
       <div class="glyph">
         <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -322,7 +316,6 @@
       </div>
     </a>
 
-    <!-- ===== ACTIVE: BOLD / HRF ===== -->
     <a class="card-demo c-bold" href="bold-hrf.html">
       <div class="glyph">
         <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -341,7 +334,6 @@
       </div>
     </a>
 
-    <!-- ===== ACTIVE: Connectivity → graph ===== -->
     <a class="card-demo c-conn" href="connectivity-graph.html">
       <div class="glyph">
         <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -368,7 +360,7 @@
       </div>
     </a>
 
-<a class="card-demo c-elbo" href="variational-free-energy.html">
+    <a class="card-demo c-elbo" href="variational-free-energy.html">
       <div class="glyph">
         <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <path d="M34,16 L70,32 L70,48 L34,64 Z" fill="#ffc24b" fill-opacity="0.22" stroke="#ffc24b" stroke-width="1.4"></path>
@@ -386,7 +378,7 @@
       </div>
     </a>
 
-<a class="card-demo c-perc" href="perceptron-capacity.html">
+    <a class="card-demo c-perc" href="perceptron-capacity.html">
       <div class="glyph">
         <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <line x1="74" y1="12" x2="126" y2="68" stroke="#d16ba5" stroke-width="2.2" stroke-linecap="round"></line>
@@ -406,7 +398,6 @@
       </div>
     </a>
 
-    <!-- ===== ACTIVE: Predictive Coding ===== -->
     <a class="card-demo c-pc" href="predictive-coding.html">
       <div class="glyph">
         <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -430,7 +421,6 @@
       </div>
     </a>
 
-    <!-- ===== ACTIVE: Drift-Diffusion ===== -->
     <a class="card-demo c-ddm" href="drift-diffusion.html">
       <div class="glyph">
         <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -450,7 +440,6 @@
       </div>
     </a>
 
-    <!-- ===== ACTIVE: Neural ODE ===== -->
     <a class="card-demo c-node" href="neural-ode.html">
       <div class="glyph">
         <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -473,8 +462,7 @@
       </div>
     </a>
 
-    <!-- ===== SOON: Diffusion & Score ===== -->
-    <div class="card-demo c-diff soon">
+    <a class="card-demo c-diff" href="diffusion-score.html">
       <div class="glyph">
         <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <g fill="#6ea8ff" fill-opacity="0.75">
@@ -492,11 +480,11 @@
         <div class="tags"><span><span class="i18n-en">Generative</span><span class="i18n-ko">생성</span></span><span><span class="i18n-en">Langevin</span><span class="i18n-ko">Langevin</span></span></div>
         <h3><span class="i18n-en">Diffusion &amp; Score</span><span class="i18n-ko">확산 &amp; 스코어</span></h3>
         <p><span class="i18n-en">Denoising diffusion as annealed Langevin sampling: learn the score, then walk noise back into data. Where physics sampling meets generative models.</span><span class="i18n-ko">어닐링된 Langevin 샘플링으로서의 노이즈 제거 확산: 스코어를 학습한 뒤, 잡음을 데이터로 되돌립니다. 물리 샘플링과 생성 모델이 만나는 지점입니다.</span></p>
-        <div class="go"><span class="i18n-en">Coming soon</span><span class="i18n-ko">준비 중</span></div>
+        <div class="go"><span class="i18n-en">Open →</span><span class="i18n-ko">열기 →</span></div>
       </div>
-    </div>
+    </a>
 
-    <div class="card-demo c-ib soon">
+    <a class="card-demo c-ib" href="information-bottleneck.html">
       <div class="glyph">
         <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <g fill="#6ea8ff" fill-opacity="0.8"><circle cx="40" cy="26" r="2.4"></circle><circle cx="30" cy="44" r="2.4"></circle><circle cx="48" cy="54" r="2.4"></circle><circle cx="36" cy="34" r="2.4"></circle></g>
@@ -510,9 +498,26 @@
         <div class="tags"><span><span class="i18n-en">Information</span><span class="i18n-ko">정보</span></span><span><span class="i18n-en">Compression</span><span class="i18n-ko">압축</span></span></div>
         <h3><span class="i18n-en">Information Bottleneck</span><span class="i18n-ko">정보 병목</span></h3>
         <p><span class="i18n-en">Squeeze a representation to keep only what predicts the target — trace the compression–prediction tradeoff and the information-plane curve.</span><span class="i18n-ko">표적을 예측하는 정보만 남기도록 표현을 압축합니다 — 압축–예측 트레이드오프와 정보 평면(information plane) 곡선을 따라가 보세요.</span></p>
-        <div class="go"><span class="i18n-en">Coming soon</span><span class="i18n-ko">준비 중</span></div>
+        <div class="go"><span class="i18n-en">Open →</span><span class="i18n-ko">열기 →</span></div>
       </div>
-    </div>
+    </a>
+
+    <a class="card-demo c-grok" href="grokking.html">
+      <div class="glyph">
+        <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <line x1="24" y1="64" x2="184" y2="64" stroke="#33415e" stroke-width="1"></line>
+          <path d="M28,30 C60,30 66,30 92,30 C110,30 116,30 156,30" stroke="#ff6b5a" stroke-width="2" fill="none" opacity=".85"></path>
+          <path d="M28,60 C70,60 92,60 104,58 C120,55 122,20 140,18 C160,16 172,16 182,16" stroke="#5eead4" stroke-width="2.4" fill="none"></path>
+          <line x1="112" y1="12" x2="112" y2="66" stroke="#8b949e" stroke-width="1" stroke-dasharray="3 3" opacity=".5"></line>
+        </svg>
+      </div>
+      <div class="body">
+        <div class="tags"><span><span class="i18n-en">Phase transition</span><span class="i18n-ko">상전이</span></span><span><span class="i18n-en">Delayed</span><span class="i18n-ko">지연 일반화</span></span></div>
+        <h3><span class="i18n-en">Grokking / Learning Transitions</span><span class="i18n-ko">그로킹 / 학습 상전이</span></h3>
+        <p><span class="i18n-en">Train long past perfect memorization and watch test accuracy suddenly jump — generalization arriving as a delayed phase transition.</span><span class="i18n-ko">완벽한 암기를 한참 지나서까지 학습하면 테스트 정확도가 갑자기 뛰어오르는 것을 지켜보세요 — 지연된 상전이로서 도착하는 일반화입니다.</span></p>
+        <div class="go"><span class="i18n-en">Open →</span><span class="i18n-ko">열기 →</span></div>
+      </div>
+    </a>
 
     <div class="card-demo c-rg soon">
       <div class="glyph">
@@ -553,35 +558,16 @@
       </div>
     </div>
 
-    <div class="card-demo c-grok soon">
-      <div class="glyph">
-        <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <line x1="24" y1="64" x2="184" y2="64" stroke="#33415e" stroke-width="1"></line>
-          <path d="M28,30 C60,30 66,30 92,30 C110,30 116,30 156,30" stroke="#ff6b5a" stroke-width="2" fill="none" opacity=".85"></path>
-          <path d="M28,60 C70,60 92,60 104,58 C120,55 122,20 140,18 C160,16 172,16 182,16" stroke="#5eead4" stroke-width="2.4" fill="none"></path>
-          <line x1="112" y1="12" x2="112" y2="66" stroke="#8b949e" stroke-width="1" stroke-dasharray="3 3" opacity=".5"></line>
-        </svg>
-      </div>
-      <div class="body">
-        <div class="tags"><span><span class="i18n-en">Phase transition</span><span class="i18n-ko">상전이</span></span><span><span class="i18n-en">Delayed</span><span class="i18n-ko">지연 일반화</span></span></div>
-        <h3><span class="i18n-en">Grokking / Learning Transitions</span><span class="i18n-ko">그로킹 / 학습 상전이</span></h3>
-        <p><span class="i18n-en">Train long past perfect memorization and watch test accuracy suddenly jump — generalization arriving as a delayed phase transition.</span><span class="i18n-ko">완벽한 암기를 한참 지나서까지 학습하면 테스트 정확도가 갑자기 뛰어오르는 것을 지켜보세요 — 지연된 상전이로서 도착하는 일반화입니다.</span></p>
-        <div class="go"><span class="i18n-en">Coming soon</span><span class="i18n-ko">준비 중</span></div>
-      </div>
-    </div>
-
-
-
   </div>
 
   <div class="more-row"><button class="more-btn" id="morePhysics" type="button" aria-expanded="false"><span class="i18n-en">See more · 13 more</span><span class="i18n-ko">더보기 · 13개</span><span class="chev">▾</span></button></div>
 
-  <h2 class="section-h"><span class="i18n-en">Concepts of Machine · Deep Learning</span><span class="i18n-ko">머신러닝 · 딥러닝 개념</span> <span class="n"><span class="i18n-en">15 live · 6 soon</span><span class="i18n-ko">15개 공개 · 6개 준비 중</span></span></h2>
+  <h2 class="section-h"><span class="i18n-en">Concepts of Machine · Deep Learning</span><span class="i18n-ko">머신러닝 · 딥러닝 개념</span> <span class="n"><span class="i18n-en">18 live · 3 soon</span><span class="i18n-ko">18개 공개 · 3개 준비 중</span></span></h2>
   <p class="section-sub"><span class="i18n-en">Core machine-learning and deep-learning ideas, hands-on — estimation, clustering, kernels, representations, and uncertainty.</span><span class="i18n-ko">머신러닝과 딥러닝의 핵심 아이디어를 직접 다뤄봅니다 — 추정, 군집화, 커널, 표현, 불확실성.</span></p>
 
   <div class="deck collapsed" id="deckML">
 
-<a class="card-demo c-mmb" href="mle-map-bayes.html">
+    <a class="card-demo c-mmb" href="mle-map-bayes.html">
       <div class="glyph">
         <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <path d="M22 62 C52 62 56 32 70 32 C84 32 88 62 118 62" stroke="#a78bfa" stroke-width="1.8" stroke-dasharray="4 3"></path>
@@ -597,7 +583,7 @@
       </div>
     </a>
 
-<a class="card-demo c-unc" href="uncertainty.html">
+    <a class="card-demo c-unc" href="uncertainty.html">
       <div class="glyph">
         <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <path d="M20 46 C70 40 120 30 184 18 L184 62 C120 50 70 52 20 50 Z" fill="#5eead4" opacity=".18"></path>
@@ -613,7 +599,7 @@
       </div>
     </a>
 
-<a class="card-demo c-gvd" href="gen-vs-disc.html">
+    <a class="card-demo c-gvd" href="gen-vs-disc.html">
       <div class="glyph">
         <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <ellipse cx="62" cy="32" rx="19" ry="12" stroke="#60a5fa" stroke-width="1.4" opacity=".5" transform="rotate(-18 62 32)"></ellipse>
@@ -630,7 +616,7 @@
       </div>
     </a>
 
-<a class="card-demo c-svm" href="svm.html">
+    <a class="card-demo c-svm" href="svm.html">
       <div class="glyph">
         <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <line x1="58" y1="12" x2="118" y2="68" stroke="#8b949e" stroke-width="2.2" stroke-linecap="round"></line>
@@ -650,7 +636,7 @@
       </div>
     </a>
 
-<a class="card-demo c-pca" href="pca.html">
+    <a class="card-demo c-pca" href="pca.html">
       <div class="glyph">
         <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <g fill="#8b949e">
@@ -670,7 +656,7 @@
       </div>
     </a>
 
-<a class="card-demo c-em" href="em.html">
+    <a class="card-demo c-em" href="em.html">
       <div class="glyph">
         <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <ellipse cx="78" cy="40" rx="30" ry="17" stroke="#34d399" stroke-width="2" transform="rotate(-12 78 40)"></ellipse>
@@ -689,7 +675,7 @@
       </div>
     </a>
 
-<a class="card-demo c-kmeans" href="kmeans.html">
+    <a class="card-demo c-kmeans" href="kmeans.html">
       <div class="glyph">
         <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <g fill="#60a5fa"><circle cx="44" cy="30" r="2.6"></circle><circle cx="54" cy="24" r="2.6"></circle><circle cx="50" cy="36" r="2.6"></circle></g>
@@ -710,7 +696,7 @@
       </div>
     </a>
 
-<a class="card-demo c-rep" href="representation.html">
+    <a class="card-demo c-rep" href="representation.html">
       <div class="glyph">
         <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <path d="M34 20 Q50 60 66 20" stroke="#f472b6" stroke-width="1.8" fill="none"></path>
@@ -813,49 +799,6 @@
       </div>
     </a>
 
-    <div class="card-demo c-bp soon">
-      <div class="glyph">
-        <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <g stroke="#8b949e" stroke-width="1.3" opacity=".7">
-            <line x1="52" y1="26" x2="100" y2="22"></line><line x1="52" y1="26" x2="100" y2="58"></line>
-            <line x1="52" y1="54" x2="100" y2="22"></line><line x1="52" y1="54" x2="100" y2="58"></line>
-            <line x1="100" y1="22" x2="150" y2="40"></line><line x1="100" y1="58" x2="150" y2="40"></line>
-          </g>
-          <g fill="#6ea8ff">
-            <circle cx="52" cy="26" r="4"></circle><circle cx="52" cy="54" r="4"></circle>
-            <circle cx="100" cy="22" r="4"></circle><circle cx="100" cy="58" r="4"></circle><circle cx="150" cy="40" r="4"></circle>
-          </g>
-          <path d="M150 70 C118 74 82 74 54 71 m9 -4 l-9 4 l9 4" stroke="#f0883e" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"></path>
-        </svg>
-      </div>
-      <div class="body">
-        <div class="tags"><span><span class="i18n-en">Chain rule</span><span class="i18n-ko">연쇄 법칙</span></span><span><span class="i18n-en">Autodiff</span><span class="i18n-ko">Autodiff</span></span></div>
-        <h3><span class="i18n-en">Backpropagation</span><span class="i18n-ko">역전파</span></h3>
-        <p><span class="i18n-en">Follow the chain rule backward through a computation graph — see how each weight's gradient is assembled from local derivatives.</span><span class="i18n-ko">계산 그래프를 따라 연쇄 법칙을 거꾸로 따라가세요 — 각 가중치의 기울기가 국소 도함수로부터 조립되는 과정을 확인합니다.</span></p>
-        <div class="go"><span class="i18n-en">Coming soon</span><span class="i18n-ko">준비 중</span></div>
-      </div>
-    </div>
-
-
-    <div class="card-demo c-cod soon">
-      <div class="glyph">
-        <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <g stroke="#8b949e" stroke-width="1.3" opacity=".65" fill="none">
-            <rect x="70" y="26" width="40" height="40"></rect><rect x="90" y="14" width="40" height="40"></rect>
-            <line x1="70" y1="26" x2="90" y2="14"></line><line x1="110" y1="26" x2="130" y2="14"></line>
-            <line x1="70" y1="66" x2="90" y2="54"></line><line x1="110" y1="66" x2="130" y2="54"></line>
-          </g>
-          <g fill="#f59e0b"><circle cx="72" cy="64" r="2.6"></circle><circle cx="128" cy="16" r="2.6"></circle><circle cx="112" cy="28" r="2.6"></circle><circle cx="92" cy="52" r="2.6"></circle></g>
-        </svg>
-      </div>
-      <div class="body">
-        <div class="tags"><span><span class="i18n-en">High-D</span><span class="i18n-ko">고차원</span></span><span><span class="i18n-en">Distance</span><span class="i18n-ko">거리</span></span></div>
-        <h3><span class="i18n-en">Curse of Dimensionality</span><span class="i18n-ko">차원의 저주</span></h3>
-        <p><span class="i18n-en">In high dimensions everything drifts far apart and nearly equidistant — see why nearest-neighbor intuition and sampling break down.</span><span class="i18n-ko">고차원에서는 모든 것이 서로 멀리 떨어지고 거의 같은 거리에 놓입니다 — 최근접 이웃 직관과 샘플링이 무너지는 이유를 확인하세요.</span></p>
-        <div class="go"><span class="i18n-en">Coming soon</span><span class="i18n-ko">준비 중</span></div>
-      </div>
-    </div>
-
     <a class="card-demo c-reg" href="double-descent.html">
       <div class="glyph">
         <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -891,8 +834,7 @@
       </div>
     </a>
 
-
-    <div class="card-demo c-conv soon">
+    <a class="card-demo c-conv" href="convolution.html">
       <div class="glyph">
         <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <g stroke="#8b949e" stroke-width="1" opacity=".45" fill="none">
@@ -910,11 +852,11 @@
         <div class="tags"><span><span class="i18n-en">CNN</span><span class="i18n-ko">CNN</span></span><span><span class="i18n-en">Locality</span><span class="i18n-ko">국소성</span></span></div>
         <h3><span class="i18n-en">Convolution &amp; Receptive Fields</span><span class="i18n-ko">합성곱과 수용 영역</span></h3>
         <p><span class="i18n-en">Slide a small kernel across an image and stack layers — see how weight sharing and a growing receptive field build features from edges to objects.</span><span class="i18n-ko">작은 커널을 이미지 위로 미끄러뜨리고 층을 쌓으며, 가중치 공유와 커지는 수용 영역이 에지에서 사물까지 특징을 쌓는 과정을 봅니다.</span></p>
-        <div class="go"><span class="i18n-en">Coming soon</span><span class="i18n-ko">준비 중</span></div>
+        <div class="go"><span class="i18n-en">Open →</span><span class="i18n-ko">열기 →</span></div>
       </div>
-    </div>
+    </a>
 
-    <div class="card-demo c-attn soon">
+    <a class="card-demo c-attn" href="self-attention.html">
       <div class="glyph">
         <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <g stroke="#a78bfa" stroke-width="1.4">
@@ -932,6 +874,64 @@
         <div class="tags"><span><span class="i18n-en">Transformers</span><span class="i18n-ko">Transformer</span></span><span><span class="i18n-en">Query·Key</span><span class="i18n-ko">쿼리·키</span></span></div>
         <h3><span class="i18n-en">Self-Attention</span><span class="i18n-ko">셀프 어텐션</span></h3>
         <p><span class="i18n-en">Every token looks at every other and mixes them by learned weights. Watch queries, keys, and the softmax attention matrix decide what attends to what.</span><span class="i18n-ko">모든 토큰이 서로를 바라보며 학습된 가중치로 섞습니다. 쿼리·키와 softmax 어텐션 행렬이 무엇이 무엇에 주목할지 정하는 것을 봅니다.</span></p>
+        <div class="go"><span class="i18n-en">Open →</span><span class="i18n-ko">열기 →</span></div>
+      </div>
+    </a>
+
+    <a class="card-demo c-mcmc" href="mcmc.html">
+      <div class="glyph">
+        <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M20 64 C60 64 74 22 100 22 C126 22 140 64 180 64" stroke="#8b949e" stroke-width="1.4" fill="none" opacity=".5"></path>
+          <polyline points="34,58 46,50 40,42 58,46 70,34 64,40 86,30 96,33 92,27 108,31" stroke="#34d399" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"></polyline>
+          <g fill="#34d399"><circle cx="46" cy="50" r="2"></circle><circle cx="70" cy="34" r="2"></circle><circle cx="96" cy="33" r="2"></circle><circle cx="108" cy="31" r="2.6"></circle></g>
+        </svg>
+      </div>
+      <div class="body">
+        <div class="tags"><span><span class="i18n-en">Sampling</span><span class="i18n-ko">표집</span></span><span><span class="i18n-en">Bayesian</span><span class="i18n-ko">베이지안</span></span></div>
+        <h3><span class="i18n-en">MCMC / Metropolis–Hastings</span><span class="i18n-ko">MCMC / 메트로폴리스–헤이스팅스</span></h3>
+        <p><span class="i18n-en">Explore a probability landscape with a guided random walk — propose, accept or reject, and watch the samples trace out a distribution you can't integrate.</span><span class="i18n-ko">안내된 무작위 걸음으로 확률 지형을 탐험합니다 — 제안하고 수락/기각하며, 적분할 수 없는 분포를 표본이 그려내는 것을 봅니다.</span></p>
+        <div class="go"><span class="i18n-en">Open →</span><span class="i18n-ko">열기 →</span></div>
+      </div>
+    </a>
+
+    <div class="card-demo c-bp soon">
+      <div class="glyph">
+        <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <g stroke="#8b949e" stroke-width="1.3" opacity=".7">
+            <line x1="52" y1="26" x2="100" y2="22"></line><line x1="52" y1="26" x2="100" y2="58"></line>
+            <line x1="52" y1="54" x2="100" y2="22"></line><line x1="52" y1="54" x2="100" y2="58"></line>
+            <line x1="100" y1="22" x2="150" y2="40"></line><line x1="100" y1="58" x2="150" y2="40"></line>
+          </g>
+          <g fill="#6ea8ff">
+            <circle cx="52" cy="26" r="4"></circle><circle cx="52" cy="54" r="4"></circle>
+            <circle cx="100" cy="22" r="4"></circle><circle cx="100" cy="58" r="4"></circle><circle cx="150" cy="40" r="4"></circle>
+          </g>
+          <path d="M150 70 C118 74 82 74 54 71 m9 -4 l-9 4 l9 4" stroke="#f0883e" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"></path>
+        </svg>
+      </div>
+      <div class="body">
+        <div class="tags"><span><span class="i18n-en">Chain rule</span><span class="i18n-ko">연쇄 법칙</span></span><span><span class="i18n-en">Autodiff</span><span class="i18n-ko">Autodiff</span></span></div>
+        <h3><span class="i18n-en">Backpropagation</span><span class="i18n-ko">역전파</span></h3>
+        <p><span class="i18n-en">Follow the chain rule backward through a computation graph — see how each weight's gradient is assembled from local derivatives.</span><span class="i18n-ko">계산 그래프를 따라 연쇄 법칙을 거꾸로 따라가세요 — 각 가중치의 기울기가 국소 도함수로부터 조립되는 과정을 확인합니다.</span></p>
+        <div class="go"><span class="i18n-en">Coming soon</span><span class="i18n-ko">준비 중</span></div>
+      </div>
+    </div>
+
+    <div class="card-demo c-cod soon">
+      <div class="glyph">
+        <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <g stroke="#8b949e" stroke-width="1.3" opacity=".65" fill="none">
+            <rect x="70" y="26" width="40" height="40"></rect><rect x="90" y="14" width="40" height="40"></rect>
+            <line x1="70" y1="26" x2="90" y2="14"></line><line x1="110" y1="26" x2="130" y2="14"></line>
+            <line x1="70" y1="66" x2="90" y2="54"></line><line x1="110" y1="66" x2="130" y2="54"></line>
+          </g>
+          <g fill="#f59e0b"><circle cx="72" cy="64" r="2.6"></circle><circle cx="128" cy="16" r="2.6"></circle><circle cx="112" cy="28" r="2.6"></circle><circle cx="92" cy="52" r="2.6"></circle></g>
+        </svg>
+      </div>
+      <div class="body">
+        <div class="tags"><span><span class="i18n-en">High-D</span><span class="i18n-ko">고차원</span></span><span><span class="i18n-en">Distance</span><span class="i18n-ko">거리</span></span></div>
+        <h3><span class="i18n-en">Curse of Dimensionality</span><span class="i18n-ko">차원의 저주</span></h3>
+        <p><span class="i18n-en">In high dimensions everything drifts far apart and nearly equidistant — see why nearest-neighbor intuition and sampling break down.</span><span class="i18n-ko">고차원에서는 모든 것이 서로 멀리 떨어지고 거의 같은 거리에 놓입니다 — 최근접 이웃 직관과 샘플링이 무너지는 이유를 확인하세요.</span></p>
         <div class="go"><span class="i18n-en">Coming soon</span><span class="i18n-ko">준비 중</span></div>
       </div>
     </div>
@@ -951,22 +951,6 @@
         <div class="tags"><span><span class="i18n-en">Deep nets</span><span class="i18n-ko">심층 신경망</span></span><span><span class="i18n-en">Training</span><span class="i18n-ko">학습</span></span></div>
         <h3><span class="i18n-en">Vanishing / Exploding Gradients</span><span class="i18n-ko">기울기 소실 / 폭주</span></h3>
         <p><span class="i18n-en">Send an error signal back through many layers and watch it shrink to nothing or blow up — why depth is hard, and how initialization, residuals, and normalization rescue it.</span><span class="i18n-ko">오차 신호를 여러 층 뒤로 보내면 0으로 사라지거나 폭발합니다 — 깊이가 어려운 이유와 초기화·잔차·정규화가 이를 구하는 방법.</span></p>
-        <div class="go"><span class="i18n-en">Coming soon</span><span class="i18n-ko">준비 중</span></div>
-      </div>
-    </div>
-
-    <div class="card-demo c-mcmc soon">
-      <div class="glyph">
-        <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <path d="M20 64 C60 64 74 22 100 22 C126 22 140 64 180 64" stroke="#8b949e" stroke-width="1.4" fill="none" opacity=".5"></path>
-          <polyline points="34,58 46,50 40,42 58,46 70,34 64,40 86,30 96,33 92,27 108,31" stroke="#34d399" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"></polyline>
-          <g fill="#34d399"><circle cx="46" cy="50" r="2"></circle><circle cx="70" cy="34" r="2"></circle><circle cx="96" cy="33" r="2"></circle><circle cx="108" cy="31" r="2.6"></circle></g>
-        </svg>
-      </div>
-      <div class="body">
-        <div class="tags"><span><span class="i18n-en">Sampling</span><span class="i18n-ko">표집</span></span><span><span class="i18n-en">Bayesian</span><span class="i18n-ko">베이지안</span></span></div>
-        <h3><span class="i18n-en">MCMC / Metropolis–Hastings</span><span class="i18n-ko">MCMC / 메트로폴리스–헤이스팅스</span></h3>
-        <p><span class="i18n-en">Explore a probability landscape with a guided random walk — propose, accept or reject, and watch the samples trace out a distribution you can't integrate.</span><span class="i18n-ko">안내된 무작위 걸음으로 확률 지형을 탐험합니다 — 제안하고 수락/기각하며, 적분할 수 없는 분포를 표본이 그려내는 것을 봅니다.</span></p>
         <div class="go"><span class="i18n-en">Coming soon</span><span class="i18n-ko">준비 중</span></div>
       </div>
     </div>
