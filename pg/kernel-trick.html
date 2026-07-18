@@ -1,0 +1,430 @@
+<html lang="en" data-theme="light" data-lang="en"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+(function(){
+  function cur(){ try{ return localStorage.getItem('theme') || (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark':'light'); }catch(e){ return 'dark'; } }
+  var t=cur(); window.__theme=t; document.documentElement.setAttribute('data-theme', t);
+  try{ document.documentElement.setAttribute('data-lang', (localStorage.getItem('lang')||'en')); }catch(e){ document.documentElement.setAttribute('data-lang','en'); }
+  window.addEventListener('storage', function(e){ if(e.key==='theme'){ var n=e.newValue||'dark'; window.__theme=n; document.documentElement.setAttribute('data-theme', n); if(window.__onTheme) window.__onTheme(n); } if(e.key==='lang'){ document.documentElement.setAttribute('data-lang', e.newValue||'en'); if(window.__onLang) window.__onLang(); } });
+})();
+</script>
+
+<title>The Kernel Trick — PRISM Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;600&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+  :root{
+    --void:#15181e; --panel:#1d212a; --panel-2:#171b22; --line:#2e343f;
+    --ink:#e6edf3; --muted:#8b949e;
+    --cool:#5eead4; --sharp:#ff6b5a; --warm-a:#ffc24b; --warm-b:#ff5a3c; --test:#a78bff; --blue:#6ea8ff;
+    --focus:#9cc7ff;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{ background: var(--void); color:var(--ink); font-family:"Inter",system-ui,-apple-system,sans-serif; line-height:1.5;
+    -webkit-font-smoothing:antialiased; padding:24px 20px 48px; }
+  .wrap{max-width:1120px;margin:0 auto}
+  .topbar{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+  .back{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--muted);text-decoration:none;
+    border:1px solid var(--line);padding:6px 12px;border-radius:20px;transition:.14s}
+  .back:hover{color:var(--cool);border-color:var(--cool)}
+  .eyebrow{font-family:"JetBrains Mono",monospace;font-size:12px;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--cool);margin:0 0 10px;display:flex;align-items:center;gap:10px}
+  .eyebrow::before{content:"";width:22px;height:1px;background:var(--cool);opacity:.7}
+  .title{font-family:"Space Grotesk",system-ui,sans-serif;font-weight:700;font-size:clamp(28px,4.6vw,46px);
+    line-height:1.02;margin:0 0 10px;letter-spacing:-.02em}
+  .title .thin{color:var(--muted);font-weight:500}
+  .subtitle{color:var(--muted);max-width:none;margin:0 0 26px;font-size:15px}
+  .subtitle b{color:var(--ink);font-weight:600}
+  .grid{display:grid;grid-template-columns:1.62fr 1fr;gap:18px;align-items:start}
+  @media (max-width:860px){ .grid{grid-template-columns:1fr} }
+  .card{background:linear-gradient(180deg,var(--panel) 0%,var(--panel-2) 100%);
+    border:1px solid var(--line);border-radius:16px;padding:16px}
+  .card + .card{margin-top:14px}
+  .card-h{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--muted);margin:0 0 12px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .card-h .hint{color:#3f7f76;letter-spacing:.02em;text-transform:none;font-size:11px}
+  .stage{padding:14px 12px 10px}
+  .canvas-hold{position:relative;width:100%}
+  canvas{display:block;width:100%;height:auto;border-radius:8px}
+  #space{height:340px}
+  #scores{height:150px}
+  .legend{display:flex;align-items:center;gap:14px;margin:10px 6px 2px;flex-wrap:wrap;font-family:"JetBrains Mono",monospace;
+    font-size:10.5px;color:var(--muted)}
+  .legend i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:5px;vertical-align:middle}
+  .axis-cap{font-family:"JetBrains Mono",monospace;font-size:10.5px;color:var(--muted);
+    display:flex;justify-content:space-between;margin:2px 6px 0}
+  .seg{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{font-family:"Inter",sans-serif;font-size:12.5px;font-weight:500;color:var(--ink);
+    background:var(--panel-2);border:1px solid var(--line);padding:7px 12px;border-radius:9px;cursor:pointer;transition:.14s}
+  .chip:hover{border-color:#3a486e}
+  .chip.active{background:var(--test);border-color:var(--test);color:#160b2e;font-weight:600}
+  .clab{font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 7px}
+  .ctl{margin:14px 0 0}
+  .ctl.hidden{display:none}
+  .ctl-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:7px}
+  .ctl-name{font-size:13px;font-weight:500}
+  .ctl-name .sub{color:var(--muted);font-weight:400;font-size:12px}
+  .ctl-val{font-family:"JetBrains Mono",monospace;font-size:13px;color:var(--cool)}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:3px;
+    background:var(--line);outline:none;margin:6px 0 0}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;
+    background:var(--ink);border:2px solid var(--void);cursor:pointer;box-shadow:0 0 0 1px var(--line)}
+  input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--ink);border:2px solid var(--void);cursor:pointer}
+  .btnrow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+  .btnrow .wide{grid-column:1 / -1}
+  .btn{border:1px solid var(--line);background:var(--panel-2);color:var(--ink);font-family:"Inter",sans-serif;
+    font-size:13px;font-weight:500;padding:10px 8px;border-radius:9px;cursor:pointer;transition:.14s}
+  .btn:hover{border-color:#3a486e;background:#152238}
+  .btn:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+  .noteline{font-family:"JetBrains Mono",monospace;font-size:12px;color:var(--muted);margin-top:11px;min-height:16px}
+  .noteline b{color:var(--cool)}
+  .ro-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .ro{background:var(--panel);padding:10px 12px}
+  .ro .k{font-family:"JetBrains Mono",monospace;font-size:10.5px;letter-spacing:.06em;color:var(--muted);text-transform:uppercase}
+  .ro .v{font-family:"JetBrains Mono",monospace;font-size:17px;margin-top:3px}
+  .ro .v.big{font-size:22px;color:var(--cool)}
+  .sync-tag{font-size:12px;padding:2px 8px;border-radius:20px;font-family:"Inter",sans-serif;font-weight:600}
+  .sync-tag.off{background:rgba(255,107,90,.14);color:var(--sharp)}
+  .sync-tag.part{background:rgba(255,194,75,.16);color:var(--warm-a)}
+  .sync-tag.on{background:rgba(94,234,212,.14);color:var(--cool)}
+  .try ol{margin:0;padding-left:20px;color:var(--muted);font-size:13.5px}
+  .try li{margin-bottom:6px}
+  .try li b{color:var(--ink);font-weight:600}
+  .try li .kbd{font-family:"JetBrains Mono",monospace;color:var(--cool);font-size:12.5px}
+  .explain{margin-top:26px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media (max-width:860px){ .explain{grid-template-columns:1fr} }
+  .ex{border-top:2px solid var(--line);padding-top:12px}
+  .ex.a{border-color:var(--test)} .ex.b{border-color:var(--cool)} .ex.c{border-color:var(--warm-a)}
+  .ex h4{font-family:"Space Grotesk",sans-serif;font-size:15px;margin:0 0 7px;font-weight:500}
+  .ex p{margin:0;font-size:13px;color:var(--muted)}
+  .ex code{font-family:"JetBrains Mono",monospace;color:var(--ink);font-size:12.5px;background:var(--panel);padding:1px 5px;border-radius:4px}
+  footer{margin-top:30px;color:var(--muted);font-size:12px;font-family:"JetBrains Mono",monospace;letter-spacing:.04em}
+  footer a{color:var(--cool);text-decoration:none}
+  html[data-theme="light"]{
+    --void:#ffffff; --panel:#f7f9fc; --panel-2:#eef2f8; --line:#e2e7ee;
+    --ink:#141b33; --muted:#5a6488;
+    --cool:#12a08d; --sharp:#e04a37; --warm-a:#c98a12; --warm-b:#cf4a24; --test:#6d4fe0; --blue:#2f6fd6; --focus:#2f6fd6;
+  }
+  html[data-theme="light"] body{ background: var(--void); }
+  html[data-theme="light"] .btn:hover{ border-color:#b9c4da; background:#e9eef7; }
+  html[data-lang="en"] .i18n-ko{ display:none !important; }
+  html[data-lang="ko"] .i18n-en{ display:none !important; }
+  .i18n-ko{ font-family:'Pretendard','Inter',sans-serif; word-break:keep-all; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar"><a class="back" href="index.html"><span class="i18n-en">← Playground</span><span class="i18n-ko">← 놀이터</span></a></div>
+  <p class="eyebrow"><span class="i18n-en">PRISM · Machine Learning Playground</span><span class="i18n-ko">PRISM · 머신러닝 놀이터</span></p>
+  <h1 class="title"><span class="i18n-en">The Kernel Trick</span><span class="i18n-ko">커널 트릭</span><br><span class="thin"><span class="i18n-en">Bend the boundary by lifting data into a richer space — without ever going there</span><span class="i18n-ko">데이터를 더 풍부한 공간으로 들어올려 경계를 휘게 한다 — 실제로 그 공간에 가지 않고</span></span></h1>
+  <p class="subtitle">
+    <span class="i18n-en">A linear model can only draw a straight boundary. Map each point through a feature map <code>φ(x)</code> into a higher-dimensional space and a plane there becomes a <b>curve</b> back here. The <b>kernel</b> <code>k(x,z) = φ(x)·φ(z)</code> computes that inner product directly — so you get the rich boundary while never building <code>φ</code>. This demo fits a real kernel model; watch the curve appear.</span><span class="i18n-ko">선형 모델은 직선 경계만 그릴 수 있다. 각 점을 특징 사상 <code>φ(x)</code>로 더 높은 차원에 보내면 그곳의 평면이 여기서는 <b>곡선</b>이 된다. <b>커널</b> <code>k(x,z) = φ(x)·φ(z)</code>은 그 내적을 직접 계산한다 — 그래서 <code>φ</code>를 만들지 않고도 풍부한 경계를 얻는다. 이 데모는 실제 커널 모델을 적합한다; 곡선이 나타나는 것을 보라.</span>
+  </p>
+
+  <div class="grid">
+    <!-- ===== LEFT ===== -->
+    <div>
+      <div class="card stage">
+        <div class="card-h"><span class="i18n-en">Input space · decision boundary</span><span class="i18n-ko">입력 공간 · 결정 경계</span> <span class="hint" id="spaceHint">f(x) = Σ αᵢ k(x, xᵢ)</span></div>
+        <div class="canvas-hold"><canvas id="space" width="1310" height="680"></canvas></div>
+        <div class="legend">
+          <span><i style="background:#6ea8ff"></i><span class="i18n-en">class +1</span><span class="i18n-ko">클래스 +1</span></span>
+          <span><i style="background:#ff6b5a"></i><span class="i18n-en">class −1</span><span class="i18n-ko">클래스 −1</span></span>
+          <span><i style="background:#5eead4"></i><span class="i18n-en">boundary f = 0</span><span class="i18n-ko">경계 f = 0</span></span>
+        </div>
+      </div>
+
+      <div class="card stage">
+        <div class="card-h"><span class="i18n-en">Score space f(x) — a single threshold at 0</span><span class="i18n-ko">점수 공간 f(x) — 0에서의 단일 임계값</span> <span class="hint"><span class="i18n-en">the kernel makes it linearly separable</span><span class="i18n-ko">커널이 선형 분리를 가능케 한다</span></span></div>
+        <div class="canvas-hold"><canvas id="scores" width="1310" height="300"></canvas></div>
+        <div class="axis-cap"><span><span class="i18n-en">f &lt; 0 → −1</span><span class="i18n-ko">f &lt; 0 → −1</span></span><span>f = 0</span><span><span class="i18n-en">f &gt; 0 → +1</span><span class="i18n-ko">f &gt; 0 → +1</span></span></div>
+      </div>
+    </div>
+
+    <!-- ===== RIGHT ===== -->
+    <div>
+      <div class="card">
+        <div class="card-h"><span class="i18n-en">Controls</span><span class="i18n-ko">제어판</span></div>
+
+        <p class="clab"><span class="i18n-en">Dataset</span><span class="i18n-ko">데이터셋</span></p>
+        <div class="seg" id="dataSeg">
+          <button class="chip active" data-d="rings"><span class="i18n-en">Rings</span><span class="i18n-ko">동심원</span></button>
+          <button class="chip" data-d="xor">XOR</button>
+          <button class="chip" data-d="moons"><span class="i18n-en">Moons</span><span class="i18n-ko">초승달</span></button>
+          <button class="chip" data-d="spiral"><span class="i18n-en">Spiral</span><span class="i18n-ko">나선</span></button>
+        </div>
+
+        <p class="clab" style="margin-top:14px"><span class="i18n-en">Kernel k(x, z)</span><span class="i18n-ko">커널 k(x, z)</span></p>
+        <div class="seg" id="kernSeg">
+          <button class="chip" data-k="linear"><span class="i18n-en">Linear</span><span class="i18n-ko">선형</span></button>
+          <button class="chip" data-k="poly"><span class="i18n-en">Polynomial</span><span class="i18n-ko">다항</span></button>
+          <button class="chip active" data-k="rbf">RBF</button>
+        </div>
+
+        <div class="ctl" id="gammaCtl">
+          <div class="ctl-top">
+            <span class="ctl-name"><span class="i18n-en">RBF width γ</span><span class="i18n-ko">RBF 폭 γ</span> <span class="sub">e<sup>−γ‖x−z‖²</sup></span></span>
+            <span class="ctl-val" id="gV">4.0</span>
+          </div>
+          <input type="range" id="gamma" min="0.2" max="24" step="0.1" value="4" aria-label="RBF gamma">
+        </div>
+
+        <div class="ctl hidden" id="degCtl">
+          <div class="ctl-top">
+            <span class="ctl-name"><span class="i18n-en">Polynomial degree d</span><span class="i18n-ko">다항 차수 d</span> <span class="sub">(x·z + 1)<sup>d</sup></span></span>
+            <span class="ctl-val" id="dV">3</span>
+          </div>
+          <input type="range" id="degree" min="1" max="8" step="1" value="3" aria-label="Polynomial degree">
+        </div>
+
+        <div class="ctl">
+          <div class="ctl-top">
+            <span class="ctl-name"><span class="i18n-en">Regularization λ</span><span class="i18n-ko">정규화 λ</span> <span class="sub"><span class="i18n-en">ridge</span><span class="i18n-ko">릿지</span></span></span>
+            <span class="ctl-val" id="lV">0.100</span>
+          </div>
+          <input type="range" id="lambda" min="-3" max="1" step="0.05" value="-1" aria-label="Regularization (log10)">
+        </div>
+
+        <div class="btnrow">
+          <button class="btn wide" id="regen"><span class="i18n-en">Regenerate data</span><span class="i18n-ko">데이터 재생성</span></button>
+        </div>
+        <div class="noteline" id="noteLine"><span class="i18n-en">Rings + Linear kernel fails; switch to RBF and the boundary curves into a circle.</span><span class="i18n-ko">동심원 + 선형 커널은 실패; RBF로 바꾸면 경계가 원으로 휜다.</span></div>
+      </div>
+
+      <div class="card">
+        <div class="card-h"><span class="i18n-en">Measurements</span><span class="i18n-ko">측정값</span> <span id="accTag" class="sync-tag on">Separated</span></div>
+        <div class="ro-grid">
+          <div class="ro"><div class="k"><span class="i18n-en">train accuracy</span><span class="i18n-ko">훈련 정확도</span></div><div class="v big" id="roAcc">100.0%</div></div>
+          <div class="ro"><div class="k"><span class="i18n-en">kernel</span><span class="i18n-ko">커널</span></div><div class="v" id="roKern">RBF</div></div>
+          <div class="ro"><div class="k"><span class="i18n-en">feature dim</span><span class="i18n-ko">특징 차원</span></div><div class="v" id="roFeat">∞</div></div>
+          <div class="ro"><div class="k"><span class="i18n-en">points N</span><span class="i18n-ko">점 개수 N</span></div><div class="v" id="roN">68</div></div>
+          <div class="ro"><div class="k"><span class="i18n-en">margin proxy</span><span class="i18n-ko">마진 근사</span></div><div class="v" id="roMargin">0.784</div></div>
+          <div class="ro"><div class="k"><span class="i18n-en">misclassified</span><span class="i18n-ko">오분류</span></div><div class="v" id="roMiss">0</div></div>
+        </div>
+      </div>
+
+      <div class="card try">
+        <div class="card-h"><span class="i18n-en">Things to try</span><span class="i18n-ko">해볼 것들</span></div>
+        <ol>
+          <li><span class="i18n-en"><b>Linear can't:</b> pick <span class="kbd">Rings</span> with the <span class="kbd">Linear</span> kernel — accuracy stalls near 50%. A straight line can't enclose a circle.</span><span class="i18n-ko"><b>선형은 불가:</b> <span class="kbd">동심원</span>에 <span class="kbd">선형</span> 커널 — 정확도가 50% 근처에 머문다. 직선은 원을 감쌀 수 없다.</span></li>
+          <li><span class="i18n-en"><b>RBF rescues it:</b> switch to <span class="kbd">RBF</span> — the boundary bends into a closed curve and accuracy jumps to 100%.</span><span class="i18n-ko"><b>RBF가 구제:</b> <span class="kbd">RBF</span>로 바꾸면 경계가 닫힌 곡선으로 휘고 정확도가 100%로 뛴다.</span></li>
+          <li><span class="i18n-en"><b>Over-fitting:</b> push <span class="kbd">γ</span> very high — the model grows tiny islands around each point. Raise <span class="kbd">λ</span> to smooth it back.</span><span class="i18n-ko"><b>과적합:</b> <span class="kbd">γ</span>를 아주 높이면 각 점 주위로 작은 섬이 생긴다. <span class="kbd">λ</span>를 올려 다시 매끄럽게.</span></li>
+          <li><span class="i18n-en"><b>Degree matters:</b> for <span class="kbd">XOR</span>, a <span class="kbd">Polynomial</span> of degree 2 already separates — the feature <code>x₁x₂</code> is enough.</span><span class="i18n-ko"><b>차수의 힘:</b> <span class="kbd">XOR</span>는 <span class="kbd">다항</span> 차수 2면 이미 분리된다 — 특징 <code>x₁x₂</code> 하나로 충분.</span></li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <div class="explain">
+    <div class="ex a">
+      <h4><span class="i18n-en">A dot product in disguise</span><span class="i18n-ko">변장한 내적</span></h4>
+      <p><span class="i18n-en">A kernel is an inner product in some feature space: <code>k(x,z) = φ(x)·φ(z)</code>. The polynomial kernel corresponds to an explicit finite <code>φ</code> (all monomials up to degree d); the RBF kernel corresponds to an <b>infinite-dimensional</b> <code>φ</code>. You never compute <code>φ</code> — only the <code>N×N</code> kernel matrix.</span><span class="i18n-ko">커널은 어떤 특징 공간에서의 내적이다: <code>k(x,z) = φ(x)·φ(z)</code>. 다항 커널은 명시적 유한 <code>φ</code>(차수 d까지의 모든 단항식)에, RBF 커널은 <b>무한 차원</b> <code>φ</code>에 대응한다. <code>φ</code>는 절대 계산하지 않고 <code>N×N</code> 커널 행렬만 다룬다.</span></p>
+    </div>
+    <div class="ex b">
+      <h4><span class="i18n-en">The representer theorem</span><span class="i18n-ko">표현자 정리</span></h4>
+      <p><span class="i18n-en">The solution is always a weighted sum of kernels centered on the data: <code>f(x) = Σ αᵢ k(x, xᵢ)</code>. Here we solve kernel ridge regression, <code>α = (K + λI)⁻¹ y</code> — one linear system in the <code>N</code> training points, no matter how large the feature space is.</span><span class="i18n-ko">해는 언제나 데이터에 중심을 둔 커널들의 가중합이다: <code>f(x) = Σ αᵢ k(x, xᵢ)</code>. 여기서는 커널 릿지 회귀 <code>α = (K + λI)⁻¹ y</code>를 푼다 — 특징 공간이 아무리 커도 훈련점 <code>N</code>개에 대한 선형계 하나다.</span></p>
+    </div>
+    <div class="ex c">
+      <h4><span class="i18n-en">Power, and its price</span><span class="i18n-ko">힘, 그리고 대가</span></h4>
+      <p><span class="i18n-en">Kernels give nonlinear power to any linear method — SVMs, ridge, PCA — and underpin brain-decoding and connectivity classifiers where samples are few but structure is rich. The cost is the <code>N×N</code> matrix: memory and compute scale with the number of points, so kernels shine on small-to-medium data.</span><span class="i18n-ko">커널은 어떤 선형 기법(SVM·릿지·PCA)에도 비선형의 힘을 준다 — 표본은 적지만 구조가 풍부한 뇌 디코딩·연결성 분류에서 특히 유용하다. 대가는 <code>N×N</code> 행렬이다: 메모리·연산이 점 개수에 비례하므로, 커널은 중소 규모 데이터에서 빛난다.</span></p>
+    </div>
+  </div>
+
+  <footer><span class="i18n-en">PRISM Lab · prototype · </span><span class="i18n-ko">PRISM Lab · 프로토타입 · </span><a href="https://sswu-prism-lab.github.io" target="_blank" rel="noopener">sswu-prism-lab.github.io</a></footer>
+</div>
+
+<script>
+(() => {
+  "use strict";
+  function L(en,ko){ return document.documentElement.getAttribute('data-lang')==='ko' ? ko : en; }
+  const PAL={
+    dark:{ ink:"#e7ecff", muted:"#8493b8", line:"#26314f", grid:a=>`rgba(38,49,79,${a})`, cool:"#5eead4", sharp:"#ff6b5a", warmA:"#ffc24b", test:"#a78bff", blue:"#6ea8ff", panel:"#111a30", posFill:"rgba(110,168,255,.13)", negFill:"rgba(255,107,90,.12)" },
+    light:{ ink:"#141b33", muted:"#5a6488", line:"#d9e0ec", grid:a=>`rgba(150,162,190,${a})`, cool:"#12a08d", sharp:"#e04a37", warmA:"#c98a12", test:"#6d4fe0", blue:"#2f6fd6", panel:"#ffffff", posFill:"rgba(47,111,214,.10)", negFill:"rgba(224,74,55,.09)" }
+  };
+  let C = PAL[(window.__theme==='light')?'light':'dark'];
+  const clamp=(x,a,b)=> x<a?a : x>b?b : x;
+
+  const S = { dataset:"rings", kernel:"rbf", gamma:4, degree:3, lambda:0.1,
+    X:[], Y:[], alpha:[], N:0 };
+
+  let spare=null;
+  function gauss(){ if(spare!==null){const v=spare;spare=null;return v;}
+    let u=0; do{u=Math.random();}while(u<=1e-12); const w=Math.sqrt(-2*Math.log(u)), a=2*Math.PI*Math.random();
+    spare=w*Math.sin(a); return w*Math.cos(a); }
+
+  // ---------- datasets (domain ~ [-1.5,1.5]) ----------
+  function makeData(){
+    const P=[],Y=[], n=34;
+    if(S.dataset==="rings"){
+      for(let i=0;i<n;i++){ const a=Math.random()*6.283, r=0.42+0.09*gauss(); P.push([r*Math.cos(a),r*Math.sin(a)]); Y.push(1); }
+      for(let i=0;i<n;i++){ const a=Math.random()*6.283, r=1.15+0.09*gauss(); P.push([r*Math.cos(a),r*Math.sin(a)]); Y.push(-1); }
+    } else if(S.dataset==="xor"){
+      const cs=[[ .7,.7,1],[-.7,-.7,1],[ .7,-.7,-1],[-.7,.7,-1]];
+      for(const c of cs) for(let i=0;i<n/2;i++){ P.push([c[0]+0.22*gauss(), c[1]+0.22*gauss()]); Y.push(c[2]); }
+    } else if(S.dataset==="moons"){
+      for(let i=0;i<n;i++){ const a=Math.PI*Math.random(); P.push([Math.cos(a)-0.5+0.09*gauss(), Math.sin(a)-0.3+0.09*gauss()]); Y.push(1); }
+      for(let i=0;i<n;i++){ const a=Math.PI*Math.random(); P.push([1-Math.cos(a)-0.5+0.09*gauss(), -Math.sin(a)+0.3+0.09*gauss()]); Y.push(-1); }
+    } else { // spiral
+      for(let i=0;i<n;i++){ const t=i/n*3.2, r=0.15+0.34*t; P.push([r*Math.cos(t*1.9)+0.05*gauss(), r*Math.sin(t*1.9)+0.05*gauss()]); Y.push(1); }
+      for(let i=0;i<n;i++){ const t=i/n*3.2, r=0.15+0.34*t; P.push([-r*Math.cos(t*1.9)+0.05*gauss(), -r*Math.sin(t*1.9)+0.05*gauss()]); Y.push(-1); }
+    }
+    S.X=P; S.Y=Y; S.N=P.length;
+  }
+
+  // ---------- kernel ----------
+  function kern(a,b){
+    if(S.kernel==="linear") return a[0]*b[0]+a[1]*b[1];
+    if(S.kernel==="poly"){ const dp=a[0]*b[0]+a[1]*b[1]; return Math.pow(dp+1, S.degree); }
+    const dx=a[0]-b[0], dy=a[1]-b[1]; return Math.exp(-S.gamma*(dx*dx+dy*dy));   // rbf
+  }
+
+  // ---------- solve (K+λI) α = y  via Gaussian elimination ----------
+  function solve(){
+    const N=S.N; const A=[];
+    for(let i=0;i<N;i++){ A[i]=new Float64Array(N+1);
+      for(let j=0;j<N;j++) A[i][j]=kern(S.X[i],S.X[j]);
+      A[i][i]+=S.lambda; A[i][N]=S.Y[i]; }
+    for(let c=0;c<N;c++){
+      let piv=c; for(let r=c+1;r<N;r++) if(Math.abs(A[r][c])>Math.abs(A[piv][c])) piv=r;
+      const tmp=A[c]; A[c]=A[piv]; A[piv]=tmp;
+      const d=A[c][c]||1e-9;
+      for(let r=0;r<N;r++){ if(r===c) continue; const f=A[r][c]/d; if(f===0) continue;
+        for(let k=c;k<=N;k++) A[r][k]-=f*A[c][k]; }
+    }
+    const al=new Float64Array(N); for(let i=0;i<N;i++) al[i]=A[i][N]/(A[i][i]||1e-9);
+    S.alpha=al;
+  }
+  function fval(p){ let s=0; for(let i=0;i<S.N;i++) s+=S.alpha[i]*kern(p,S.X[i]); return s; }
+
+  function refit(){ solve(); }
+
+  // ---------- canvases ----------
+  const cvS=document.getElementById("space"), cxS=cvS.getContext("2d");
+  const cvH=document.getElementById("scores"), cxH=cvH.getContext("2d");
+  function fit(cv,ctx){ const dpr=Math.min(window.devicePixelRatio||1,2); const w=cv.clientWidth,h=cv.clientHeight;
+    cv.width=Math.round(w*dpr); cv.height=Math.round(h*dpr); ctx.setTransform(dpr,0,0,dpr,0,0); return {w,h}; }
+
+  const VIEW=1.65;
+  function drawSpace(){
+    const {w,h}=fit(cvS,cxS);
+    cxS.clearRect(0,0,w,h);
+    const cx=w/2, cy=h/2, sc=Math.min(w,h)/(2*VIEW);
+    const X=(x)=> cx + x*sc, Y=(y)=> cy - y*sc;
+    const toX=(px)=>(px-cx)/sc, toY=(py)=>(cy-py)/sc;
+
+    // decision region: sample grid of f, fill by sign
+    const G=52, cw=w/G, ch=h/G;
+    for(let i=0;i<G;i++) for(let j=0;j<G;j++){
+      const x=toX((i+0.5)*cw), y=toY((j+0.5)*ch);
+      const f=fval([x,y]);
+      cxS.fillStyle = f>=0 ? C.posFill : C.negFill;
+      cxS.fillRect(i*cw, j*ch, cw+1, ch+1);
+    }
+    // boundary contour f=0 via marching over a finer grid (draw where sign changes)
+    const M=72; cxS.fillStyle=C.cool;
+    for(let i=0;i<=M;i++){
+      const x=-VIEW+2*VIEW*i/M;
+      let prev=null;
+      for(let j=0;j<=M;j++){
+        const y=-VIEW+2*VIEW*j/M; const f=fval([x,y]);
+        if(prev!==null && (prev<0)!==(f<0)){ cxS.beginPath(); cxS.arc(X(x),Y(y-VIEW/M*0.5),1.1,0,6.28); cxS.fill(); }
+        prev=f;
+      }
+    }
+    // axes
+    cxS.strokeStyle=C.grid(.5); cxS.lineWidth=1;
+    cxS.beginPath(); cxS.moveTo(X(-VIEW),Y(0)); cxS.lineTo(X(VIEW),Y(0)); cxS.moveTo(X(0),Y(-VIEW)); cxS.lineTo(X(0),Y(VIEW)); cxS.stroke();
+    // points
+    for(let i=0;i<S.N;i++){
+      const p=S.X[i]; const f=fval(p); const correct=(f>=0)===(S.Y[i]>0);
+      cxS.fillStyle = S.Y[i]>0 ? C.blue : C.sharp;
+      cxS.beginPath(); cxS.arc(X(p[0]),Y(p[1]),4,0,6.283); cxS.fill();
+      if(!correct){ cxS.strokeStyle=C.warmA; cxS.lineWidth=2; cxS.beginPath(); cxS.arc(X(p[0]),Y(p[1]),6,0,6.283); cxS.stroke(); }
+    }
+  }
+
+  function drawScores(){
+    const {w,h}=fit(cvH,cxH);
+    cxH.clearRect(0,0,w,h);
+    const pl=10,pr=10,pt=10,pb=10; const mid=(pt+(h-pb))/2;
+    // compute f for all points
+    const fp=[], fn=[]; let fmax=1e-3;
+    for(let i=0;i<S.N;i++){ const f=fval(S.X[i]); if(Math.abs(f)>fmax)fmax=Math.abs(f); (S.Y[i]>0?fp:fn).push(f); }
+    const NB=40; const hp=new Array(NB).fill(0), hn=new Array(NB).fill(0);
+    const bin=f=>clamp(Math.floor((f/fmax*0.5+0.5)*NB),0,NB-1);
+    fp.forEach(f=>hp[bin(f)]++); fn.forEach(f=>hn[bin(f)]++);
+    let mx=1; for(let i=0;i<NB;i++){ mx=Math.max(mx,hp[i],hn[i]); }
+    const bw=(w-pl-pr)/NB, half=(mid-pt)-2;
+    // zero line (f=0 → center of x)
+    const X0=pl+(w-pl-pr)*0.5;
+    cxH.strokeStyle=C.cool; cxH.setLineDash([4,3]); cxH.lineWidth=1.4;
+    cxH.beginPath(); cxH.moveTo(X0,pt); cxH.lineTo(X0,h-pb); cxH.stroke(); cxH.setLineDash([]);
+    cxH.strokeStyle=C.grid(1); cxH.lineWidth=1; cxH.beginPath(); cxH.moveTo(pl,mid); cxH.lineTo(w-pr,mid); cxH.stroke();
+    for(let i=0;i<NB;i++){
+      const x=pl+i*bw;
+      if(hp[i]>0){ cxH.fillStyle=C.blue; cxH.globalAlpha=.85; cxH.fillRect(x+0.5,mid-hp[i]/mx*half,bw-1,hp[i]/mx*half); }
+      if(hn[i]>0){ cxH.fillStyle=C.sharp; cxH.globalAlpha=.85; cxH.fillRect(x+0.5,mid,bw-1,hn[i]/mx*half); }
+    }
+    cxH.globalAlpha=1;
+    cxH.fillStyle=C.muted; cxH.font='10px "JetBrains Mono", monospace'; cxH.textAlign="center"; cxH.textBaseline="top";
+    cxH.fillText("f = 0", X0, h-pb-2);
+  }
+
+  function metrics(){
+    let miss=0, minAbs=1e9;
+    for(let i=0;i<S.N;i++){ const f=fval(S.X[i]); if((f>=0)!==(S.Y[i]>0)) miss++; minAbs=Math.min(minAbs,Math.abs(f)); }
+    return { acc:(S.N-miss)/S.N, miss, margin:minAbs };
+  }
+  function updateReadouts(){
+    const m=metrics();
+    document.getElementById("roAcc").textContent=(m.acc*100).toFixed(1)+"%";
+    document.getElementById("roKern").textContent = S.kernel==="rbf"?"RBF":(S.kernel==="poly"?L("poly d="+S.degree,"다항 d="+S.degree):L("linear","선형"));
+    document.getElementById("roFeat").textContent = S.kernel==="rbf"?"∞":(S.kernel==="poly"? String(((S.degree+1)*(S.degree+2))/2) : "2");
+    document.getElementById("roN").textContent=S.N;
+    document.getElementById("roMargin").textContent=m.margin.toFixed(3);
+    document.getElementById("roMiss").textContent=m.miss;
+    const tag=document.getElementById("accTag");
+    if(m.acc>0.98){ tag.textContent=L("Separated","분리됨"); tag.className="sync-tag on"; }
+    else if(m.acc>0.8){ tag.textContent=L("Mostly","대체로"); tag.className="sync-tag part"; }
+    else { tag.textContent=L("Failing","실패"); tag.className="sync-tag off"; }
+  }
+
+  function drawAll(){ drawSpace(); drawScores(); updateReadouts(); }
+  function full(){ refit(); drawAll(); }
+
+  window.__onTheme=t=>{ C=PAL[t==='light'?'light':'dark']; drawAll(); };
+  window.__onLang=()=>{ drawAll(); };
+  window.addEventListener("resize",()=>{ clearTimeout(window.__rt); window.__rt=setTimeout(drawAll,80); });
+
+  // ---------- controls ----------
+  function segSetup(segId, after){
+    document.getElementById(segId).addEventListener("click",e=>{ const b=e.target.closest(".chip"); if(!b) return;
+      [...e.currentTarget.children].forEach(c=>c.classList.remove("active")); b.classList.add("active"); after(b.dataset); });
+  }
+  segSetup("dataSeg",ds=>{ S.dataset=ds.d; makeData(); full(); });
+  segSetup("kernSeg",ds=>{ S.kernel=ds.k;
+    document.getElementById("gammaCtl").classList.toggle("hidden", S.kernel!=="rbf");
+    document.getElementById("degCtl").classList.toggle("hidden", S.kernel!=="poly");
+    full(); });
+
+  const bind=(id,valId,fmt,fn)=>{ const el=document.getElementById(id);
+    el.addEventListener("input",()=>{ const v=parseFloat(el.value); fn(v); if(valId) document.getElementById(valId).textContent=fmt(v); full(); }); };
+  bind("gamma","gV",v=>v.toFixed(1),v=>{S.gamma=v;});
+  bind("degree","dV",v=>String(v|0),v=>{S.degree=v|0;});
+  bind("lambda","lV",v=>Math.pow(10,v).toFixed(v<-0.5?3:2),v=>{S.lambda=Math.pow(10,v);});
+
+  document.getElementById("regen").onclick=()=>{ makeData(); full(); };
+
+  // ---------- init ----------
+  document.getElementById("lV").textContent=Math.pow(10,-1).toFixed(3);
+  makeData(); full();
+})();
+</script>
+
+
+</body></html>
