@@ -70,6 +70,7 @@
   a.c-conn:hover{border-color:#4fd1a0}
   .c-pc{border-top-color:#c4b5fd} .c-ddm{border-top-color:#5ed0c0}
   a.c-pc:hover{border-color:#c4b5fd} a.c-ddm:hover{border-color:#5ed0c0}
+  .c-node{border-top-color:#7dd3fc} a.c-node:hover{border-color:#7dd3fc}
 
   .glyph{height:98px;display:flex;align-items:center;justify-content:center;
     background:var(--panel-2);border-bottom:1px solid var(--line)}
@@ -139,6 +140,8 @@
   a.c-ce:hover{border-color:#c084fc} a.c-bvt:hover{border-color:#f0883e}
   a.c-vi:hover{border-color:#f472b6}
   a.c-gd:hover{border-color:#4ade80} a.c-bn:hover{border-color:#4ade80}
+  .c-conv{border-top-color:#f0b429} .c-attn{border-top-color:#a78bfa} .c-vgrad{border-top-color:#fb7185} .c-mcmc{border-top-color:#34d399}
+  a.c-conv:hover{border-color:#f0b429} a.c-attn:hover{border-color:#a78bfa} a.c-vgrad:hover{border-color:#fb7185} a.c-mcmc:hover{border-color:#34d399}
 
   /* ---------- i18n ---------- */
   html[data-lang="en"] .i18n-ko{ display:none !important; }
@@ -154,7 +157,7 @@
     Move a slider to feel phase transitions, free energy, and synchronization first-hand. Click a card to enter.</span><span class="i18n-ko">물리적 직관과 학습 알고리즘을 잇는 <b>인터랙티브 데모</b> 모음입니다.
     슬라이더를 움직여 상전이, 자유 에너지, 동기화를 직접 느껴보세요. 카드를 클릭해 들어가세요.</span>
   </p>
-  <h2 class="section-h first"><span class="i18n-en">Physics-inspired Representation Learning</span><span class="i18n-ko">물리학 기반 표현 학습</span> <span class="n"><span class="i18n-en">13 live · 5 soon</span><span class="i18n-ko">13개 공개 · 5개 준비 중</span></span></h2>
+  <h2 class="section-h first"><span class="i18n-en">Physics-inspired Representation Learning</span><span class="i18n-ko">물리학 기반 표현 학습</span> <span class="n"><span class="i18n-en">14 live · 5 soon</span><span class="i18n-ko">14개 공개 · 5개 준비 중</span></span></h2>
   <p class="section-sub"><span class="i18n-en">Statistical-mechanics intuition behind representation and learning — feel phase transitions, free energy, and synchronization first-hand.</span><span class="i18n-ko">표현과 학습의 이면에 있는 통계역학적 직관 — 상전이, 자유 에너지, 동기화를 직접 느껴보세요.</span></p>
 
   <div class="deck collapsed" id="deckPhysics">
@@ -447,6 +450,29 @@
       </div>
     </a>
 
+    <!-- ===== ACTIVE: Neural ODE ===== -->
+    <a class="card-demo c-node" href="neural-ode.html">
+      <div class="glyph">
+        <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <g stroke="#4a5578" stroke-width="1">
+            <line x1="34" y1="20" x2="52" y2="26"></line><line x1="34" y1="60" x2="52" y2="54"></line>
+            <line x1="86" y1="18" x2="104" y2="24"></line><line x1="86" y1="62" x2="104" y2="56"></line>
+            <line x1="138" y1="22" x2="156" y2="30"></line><line x1="138" y1="58" x2="156" y2="50"></line>
+          </g>
+          <path d="M34,58 C64,58 70,30 100,30 C130,30 138,50 166,42" stroke="#7dd3fc" stroke-width="2.4" fill="none" stroke-linecap="round"></path>
+          <path d="M34,24 C64,24 74,54 104,54 C132,54 140,34 166,40" stroke="#ff6b5a" stroke-width="2.2" fill="none" stroke-linecap="round" opacity=".85"></path>
+          <circle cx="34" cy="58" r="3" fill="#7dd3fc"></circle><circle cx="34" cy="24" r="3" fill="#ff6b5a"></circle>
+          <circle cx="166" cy="42" r="3" fill="#7dd3fc"></circle><circle cx="166" cy="40" r="3" fill="#ff6b5a"></circle>
+        </svg>
+      </div>
+      <div class="body">
+        <div class="tags"><span><span class="i18n-en">Continuous depth</span><span class="i18n-ko">연속 깊이</span></span><span><span class="i18n-en">Dynamics</span><span class="i18n-ko">동역학</span></span></div>
+        <h3><span class="i18n-en">Neural ODE</span><span class="i18n-ko">뉴럴 ODE</span></h3>
+        <p><span class="i18n-en">A ResNet layer is one Euler step of an ODE. Let depth become time and watch a vector field flow data into a new shape — then hit the wall where a 2-D flow can't separate rings, and augment to fix it.</span><span class="i18n-ko">ResNet 층은 ODE의 오일러 한 스텝입니다. 깊이를 시간으로 삼아 벡터장이 데이터를 새 모양으로 흐르게 하고, 2차원 흐름이 동심원을 분리 못 하는 벽에 부딪힌 뒤 차원을 증강해 해결하세요.</span></p>
+        <div class="go"><span class="i18n-en">Open →</span><span class="i18n-ko">열기 →</span></div>
+      </div>
+    </a>
+
     <!-- ===== SOON: Diffusion & Score ===== -->
     <div class="card-demo c-diff soon">
       <div class="glyph">
@@ -548,9 +574,9 @@
 
   </div>
 
-  <div class="more-row"><button class="more-btn" id="morePhysics" type="button" aria-expanded="false"><span class="i18n-en">See more · 12 more</span><span class="i18n-ko">더보기 · 12개</span><span class="chev">▾</span></button></div>
+  <div class="more-row"><button class="more-btn" id="morePhysics" type="button" aria-expanded="false"><span class="i18n-en">See more · 13 more</span><span class="i18n-ko">더보기 · 13개</span><span class="chev">▾</span></button></div>
 
-  <h2 class="section-h"><span class="i18n-en">Concepts of Machine · Deep Learning</span><span class="i18n-ko">머신러닝 · 딥러닝 개념</span> <span class="n"><span class="i18n-en">13 live · 4 soon</span><span class="i18n-ko">13개 공개 · 4개 준비 중</span></span></h2>
+  <h2 class="section-h"><span class="i18n-en">Concepts of Machine · Deep Learning</span><span class="i18n-ko">머신러닝 · 딥러닝 개념</span> <span class="n"><span class="i18n-en">15 live · 6 soon</span><span class="i18n-ko">15개 공개 · 6개 준비 중</span></span></h2>
   <p class="section-sub"><span class="i18n-en">Core machine-learning and deep-learning ideas, hands-on — estimation, clustering, kernels, representations, and uncertainty.</span><span class="i18n-ko">머신러닝과 딥러닝의 핵심 아이디어를 직접 다뤄봅니다 — 추정, 군집화, 커널, 표현, 불확실성.</span></p>
 
   <div class="deck collapsed" id="deckML">
@@ -830,7 +856,7 @@
       </div>
     </div>
 
-    <div class="card-demo c-reg soon">
+    <a class="card-demo c-reg" href="double-descent.html">
       <div class="glyph">
         <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <line x1="104" y1="12" x2="104" y2="68" stroke="#8b949e" stroke-width="1" stroke-dasharray="3 3" opacity=".55"></line>
@@ -841,11 +867,11 @@
         <div class="tags"><span><span class="i18n-en">Overparam</span><span class="i18n-ko">과매개변수화</span></span><span><span class="i18n-en">Generalization</span><span class="i18n-ko">일반화</span></span></div>
         <h3><span class="i18n-en">Regularization / Double Descent</span><span class="i18n-ko">정규화 / 이중 하강</span></h3>
         <p><span class="i18n-en">Add L2 or more parameters and watch test error dip, spike at the interpolation threshold, then fall again — the double-descent curve.</span><span class="i18n-ko">L2를 추가하거나 매개변수를 더 늘리며 테스트 오차가 떨어졌다가, 보간 임계점에서 치솟은 뒤, 다시 떨어지는 것을 지켜보세요 — 이중 하강 곡선입니다.</span></p>
-        <div class="go"><span class="i18n-en">Coming soon</span><span class="i18n-ko">준비 중</span></div>
+        <div class="go"><span class="i18n-en">Open →</span><span class="i18n-ko">열기 →</span></div>
       </div>
-    </div>
+    </a>
 
-    <div class="card-demo c-ker soon">
+    <a class="card-demo c-ker" href="kernel-trick.html">
       <div class="glyph">
         <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <circle cx="50" cy="40" r="22" stroke="#8b949e" stroke-width="1" opacity=".4" fill="none"></circle>
@@ -861,14 +887,93 @@
         <div class="tags"><span><span class="i18n-en">Kernels</span><span class="i18n-ko">커널</span></span><span><span class="i18n-en">Feature space</span><span class="i18n-ko">특징 공간</span></span></div>
         <h3><span class="i18n-en">The Kernel Trick</span><span class="i18n-ko">커널 트릭</span></h3>
         <p><span class="i18n-en">Lift points into a higher-dimensional feature space where they become linearly separable — without ever computing the coordinates.</span><span class="i18n-ko">점들을 더 높은 차원의 특징 공간으로 들어올려 선형 분리가 가능하게 만듭니다 — 좌표를 실제로 계산하지 않고도 말이죠.</span></p>
+        <div class="go"><span class="i18n-en">Open →</span><span class="i18n-ko">열기 →</span></div>
+      </div>
+    </a>
+
+
+    <div class="card-demo c-conv soon">
+      <div class="glyph">
+        <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <g stroke="#8b949e" stroke-width="1" opacity=".45" fill="none">
+            <rect x="22" y="16" width="48" height="48"></rect>
+            <line x1="38" y1="16" x2="38" y2="64"></line><line x1="54" y1="16" x2="54" y2="64"></line>
+            <line x1="22" y1="32" x2="70" y2="32"></line><line x1="22" y1="48" x2="70" y2="48"></line>
+          </g>
+          <rect x="22" y="16" width="32" height="32" fill="#f0b429" fill-opacity="0.16" stroke="#f0b429" stroke-width="1.8"></rect>
+          <path d="M82 40 h20 m-7 -4 l7 4 l-7 4" stroke="#8b949e" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"></path>
+          <rect x="118" y="24" width="32" height="32" stroke="#8b949e" stroke-width="1" opacity=".45" fill="none"></rect>
+          <rect x="118" y="24" width="16" height="16" fill="#f0b429" fill-opacity=".55"></rect>
+        </svg>
+      </div>
+      <div class="body">
+        <div class="tags"><span><span class="i18n-en">CNN</span><span class="i18n-ko">CNN</span></span><span><span class="i18n-en">Locality</span><span class="i18n-ko">국소성</span></span></div>
+        <h3><span class="i18n-en">Convolution &amp; Receptive Fields</span><span class="i18n-ko">합성곱과 수용 영역</span></h3>
+        <p><span class="i18n-en">Slide a small kernel across an image and stack layers — see how weight sharing and a growing receptive field build features from edges to objects.</span><span class="i18n-ko">작은 커널을 이미지 위로 미끄러뜨리고 층을 쌓으며, 가중치 공유와 커지는 수용 영역이 에지에서 사물까지 특징을 쌓는 과정을 봅니다.</span></p>
         <div class="go"><span class="i18n-en">Coming soon</span><span class="i18n-ko">준비 중</span></div>
       </div>
     </div>
 
+    <div class="card-demo c-attn soon">
+      <div class="glyph">
+        <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <g stroke="#a78bfa" stroke-width="1.4">
+            <line x1="100" y1="22" x2="40" y2="58" opacity=".28"></line>
+            <line x1="100" y1="22" x2="70" y2="58" opacity=".6"></line>
+            <line x1="100" y1="22" x2="100" y2="58" opacity="1"></line>
+            <line x1="100" y1="22" x2="130" y2="58" opacity=".5"></line>
+            <line x1="100" y1="22" x2="160" y2="58" opacity=".24"></line>
+          </g>
+          <circle cx="100" cy="18" r="5.5" fill="#a78bfa"></circle>
+          <g fill="#6ea8ff"><circle cx="40" cy="62" r="4"></circle><circle cx="70" cy="62" r="4"></circle><circle cx="100" cy="62" r="4"></circle><circle cx="130" cy="62" r="4"></circle><circle cx="160" cy="62" r="4"></circle></g>
+        </svg>
+      </div>
+      <div class="body">
+        <div class="tags"><span><span class="i18n-en">Transformers</span><span class="i18n-ko">Transformer</span></span><span><span class="i18n-en">Query·Key</span><span class="i18n-ko">쿼리·키</span></span></div>
+        <h3><span class="i18n-en">Self-Attention</span><span class="i18n-ko">셀프 어텐션</span></h3>
+        <p><span class="i18n-en">Every token looks at every other and mixes them by learned weights. Watch queries, keys, and the softmax attention matrix decide what attends to what.</span><span class="i18n-ko">모든 토큰이 서로를 바라보며 학습된 가중치로 섞습니다. 쿼리·키와 softmax 어텐션 행렬이 무엇이 무엇에 주목할지 정하는 것을 봅니다.</span></p>
+        <div class="go"><span class="i18n-en">Coming soon</span><span class="i18n-ko">준비 중</span></div>
+      </div>
+    </div>
+
+    <div class="card-demo c-vgrad soon">
+      <div class="glyph">
+        <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <g stroke="#4a5578" stroke-width="1">
+            <line x1="42" y1="44" x2="76" y2="44"></line><line x1="76" y1="44" x2="110" y2="44"></line><line x1="110" y1="44" x2="150" y2="44"></line>
+          </g>
+          <g fill="#6ea8ff"><circle cx="42" cy="44" r="4"></circle><circle cx="76" cy="44" r="4"></circle><circle cx="110" cy="44" r="4"></circle><circle cx="150" cy="44" r="4"></circle></g>
+          <path d="M156 24 C120 16 84 16 42 22" stroke="#fb7185" stroke-width="1.4" fill="none" opacity=".5"></path>
+          <g fill="#fb7185"><circle cx="150" cy="24" r="6"></circle><circle cx="112" cy="23" r="4"></circle><circle cx="76" cy="22" r="2.5"></circle><circle cx="42" cy="22" r="1.3"></circle></g>
+        </svg>
+      </div>
+      <div class="body">
+        <div class="tags"><span><span class="i18n-en">Deep nets</span><span class="i18n-ko">심층 신경망</span></span><span><span class="i18n-en">Training</span><span class="i18n-ko">학습</span></span></div>
+        <h3><span class="i18n-en">Vanishing / Exploding Gradients</span><span class="i18n-ko">기울기 소실 / 폭주</span></h3>
+        <p><span class="i18n-en">Send an error signal back through many layers and watch it shrink to nothing or blow up — why depth is hard, and how initialization, residuals, and normalization rescue it.</span><span class="i18n-ko">오차 신호를 여러 층 뒤로 보내면 0으로 사라지거나 폭발합니다 — 깊이가 어려운 이유와 초기화·잔차·정규화가 이를 구하는 방법.</span></p>
+        <div class="go"><span class="i18n-en">Coming soon</span><span class="i18n-ko">준비 중</span></div>
+      </div>
+    </div>
+
+    <div class="card-demo c-mcmc soon">
+      <div class="glyph">
+        <svg viewBox="0 0 200 80" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M20 64 C60 64 74 22 100 22 C126 22 140 64 180 64" stroke="#8b949e" stroke-width="1.4" fill="none" opacity=".5"></path>
+          <polyline points="34,58 46,50 40,42 58,46 70,34 64,40 86,30 96,33 92,27 108,31" stroke="#34d399" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"></polyline>
+          <g fill="#34d399"><circle cx="46" cy="50" r="2"></circle><circle cx="70" cy="34" r="2"></circle><circle cx="96" cy="33" r="2"></circle><circle cx="108" cy="31" r="2.6"></circle></g>
+        </svg>
+      </div>
+      <div class="body">
+        <div class="tags"><span><span class="i18n-en">Sampling</span><span class="i18n-ko">표집</span></span><span><span class="i18n-en">Bayesian</span><span class="i18n-ko">베이지안</span></span></div>
+        <h3><span class="i18n-en">MCMC / Metropolis–Hastings</span><span class="i18n-ko">MCMC / 메트로폴리스–헤이스팅스</span></h3>
+        <p><span class="i18n-en">Explore a probability landscape with a guided random walk — propose, accept or reject, and watch the samples trace out a distribution you can't integrate.</span><span class="i18n-ko">안내된 무작위 걸음으로 확률 지형을 탐험합니다 — 제안하고 수락/기각하며, 적분할 수 없는 분포를 표본이 그려내는 것을 봅니다.</span></p>
+        <div class="go"><span class="i18n-en">Coming soon</span><span class="i18n-ko">준비 중</span></div>
+      </div>
+    </div>
 
   </div>
 
-  <div class="more-row"><button class="more-btn" id="moreML" type="button" aria-expanded="false"><span class="i18n-en">See more · 11 more</span><span class="i18n-ko">더보기 · 11개</span><span class="chev">▾</span></button></div>
+  <div class="more-row"><button class="more-btn" id="moreML" type="button" aria-expanded="false"><span class="i18n-en">See more · 15 more</span><span class="i18n-ko">더보기 · 15개</span><span class="chev">▾</span></button></div>
 
 </div>
 
