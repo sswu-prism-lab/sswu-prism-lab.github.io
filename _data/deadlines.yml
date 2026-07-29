@@ -1,6 +1,6 @@
 # _data/deadlines.yml
 # 이 파일은 scripts/update_deadlines.py 에 의해 자동으로 생성됩니다.
-# 마지막 자동 갱신: 2026-07-28 19:43 UTC
+# 마지막 자동 갱신: 2026-07-29 19:34 UTC
 # 수동으로 편집한 내용은 다음 자동 실행 때 덮어써질 수 있습니다.
 
 - name: ICCV
@@ -13,15 +13,6 @@
   tag:
   - CV
   - AI
-- name: ICLR
-  full_name: International Conference on Learning Representations
-  link: https://iclr.cc/Conferences/2026
-  date: May 01-05, 2026
-  place: Brazil
-  deadline_utc: '2025-09-25T11:59:59Z'
-  conf_end_utc: '2026-05-05T23:59:59Z'
-  tag:
-  - ML
 - name: AISTATS
   full_name: International Conference on Artificial Intelligence and Statistics
   link: https://virtual.aistats.org/Conferences/2026
@@ -218,6 +209,15 @@
   tag:
   - CV
   - AI
+- name: ICLR
+  full_name: International Conference on Learning Representations
+  link: https://iclr.cc/Conferences/2027
+  date: April 27-30, 2027
+  place: San Francisco, CA, USA
+  deadline_utc: '2026-09-17T11:59:59Z'
+  conf_end_utc: '2027-04-30T23:59:59Z'
+  tag:
+  - ML
 - name: ICASSP
   full_name: IEEE International Conference on Acoustics, Speech, and Signal Processing
   link: https://2027.ieeeicassp.org/
