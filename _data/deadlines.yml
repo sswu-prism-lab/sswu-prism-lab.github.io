@@ -1,6 +1,6 @@
 # _data/deadlines.yml
 # 이 파일은 scripts/update_deadlines.py 에 의해 자동으로 생성됩니다.
-# 마지막 자동 갱신: 2026-08-01 19:20 UTC
+# 마지막 자동 갱신: 2026-08-02 19:21 UTC
 # 수동으로 편집한 내용은 다음 자동 실행 때 덮어써질 수 있습니다.
 
 - name: ICCV
@@ -212,10 +212,10 @@
 - name: ICLR
   full_name: International Conference on Learning Representations
   link: https://iclr.cc/Conferences/2027
-  date: TBD
+  date: April 26-30, 2027
   place: San Francisco, CA, USA
   deadline_utc: '2026-09-26T11:59:59Z'
-  conf_end_utc: '2026-09-26T11:59:59Z'
+  conf_end_utc: '2027-04-30T23:59:59Z'
   tag:
   - ML
 - name: ECIR
