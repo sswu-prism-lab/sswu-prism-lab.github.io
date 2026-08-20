@@ -1,6 +1,6 @@
 # _data/deadlines.yml
 # 이 파일은 scripts/update_deadlines.py 에 의해 자동으로 생성됩니다.
-# 마지막 자동 갱신: 2026-08-19 18:44 UTC
+# 마지막 자동 갱신: 2026-08-20 18:50 UTC
 # 수동으로 편집한 내용은 다음 자동 실행 때 덮어써질 수 있습니다.
 
 - name: ICCV
