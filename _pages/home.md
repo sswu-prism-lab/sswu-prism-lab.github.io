@@ -48,24 +48,25 @@ html[data-theme="dark"] .logo-light { display: none; }
 html[data-theme="dark"] .logo-dark { display: inline; }
 </style>
 
-<div id="open-positions" class="alert" role="alert" style="margin: 20px 0; line-height: 1.6; background-color: #fafdff; border: 1px solid #e9d5ff; color: #5b21b6; border-radius: 6px;">
-  <h4 style="margin-top: 0; margin-bottom: 10px; color: #5b21b6;"><strong>📢 <span class="i18n-en">Current Open Positions</span><span class="i18n-ko">현재 모집 중인 자리</span></strong></h4>
-  <p style="margin-bottom: 8px;"><span class="i18n-en">We are currently seeking motivated students to join our lab:</span><span class="i18n-ko">우리 연구실에 함께할 열정적인 학생을 모집하고 있습니다:</span></p>
-  <ul style="margin-bottom: 0; padding-left: 20px;">
-    <li><strong><span class="i18n-en">Prospective Ph.D./Master Student:</span><span class="i18n-ko">박사/석사 과정 지원자:</span></strong> 2
-      <ul style="margin-top: 5px; margin-bottom: 0; padding-left: 20px; list-style-type: circle;">
-        <li><span class="i18n-en">Topic: Biomedical data representation and/or statistical deep learning</span><span class="i18n-ko">주제: 생체의학 데이터 표현 및/또는 통계적 딥러닝</span></li>
-        <li><span class="i18n-en">Required: Experience with PyTorch</span><span class="i18n-ko">필수: PyTorch 사용 경험</span></li>
-      </ul>
-    </li>
-    <li><strong><span class="i18n-en">Undergraduate Intern:</span><span class="i18n-ko">학부 인턴:</span></strong> 1
-      <ul style="margin-top: 5px; margin-bottom: 0; padding-left: 20px; list-style-type: circle;">
-        <li><span class="i18n-en">Topic: Biosignal representation</span><span class="i18n-ko">주제: 생체신호 표현</span></li>
-        <li><span class="i18n-en">Preferred: Experience with PyTorch, Sophomore or Junior student</span><span class="i18n-ko">우대: PyTorch 사용 경험, 2학년 또는 3학년 학생</span></li>
-      </ul>
-    </li>
-  </ul>
-  <p style="margin-bottom: 0;"><span class="i18n-en">If you are interested, please contact </span><span class="i18n-ko">관심이 있으시면 </span><a href="mailto:wjko@sungshin.ac.kr" class="rainbow-link">Prof. Wonjun Ko</a><span class="i18n-ko">에게 연락해 주세요</span>😄</p>
+<div id="open-positions" class="alert" role="alert" style="margin: 20px 0; line-height: 1.6; background-color: #fafdff; border: 1px solid #e9d5ff; color: #5b21b6; border-radius: 6px;">   
+  <h4 style="margin-top: 0; margin-bottom: 10px; color: #5b21b6;"><strong>📢 <span class="i18n-en">Current Open Positions</span><span class="i18n-ko">현재 모집 중인 자리</span></strong></h4>   
+  <p style="margin-bottom: 8px;"><span class="i18n-en">We are currently seeking motivated students to join our lab:</span><span class="i18n-ko">우리 연구실에 함께할 열정적인 학생을 모집하고 있습니다:</span></p>   
+  <ul style="margin-bottom: 0; padding-left: 20px;">     
+    <li><strong><span class="i18n-en">Prospective Ph.D./Master Student:</span><span class="i18n-ko">박사/석사 과정 지원자:</span></strong> 2       
+      <ul style="margin-top: 5px; margin-bottom: 0; padding-left: 20px; list-style-type: circle;">         
+        <li><span class="i18n-en">Topic: Biomedical data representation and/or statistical deep learning</span><span class="i18n-ko">주제: 생체의학 데이터 표현 및/또는 통계적 딥러닝</span></li>         
+        <li><span class="i18n-en">Required: Experience with PyTorch</span><span class="i18n-ko">필수: PyTorch 사용 경험</span></li>       
+      </ul>     
+    </li>     
+    <!-- 학부 인턴 파트 취소선 적용 -->
+    <li><del><strong><span class="i18n-en">Undergraduate Intern:</span><span class="i18n-ko">학부 인턴:</span></strong> 1       
+      <ul style="margin-top: 5px; margin-bottom: 0; padding-left: 20px; list-style-type: circle;">         
+        <li><span class="i18n-en">Topic: Biosignal representation</span><span class="i18n-ko">주제: 생체신호 표현</span></li>         
+        <li><span class="i18n-en">Preferred: Experience with PyTorch, Sophomore or Junior student</span><span class="i18n-ko">우대: PyTorch 사용 경험, 2학년 또는 3학년 학생</span></li>       
+      </ul>     
+    </del></li>   
+  </ul>   
+  <p style="margin-bottom: 0;"><span class="i18n-en">If you are interested, please contact </span><span class="i18n-ko">관심이 있으시면 </span><a href="mailto:wjko@sungshin.ac.kr" class="rainbow-link">Prof. Wonjun Ko</a><span class="i18n-ko">에게 연락해 주세요</span>😄</p> 
 </div>
 
 #### <span class="i18n-en">We are Pattern Recognition and Intelligent System Modeling Lab!</span><span class="i18n-ko">우리는 패턴 인식 및 지능형 시스템 모델링 연구실입니다!</span>
