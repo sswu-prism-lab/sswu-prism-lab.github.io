@@ -1,3 +1,25 @@
+- name: Jiho Lee (이지호)
+  photo: Jiho.png
+  info: Undergraduate Intern
+  info_ko: 학부 인턴
+  email: 20231414@sungshin.ac.kr
+  number_educ: 1
+  education1: Imaging genetics, graphical model
+  performance: One presented domestic conference (win the poster award)
+  performance_ko: 국내 학회 1편 발표 (포스터상 수상)
+
+- name: Yoonkyeong Kang (강윤경)
+  photo: Yoonkyeong.jpeg
+  duration: In PRISM Lab 2025 - 2026
+  duration_ko: PRISM Lab 소속 2025 - 2026
+  info: Undergraduate Intern
+  info_ko: 학부 인턴
+  email: 20220363@sungshin.ac.kr
+  number_educ: 1
+  education1: Biosignal representation, topological deep learning
+  performance: One presented top-tier CS Conference and one SCIE journal (under review)
+  performance_ko: 최상위 CS 학회 1편 발표, SCIE 저널 1편 심사 중
+
 - name: Jeongwon Choe (최정원)
   photo: Jeongwon.jpeg
   duration: In PRISM Lab 2023 - 2026
