@@ -59,7 +59,7 @@ html[data-theme="dark"] .logo-dark { display: inline; }
       </ul>     
     </li>     
     <!-- 학부 인턴 파트 취소선 적용 -->
-    <li><del><strong><span class="i18n-en">Undergraduate Intern:</span><span class="i18n-ko">학부 인턴:</span></strong> 2       
+    <li><del><strong><span class="i18n-en">Undergraduate Intern: All openings have been filled.</span><span class="i18n-ko">학부 인턴: 모든 인원이 충원되었습니다.</span></strong> 2       
       <ul style="margin-top: 5px; margin-bottom: 0; padding-left: 20px; list-style-type: circle;">         
         <li><span class="i18n-en">Topic: Biosignal representation or EHR analysis</span><span class="i18n-ko">주제: 생체신호 표현 또는 EHR 분석</span></li>         
         <li><span class="i18n-en">Preferred: Experience with PyTorch, Sophomore or Junior student</span><span class="i18n-ko">우대: PyTorch 사용 경험, 2학년 또는 3학년 학생</span></li>       
