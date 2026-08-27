@@ -31,6 +31,28 @@
   education2: Neuroimaging analysis, graphical model
   education2_ko: 신경영상 분석, 그래프 모델
 
+- name: Yunseo Kim (김윤서)
+  photo: Yoonseo.jpeg
+  info: Undergraduate Intern
+  info_ko: 학부 인턴
+  email: 20231339@sungshin.ac.kr
+  number_educ: 2
+  education1: Major in Artificial Intelligence
+  education1_ko: 인공지능 전공
+  education2: Biosignal representation, information-theoritic model
+  education2_ko: 생체신호 표현, 정보-이론 모델
+
+- name: Chaelin Lee (이채린)
+  photo: Chaelin.jpeg
+  info: Undergraduate Intern
+  info_ko: 학부 인턴
+  email: 20241260@sungshin.ac.kr
+  number_educ: 2
+  education1: Major in Artificial Intelligence
+  education1_ko: 인공지능 전공
+  education2: EHR modeling, explainable AI
+  education2_ko: EHR 모델링, 설명가능 인공지능
+
 - name: "This could be you!"
   photo: sw-dragon.JPG
   info: Contact us:)
