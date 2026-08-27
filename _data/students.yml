@@ -20,28 +20,6 @@
   education2: Imaging genetics, self-supervised learning
   education2_ko: 영상 유전체학, 자기지도 학습
 
-- name: Yoonkyeong Kang (강윤경)
-  photo: Yoonkyeong.jpeg
-  info: Undergraduate Intern
-  info_ko: 학부 인턴
-  email: 20232632@sungshin.ac.kr
-  number_educ: 2
-  education1: Major in Artificial Intelligence
-  education1_ko: 인공지능 전공
-  education2: Biosignal representation, topological deep learning
-  education2_ko: 생체신호 표현, 위상 심층 학습
-
-- name: Jiho Lee (이지호)
-  photo: Jiho.png
-  info: Undergraduate Intern
-  info_ko: 학부 인턴
-  email: 20231414@sungshin.ac.kr
-  number_educ: 2
-  education1: Major in Artificial Intelligence
-  education1_ko: 인공지능 전공
-  education2: Imaging genetics, graphical model
-  education2_ko: 영상 유전체학, 그래프 모델
-
 - name: Eunhye Jeong (정은혜)
   photo: Eunhye.jpeg
   info: Undergraduate Intern
