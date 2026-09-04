@@ -1,6 +1,6 @@
 # _data/deadlines.yml
 # 이 파일은 scripts/update_deadlines.py 에 의해 자동으로 생성됩니다.
-# 마지막 자동 갱신: 2026-09-03 20:53 UTC
+# 마지막 자동 갱신: 2026-09-04 20:40 UTC
 # 수동으로 편집한 내용은 다음 자동 실행 때 덮어써질 수 있습니다.
 
 - name: ICCV
@@ -10,26 +10,6 @@
   place: Honolulu, Hawaii
   deadline_utc: '2025-03-08T09:59:59Z'
   conf_end_utc: '2025-10-25T23:59:59Z'
-  tag:
-  - CV
-  - AI
-- name: AISTATS
-  full_name: International Conference on Artificial Intelligence and Statistics
-  link: https://virtual.aistats.org/Conferences/2026
-  date: May 2-5, 2026
-  place: Morocco
-  deadline_utc: '2025-10-03T11:59:59Z'
-  conf_end_utc: '2026-05-05T23:59:59Z'
-  tag:
-  - STAT
-  - AI
-- name: CVPR
-  full_name: IEEE/CVF Conference on Computer Vision and Pattern Recognition
-  link: https://cvpr.thecvf.com/Conferences/2026
-  date: June 3-7, 2026
-  place: Denver, Colorado, United States
-  deadline_utc: '2025-11-14T11:59:00Z'
-  conf_end_utc: '2026-06-07T23:59:59Z'
   tag:
   - CV
   - AI
@@ -228,12 +208,22 @@
   tag:
   - ML
   - AI
+- name: AISTATS
+  full_name: International Conference on Artificial Intelligence and Statistics
+  link: https://virtual.aistats.org/Conferences/2027
+  date: May 3, 2027
+  place: Montréal, Canada
+  deadline_utc: '2026-10-07T11:59:59Z'
+  conf_end_utc: '2027-05-03T23:59:59Z'
+  tag:
+  - STAT
+  - AI
 - name: WWW
   full_name: International World Wide Web Conferences
-  link: https://acmweb2027.org/
+  link: https://www2027.thewebconf.org/
   date: May 10 - 14, 2027
   place: Dublin, Ireland
-  deadline_utc: '2026-10-19T11:59:59Z'
+  deadline_utc: '2026-10-26T11:59:59Z'
   conf_end_utc: '2027-05-14T23:59:59Z'
   tag:
   - AI
@@ -247,6 +237,16 @@
   conf_end_utc: '2027-05-21T23:59:59Z'
   tag:
   - DB
+  - AI
+- name: CVPR
+  full_name: IEEE/CVF Conference on Computer Vision and Pattern Recognition
+  link: https://cvpr.thecvf.com/Conferences/2027
+  date: June 20-24, 2027
+  place: Seattle, WA, United States
+  deadline_utc: '2026-11-17T11:59:00Z'
+  conf_end_utc: '2027-06-24T23:59:59Z'
+  tag:
+  - CV
   - AI
 - name: WSDM
   full_name: International Conference on Web Search and Data Mining
