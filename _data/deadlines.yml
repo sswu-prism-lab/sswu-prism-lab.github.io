@@ -1,25 +1,25 @@
 # _data/deadlines.yml
 # 이 파일은 scripts/update_deadlines.py 에 의해 자동으로 생성됩니다.
-# 마지막 자동 갱신: 2026-09-25 21:25 UTC
+# 마지막 자동 갱신: 2026-09-26 20:58 UTC
 # 수동으로 편집한 내용은 다음 자동 실행 때 덮어써질 수 있습니다.
 
 - name: ICCV
   full_name: IEEE International Conference on Computer Vision
   link: https://iccv.thecvf.com/Conferences/2025
-  date: October 19-25, 2025
+  date: October 19-23, 2025
   place: Honolulu, Hawaii
   deadline_utc: '2025-03-08T09:59:59Z'
-  conf_end_utc: '2025-10-25T23:59:59Z'
+  conf_end_utc: '2025-10-23T23:59:59Z'
   tag:
   - CV
   - AI
 - name: ICPR
   full_name: International Conference on Pattern Recognition
   link: https://icpr2026.org/
-  date: August 17-21, 2026
+  date: August 17-22, 2026
   place: Lyon, France
   deadline_utc: '2026-01-11T11:59:59Z'
-  conf_end_utc: '2026-08-21T23:59:59Z'
+  conf_end_utc: '2026-08-22T23:59:59Z'
   tag:
   - ML
   - AI
@@ -84,20 +84,20 @@
 - name: ECCV
   full_name: European Conference on Computer Vision
   link: https://eccv.ecva.net/
-  date: September 8 - 13, 2026
+  date: September 8 - 12, 2026
   place: Malmö, Sweden
   deadline_utc: '2026-03-05T22:00:00Z'
-  conf_end_utc: '2026-09-13T23:59:59Z'
+  conf_end_utc: '2026-09-12T23:59:59Z'
   tag:
   - CV
   - AI
 - name: NeurIPS
   full_name: Conference on Neural Information Processing Systems
   link: https://neurips.cc/Conferences/2026
-  date: December 6-12, 2026
-  place: Sydney, Australia
+  date: December 6-12 (Sydney), December 9-13 (Atlanta and Paris), 2026
+  place: Sydney, Australia; Atlanta, USA; Paris, France
   deadline_utc: '2026-05-07T11:59:00Z'
-  conf_end_utc: '2026-12-12T23:59:59Z'
+  conf_end_utc: '2026-12-13T23:59:59Z'
   tag:
   - ML
   - AI
@@ -116,7 +116,7 @@
   link: https://bmvc2026.bmva.org/
   date: November 23-26, 2026
   place: Lancaster, UK
-  deadline_utc: '2026-05-29T23:59:59Z'
+  deadline_utc: '2026-05-30T11:59:59Z'
   conf_end_utc: '2026-11-26T23:59:59Z'
   tag:
   - CV
@@ -168,6 +168,16 @@
   deadline_utc: '2026-07-29T11:59:59Z'
   conf_end_utc: '2027-02-23T23:59:59Z'
   tag:
+  - AI
+- name: WSDM
+  full_name: International Conference on Web Search and Data Mining
+  link: https://wsdm-conference.org/2027/
+  date: February 15 - 19, 2027
+  place: Cordis, Hong Kong SAR, China
+  deadline_utc: '2026-08-25T11:59:59Z'
+  conf_end_utc: '2027-02-19T23:59:59Z'
+  tag:
+  - DB
   - AI
 - name: WACV
   full_name: IEEE/CVF Winter Conference on Applications of Computer Vision
@@ -241,22 +251,12 @@
 - name: CVPR
   full_name: IEEE/CVF Conference on Computer Vision and Pattern Recognition
   link: https://cvpr.thecvf.com/Conferences/2027
-  date: June 20-24, 2027
+  date: June 20-25, 2027
   place: Seattle, WA, United States
   deadline_utc: '2026-11-17T11:59:00Z'
-  conf_end_utc: '2027-06-24T23:59:59Z'
+  conf_end_utc: '2027-06-25T23:59:59Z'
   tag:
   - CV
-  - AI
-- name: WSDM
-  full_name: International Conference on Web Search and Data Mining
-  link: https://wsdm-conference.org/2027/
-  date: February 15 - 19, 2027
-  place: Cordis, Hong Kong SAR, China
-  deadline_utc: '2026-11-18T11:59:59Z'
-  conf_end_utc: '2027-02-19T23:59:59Z'
-  tag:
-  - DB
   - AI
 - name: MVA
   full_name: International Conference on Machine Vision Applications
