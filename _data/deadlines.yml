@@ -1,13 +1,13 @@
 # _data/deadlines.yml
 # 이 파일은 scripts/update_deadlines.py 에 의해 자동으로 생성됩니다.
-# 마지막 자동 갱신: 2026-09-30 22:08 UTC
+# 마지막 자동 갱신: 2026-10-01 22:35 UTC
 # 수동으로 편집한 내용은 다음 자동 실행 때 덮어써질 수 있습니다.
 
 - name: ICCV
   full_name: IEEE International Conference on Computer Vision
   link: https://iccv.thecvf.com/Conferences/2025
-  date: October 19-23, 2025
-  place: Honolulu, Hawaii
+  date: October 21-23, 2025
+  place: Honolulu, Hawaii (Hybrid)
   deadline_utc: '2025-03-08T09:59:59Z'
   conf_end_utc: '2025-10-23T23:59:59Z'
   tag:
@@ -16,17 +16,17 @@
 - name: ICPR
   full_name: International Conference on Pattern Recognition
   link: https://icpr2026.org/
-  date: August 17-22, 2026
+  date: August 17-20, 2026
   place: Lyon, France
   deadline_utc: '2026-01-11T11:59:59Z'
-  conf_end_utc: '2026-08-22T23:59:59Z'
+  conf_end_utc: '2026-08-20T23:59:59Z'
   tag:
   - ML
   - AI
 - name: IJCAI
   full_name: International Joint Conference on Artificial Intelligence
   link: https://2026.ijcai.org/
-  date: August 15-21, 2026
+  date: August 18-21, 2026
   place: Bremen, Germany
   deadline_utc: '2026-01-20T11:59:59Z'
   conf_end_utc: '2026-08-21T23:59:59Z'
@@ -54,7 +54,7 @@
 - name: COLT
   full_name: Annual Conference on Learning Theory
   link: https://learningtheory.org/colt2026/
-  date: June 29 - July 3, 2026
+  date: June 30 - July 3, 2026
   place: San Diego, California
   deadline_utc: '2026-02-05T11:59:59Z'
   conf_end_utc: '2026-07-03T23:59:59Z'
@@ -63,10 +63,10 @@
 - name: UAI
   full_name: Conference on Uncertainty in Artificial Intelligence
   link: https://www.auai.org/uai2026/
-  date: August 17-21, 2026
-  place: Amsterdam, Netherlands
+  date: August 18-20, 2026
+  place: Amsterdam, Netherlands (Hybrid)
   deadline_utc: '2026-02-26T11:59:59Z'
-  conf_end_utc: '2026-08-21T23:59:59Z'
+  conf_end_utc: '2026-08-20T23:59:59Z'
   tag:
   - STAT
   - AI
@@ -84,7 +84,7 @@
 - name: ECCV
   full_name: European Conference on Computer Vision
   link: https://eccv.ecva.net/
-  date: September 8 - 12, 2026
+  date: September 10-12, 2026
   place: Malmö, Sweden
   deadline_utc: '2026-03-05T22:00:00Z'
   conf_end_utc: '2026-09-12T23:59:59Z'
@@ -104,7 +104,7 @@
 - name: CIKM
   full_name: ACM International Conference on Information and Knowledge Management
   link: https://cikm2026.diag.uniroma1.it/
-  date: November 7-11, 2026
+  date: November 9-11, 2026
   place: Rome, Italy
   deadline_utc: '2026-05-24T11:59:59Z'
   conf_end_utc: '2026-11-11T23:59:59Z'
@@ -134,7 +134,7 @@
 - name: ACCV
   full_name: Asian Conference on Computer Vision
   link: https://accv2026.org/
-  date: December 14-18, 2026
+  date: December 16-18, 2026
   place: Osaka, Japan
   deadline_utc: '2026-07-05T23:59:59Z'
   conf_end_utc: '2026-12-18T23:59:59Z'
@@ -144,10 +144,10 @@
 - name: ACML
   full_name: Asian Conference on Machine Learning
   link: https://www.acml-conf.org/2026/
-  date: December 1-4, 2026
+  date: TBD
   place: Melbourne, Australia
   deadline_utc: '2026-07-06T11:59:59Z'
-  conf_end_utc: '2026-12-04T23:59:59Z'
+  conf_end_utc: '2026-07-06T11:59:59Z'
   tag:
   - ML
 - name: SIGKDD
