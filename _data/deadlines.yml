@@ -1,6 +1,6 @@
 # _data/deadlines.yml
 # 이 파일은 scripts/update_deadlines.py 에 의해 자동으로 생성됩니다.
-# 마지막 자동 갱신: 2026-10-01 22:35 UTC
+# 마지막 자동 갱신: 2026-10-02 22:04 UTC
 # 수동으로 편집한 내용은 다음 자동 실행 때 덮어써질 수 있습니다.
 
 - name: ICCV
@@ -44,8 +44,8 @@
 - name: CogSci
   full_name: Annual Meeting of the Cognitive Science Society
   link: https://cognitivesciencesociety.org/cogsci-2026/
-  date: July 22-25, 2026
-  place: Rio de Janeiro, Brazil
+  date: July 23-25, 2026
+  place: Rio de Janeiro, Brazil (Hybrid)
   deadline_utc: '2026-02-03T11:59:59Z'
   conf_end_utc: '2026-07-25T23:59:59Z'
   tag:
@@ -74,10 +74,10 @@
   full_name: International Conference on Medical Image Computing and Computer Assisted
     Intervention
   link: https://conferences.miccai.org/2026/en/IMPORTANT-DATES.html
-  date: September 27 - October 1, 2026
+  date: September 28-30, 2026
   place: Strasbourg, France
   deadline_utc: '2026-02-27T07:59:00Z'
-  conf_end_utc: '2026-10-01T23:59:59Z'
+  conf_end_utc: '2026-09-30T23:59:59Z'
   tag:
   - BIO
   - AI
@@ -94,10 +94,10 @@
 - name: NeurIPS
   full_name: Conference on Neural Information Processing Systems
   link: https://neurips.cc/Conferences/2026
-  date: December 6-12 (Sydney), December 9-13 (Atlanta and Paris), 2026
+  date: December 8-10 (Sydney), December 9-11 (Atlanta and Paris), 2026
   place: Sydney, Australia; Atlanta, USA; Paris, France
   deadline_utc: '2026-05-07T11:59:00Z'
-  conf_end_utc: '2026-12-13T23:59:59Z'
+  conf_end_utc: '2026-12-11T23:59:59Z'
   tag:
   - ML
   - AI
@@ -213,7 +213,7 @@
   link: https://ecir2027.co.uk/
   date: March 21-25, 2027
   place: Southampton, UK
-  deadline_utc: '2026-10-05T23:59:59Z'
+  deadline_utc: '2026-10-06T11:59:59Z'
   conf_end_utc: '2027-03-25T23:59:59Z'
   tag:
   - ML
