@@ -1,6 +1,6 @@
 # _data/deadlines.yml
 # 이 파일은 scripts/update_deadlines.py 에 의해 자동으로 생성됩니다.
-# 마지막 자동 갱신: 2026-10-09 22:31 UTC
+# 마지막 자동 갱신: 2026-10-10 21:29 UTC
 # 수동으로 편집한 내용은 다음 자동 실행 때 덮어써질 수 있습니다.
 
 - name: ICCV
@@ -12,15 +12,6 @@
   conf_end_utc: '2025-10-23T23:59:59Z'
   tag:
   - CV
-  - AI
-- name: IJCAI
-  full_name: International Joint Conference on Artificial Intelligence
-  link: https://2026.ijcai.org/
-  date: August 18-21, 2026
-  place: Bremen, Germany
-  deadline_utc: '2026-01-20T11:59:59Z'
-  conf_end_utc: '2026-08-21T23:59:59Z'
-  tag:
   - AI
 - name: ICML
   full_name: International Conference on Machine Learning
@@ -111,16 +102,6 @@
   tag:
   - CV
   - AI
-- name: ICDM
-  full_name: IEEE International Conference on Data Mining
-  link: http://icdm2026.neu.edu.cn/
-  date: November 12-15, 2026
-  place: Shenyang, China
-  deadline_utc: '2026-06-07T11:59:59Z'
-  conf_end_utc: '2026-11-15T23:59:59Z'
-  tag:
-  - ML
-  - DB
 - name: ACCV
   full_name: Asian Conference on Computer Vision
   link: https://accv2026.org/
@@ -248,6 +229,15 @@
   tag:
   - CV
   - AI
+- name: IJCAI
+  full_name: International Joint Conference on Artificial Intelligence
+  link: https://2027.ijcai.org/
+  date: August 7-13, 2027
+  place: Kyoto, Japan
+  deadline_utc: '2027-01-12T11:59:00Z'
+  conf_end_utc: '2027-08-13T23:59:59Z'
+  tag:
+  - AI
 - name: MVA
   full_name: International Conference on Machine Vision Applications
   link: https://www.mva-org.jp/mva2027/
@@ -268,6 +258,16 @@
   tag:
   - ML
   - AI
+- name: ICDM
+  full_name: IEEE International Conference on Data Mining
+  link: https://icdm2027-website.onrender.com/
+  date: November 15-18, 2027
+  place: Brisbane, Australia
+  deadline_utc: '2027-06-07T11:59:00Z'
+  conf_end_utc: '2027-11-18T23:59:59Z'
+  tag:
+  - ML
+  - DB
 - name: EMBC
   full_name: International Conference of the IEEE Engineering in Medicine and Biology
     Society
