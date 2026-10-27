@@ -1,6 +1,6 @@
 # _data/deadlines.yml
 # 이 파일은 scripts/update_deadlines.py 에 의해 자동으로 생성됩니다.
-# 마지막 자동 갱신: 2026-10-26 22:33 UTC
+# 마지막 자동 갱신: 2026-10-27 22:03 UTC
 # 수동으로 편집한 내용은 다음 자동 실행 때 덮어써질 수 있습니다.
 
 - name: ICCV
@@ -32,15 +32,6 @@
   tag:
   - MX
   - AI
-- name: COLT
-  full_name: Annual Conference on Learning Theory
-  link: https://learningtheory.org/colt2026/
-  date: June 30 - July 3, 2026
-  place: San Diego, California
-  deadline_utc: '2026-02-05T11:59:59Z'
-  conf_end_utc: '2026-07-03T23:59:59Z'
-  tag:
-  - ML
 - name: UAI
   full_name: Conference on Uncertainty in Artificial Intelligence
   link: https://www.auai.org/uai2026/
@@ -248,6 +239,15 @@
   - CV
   - AI
   conf_end_utc: '2027-01-15T11:59:59'
+- name: COLT
+  full_name: Annual Conference on Learning Theory
+  link: https://learningtheory.org/colt2027/
+  date: June 28 - July 2, 2027
+  place: Tokyo, Japan
+  deadline_utc: '2027-01-30T11:59:59Z'
+  conf_end_utc: '2027-07-02T23:59:59Z'
+  tag:
+  - ML
 - name: ICPR
   full_name: International Conference on Pattern Recognition
   link: https://www.icpr2027.com/
