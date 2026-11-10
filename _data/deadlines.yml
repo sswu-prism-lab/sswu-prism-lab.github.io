@@ -1,6 +1,6 @@
 # _data/deadlines.yml
 # 이 파일은 scripts/update_deadlines.py 에 의해 자동으로 생성됩니다.
-# 마지막 자동 갱신: 2026-11-10 01:25 UTC
+# 마지막 자동 갱신: 2026-11-10 23:06 UTC
 # 수동으로 편집한 내용은 다음 자동 실행 때 덮어써질 수 있습니다.
 
 - name: ICCV
@@ -203,7 +203,7 @@
 - name: CVPR
   full_name: IEEE/CVF Conference on Computer Vision and Pattern Recognition
   link: https://cvpr.thecvf.com/Conferences/2027
-  date: June 20-25, 2027
+  date: June 22-25, 2027
   place: Seattle, WA, United States
   deadline_utc: '2026-11-17T11:59:59Z'
   conf_end_utc: '2027-06-25T23:59:59Z'
